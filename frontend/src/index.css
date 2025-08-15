@@ -1,0 +1,232 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 210 100% 40%; /* Synergy Blue */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 168 100% 38%; /* Velocity Teal */
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 210 100% 40%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 100% 50%; /* Synergy Blue - brighter for dark mode */
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 168 100% 45%; /* Velocity Teal - brighter for dark mode */
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 210 100% 50%;
+  }
+
+  * {
+    @apply border-neutral-200 dark:border-neutral-700;
+  }
+  
+  body {
+    @apply bg-neutral-50 dark:bg-dark-bg text-neutral-900 dark:text-dark-text;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-neutral-100 dark:bg-neutral-800;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-neutral-300 dark:bg-neutral-600 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-neutral-400 dark:bg-neutral-500;
+  }
+}
+
+@layer components {
+  /* Glassmorphism utilities */
+  .glass {
+    @apply backdrop-blur-md bg-white/10 dark:bg-black/10 border border-white/20 dark:border-white/10;
+  }
+
+  .glass-card {
+    @apply glass rounded-2xl shadow-lg dark:shadow-xl;
+  }
+
+  /* Button variants */
+  .btn-primary {
+    @apply bg-gradient-synergy hover:shadow-glow text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-white dark:bg-dark-surface text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white font-medium transition-colors duration-200;
+  }
+
+  /* Text gradients */
+  .text-gradient {
+    @apply bg-gradient-synergy bg-clip-text text-transparent animate-gradient-x;
+  }
+
+  .text-gradient-static {
+    @apply bg-gradient-synergy bg-clip-text text-transparent;
+  }
+
+  /* Card styles */
+  .feature-card {
+    @apply glass-card p-6 hover:shadow-glow transition-all duration-300 transform hover:-translate-y-2;
+  }
+
+  .stats-card {
+    @apply glass-card p-8 text-center;
+  }
+
+  /* Animation classes */
+  .animate-on-scroll {
+    @apply opacity-0 translate-y-8 transition-all duration-700;
+  }
+
+  .animate-on-scroll.animate {
+    @apply opacity-100 translate-y-0;
+  }
+
+  /* Gradient backgrounds */
+  .bg-gradient-hero {
+    @apply bg-gradient-to-br from-neutral-50 via-white to-neutral-100 dark:from-dark-bg dark:via-dark-surface dark:to-dark-bg;
+  }
+
+  .bg-gradient-features {
+    @apply bg-gradient-to-br from-neutral-50 to-white dark:from-dark-bg dark:to-dark-surface;
+  }
+
+  /* Floating elements */
+  .floating {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .floating-delayed {
+    animation: float 6s ease-in-out infinite;
+    animation-delay: 2s;
+  }
+
+  .floating-slow {
+    animation: float 8s ease-in-out infinite;
+  }
+}
+
+@layer utilities {
+  /* Custom utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  /* Responsive text sizes */
+  .text-responsive-xl {
+    @apply text-4xl md:text-5xl lg:text-6xl xl:text-7xl;
+  }
+
+  .text-responsive-lg {
+    @apply text-2xl md:text-3xl lg:text-4xl;
+  }
+
+  .text-responsive-md {
+    @apply text-lg md:text-xl lg:text-2xl;
+  }
+
+  /* Enhanced color utilities */
+  .bg-synergy-gradient {
+    @apply bg-gradient-to-r from-synergy-500 to-synergy-600;
+  }
+
+  .bg-velocity-gradient {
+    @apply bg-gradient-to-r from-velocity-500 to-velocity-600;
+  }
+
+  .bg-synergy-velocity {
+    @apply bg-gradient-to-r from-synergy-500 to-velocity-500;
+  }
+
+  .text-synergy-gradient {
+    @apply bg-gradient-to-r from-synergy-500 to-synergy-600 bg-clip-text text-transparent;
+  }
+
+  .text-velocity-gradient {
+    @apply bg-gradient-to-r from-velocity-500 to-velocity-600 bg-clip-text text-transparent;
+  }
+
+  .border-synergy-glow {
+    @apply border border-synergy-500/30 shadow-glow;
+  }
+
+  .border-velocity-glow {
+    @apply border border-velocity-500/30 shadow-glow-teal;
+  }
+
+  /* Focus states */
+  .focus-synergy {
+    @apply focus:ring-2 focus:ring-synergy-500/50 focus:border-synergy-500;
+  }
+
+  .focus-velocity {
+    @apply focus:ring-2 focus:ring-velocity-500/50 focus:border-velocity-500;
+  }
+
+  /* Hover effects */
+  .hover-synergy {
+    @apply hover:bg-synergy-50 hover:border-synergy-200 dark:hover:bg-synergy-950 dark:hover:border-synergy-800;
+  }
+
+  .hover-velocity {
+    @apply hover:bg-velocity-50 hover:border-velocity-200 dark:hover:bg-velocity-950 dark:hover:border-velocity-800;
+  }
+}
