@@ -37,12 +37,14 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       badge: null
     },
     {
-      title: 'Goals',
+      title: 'My Goals',
       icon: Target,
       path: '/goals',
       badge: '3',
       submenu: [
-        { title: 'My Goals', path: '/goals' },
+        { title: 'All Goals', path: '/goals' },
+        { title: 'Individual Goals', path: '/goals/individual' },
+        { title: 'Group Goals', path: '/goals/groups' },
         { title: 'Create Goal', path: '/goals/create' },
         { title: 'Goal Templates', path: '/goals/templates' }
       ]
@@ -55,7 +57,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       submenu: [
         { title: 'My Groups', path: '/groups' },
         { title: 'Create Group', path: '/groups/create' },
-        { title: 'Join Group', path: '/groups/join' }
+        { title: 'Join Group', path: '/groups/join' },
+        { title: 'Group Invites', path: '/groups/invites' }
       ]
     },
     {
@@ -66,7 +69,9 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       submenu: [
         { title: 'History', path: '/contributions' },
         { title: 'Make Payment', path: '/contributions/pay' },
-        { title: 'Scheduled', path: '/contributions/scheduled' }
+        { title: 'Scheduled', path: '/contributions/scheduled' },
+        { title: 'Individual Savings', path: '/contributions/individual' },
+        { title: 'Group Contributions', path: '/contributions/groups' }
       ]
     },
     {
@@ -76,7 +81,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       badge: null,
       submenu: [
         { title: 'Overview', path: '/analytics' },
-        { title: 'Progress', path: '/analytics/progress' },
+        { title: 'Individual Progress', path: '/analytics/individual' },
+        { title: 'Group Analytics', path: '/analytics/groups' },
         { title: 'Insights', path: '/analytics/insights' }
       ]
     },
@@ -87,6 +93,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       badge: '5',
       submenu: [
         { title: 'My Badges', path: '/achievements' },
+        { title: 'Individual Achievements', path: '/achievements/individual' },
+        { title: 'Group Achievements', path: '/achievements/groups' },
         { title: 'Leaderboard', path: '/achievements/leaderboard' },
         { title: 'Challenges', path: '/achievements/challenges' }
       ]

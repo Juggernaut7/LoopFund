@@ -324,7 +324,8 @@ const SignUpPage = () => {
         <div className="text-center text-white relative z-10">
           <h3 className="text-3xl font-bold mb-6">Start Your Savings Journey</h3>
           <p className="text-lg mb-8 text-blue-100">
-            Join thousands of users who are already saving together and achieving their financial goals.
+            Whether you're saving solo for personal dreams or collaborating with loved ones for shared goals, 
+            LoopFund makes achieving your financial aspirations simple, secure, and rewarding.
           </p>
           
           {/* Animated Network Display */}
@@ -335,7 +336,7 @@ const SignUpPage = () => {
           <div className="space-y-6">
             <div className="flex items-center justify-center space-x-3">
               <CheckCircle className="w-6 h-6 text-green-300" />
-              <span className="text-lg">Secure group savings</span>
+              <span className="text-lg">Individual & group savings</span>
             </div>
             <div className="flex items-center justify-center space-x-3">
               <CheckCircle className="w-6 h-6 text-green-300" />

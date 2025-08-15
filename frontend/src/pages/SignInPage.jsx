@@ -223,7 +223,7 @@ const SignInPage = () => {
           </div>
           <h3 className="text-3xl font-bold mb-6">Welcome Back!</h3>
           <p className="text-lg mb-8 text-blue-100">
-            Continue your savings journey with your groups and track your progress.
+            Continue your savings journey with your individual goals and group collaborations.
           </p>
           
           {/* Animated Network Display */}
@@ -234,7 +234,7 @@ const SignInPage = () => {
           <div className="space-y-6">
             <div className="flex items-center justify-center space-x-3">
               <div className="w-2 h-2 bg-green-300 rounded-full"></div>
-              <span className="text-lg">Access your savings groups</span>
+              <span className="text-lg">Access your savings goals</span>
             </div>
             <div className="flex items-center justify-center space-x-3">
               <div className="w-2 h-2 bg-green-300 rounded-full"></div>

@@ -1,6 +1,6 @@
-# 💰 LoopFund - Collaborative Group Savings Platform
+# 💰 LoopFund - Individual & Group Savings Platform
 
-A modern, intuitive web application that enables friends and families to save money together towards shared financial goals. Built with cutting-edge frontend technologies and beautiful animations.
+A modern, intuitive web application that enables users to save money individually for personal goals or collaboratively with friends and family towards shared financial objectives. Built with cutting-edge frontend technologies and beautiful animations.
 
 ## ✨ Features
 
@@ -27,6 +27,13 @@ A modern, intuitive web application that enables friends and families to save mo
 - **Persistent Storage** - User preferences and data persistence
 - **Multiple Stores** - Auth, Goals, Groups, and Notifications stores
 
+### 💰 **Savings Features**
+- **Individual Savings** - Save for personal goals like vacations, gadgets, education
+- **Group Savings** - Collaborate with friends and family for shared objectives
+- **Goal Tracking** - Visual progress tracking with beautiful animations
+- **Smart Automation** - Automated savings, reminders, and smart suggestions
+- **Progress Analytics** - Detailed insights for both individual and group savings
+
 ## 🚀 Tech Stack
 
 ### Frontend
@@ -50,8 +57,9 @@ A modern, intuitive web application that enables friends and families to save mo
 
 ### Landing Page
 - **Hero Section** - Compelling value proposition with Lottie animations
-- **Feature Showcase** - Interactive sections highlighting key benefits
-- **Testimonials** - Social proof and user stories
+- **Feature Showcase** - Interactive sections highlighting individual and group savings
+- **Goal Examples** - Visual examples of both individual and group savings goals
+- **Testimonials** - Social proof from individual and group savers
 - **Call-to-Action** - Clear conversion paths
 
 ### Authentication Pages
@@ -61,9 +69,9 @@ A modern, intuitive web application that enables friends and families to save mo
 - **Social Login** - One-click Google authentication
 
 ### Dashboard
-- **Stats Cards** - Animated metrics with trend indicators
+- **Dual Stats Cards** - Separate tracking for individual and group savings
 - **Progress Rings** - Visual goal tracking with smooth animations
-- **Recent Activity** - Timeline of user actions
+- **Recent Activity** - Timeline of individual and group activities
 - **Weather Widget** - Ambient information display
 - **Floating Actions** - Quick access to common tasks
 
@@ -132,16 +140,16 @@ A sophisticated SVG animation that visualizes the app's architecture with:
 
 ### State Management
 - **Auth Store** - User authentication and session management
-- **Goals Store** - Goal creation, tracking, and management
+- **Goals Store** - Individual and group goal creation, tracking, and management
 - **Groups Store** - Group management and member handling
 - **Notifications Store** - Real-time notifications and preferences
 
 ## 🚧 Development Status
 
 ### ✅ Completed
-- [x] Landing page with animations
+- [x] Landing page with individual and group savings focus
 - [x] Authentication system (Sign Up, Sign In, Forgot Password)
-- [x] Dashboard layout and navigation
+- [x] Dashboard layout with dual savings tracking
 - [x] Theme system (dark/light mode)
 - [x] State management with Zustand
 - [x] Advanced UI components
@@ -181,4 +189,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ for collaborative financial success** 
+**Built with ❤️ for individual and collaborative financial success** 
