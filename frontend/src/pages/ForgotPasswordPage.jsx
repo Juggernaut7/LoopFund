@@ -1,40 +1,93 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  ArrowLeft,
-  Mail,
-  CheckCircle,
+  ArrowLeft, 
   ArrowRight,
+  Mail, 
+  CheckCircle, 
+  RefreshCw,
   Shield,
-  Lock,
-  RefreshCw
+  Lock
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../components/ui/Logo';
 import AnimatedNetwork from '../components/ui/AnimatedNetwork';
+import { useToast } from '../context/ToastContext';
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    if (!email.trim()) {
+      toast.error('Validation Error', 'Please enter your email address.');
+      return;
+    }
+
+    setIsLoading(true);
+    toast.loading('Sending Reset Link', 'Please wait while we send the password reset email...');
+
+    try {
+      const response = await fetch('http://localhost:4000/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: email.trim() })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success('Email Sent!', 'Password reset link has been sent to your email address.');
+        setIsSubmitted(true);
+      } else {
+        toast.error('Failed to Send', data.error || 'Failed to send reset email. Please try again.');
+      }
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      toast.error('Network Error', 'Unable to connect to the server. Please check your internet connection.');
+    } finally {
       setIsLoading(false);
-      setIsSubmitted(true);
-    }, 2000);
+    }
   };
 
-  const handleResendEmail = () => {
+  const handleResendEmail = async () => {
+    if (!email.trim()) {
+      toast.error('Validation Error', 'Please enter your email address.');
+      return;
+    }
+
     setIsLoading(true);
-    setTimeout(() => {
+    toast.loading('Resending Email', 'Please wait while we resend the password reset email...');
+
+    try {
+      const response = await fetch('http://localhost:4000/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: email.trim() })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success('Email Resent!', 'Password reset link has been resent to your email address.');
+      } else {
+        toast.error('Failed to Resend', data.error || 'Failed to resend reset email. Please try again.');
+      }
+    } catch (error) {
+      console.error('Resend email error:', error);
+      toast.error('Network Error', 'Unable to connect to the server. Please check your internet connection.');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleBackToSignIn = () => {

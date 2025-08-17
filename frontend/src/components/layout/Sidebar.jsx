@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Home, 
@@ -23,11 +23,20 @@ import {
   Moon
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuthWithToast } from '../../hooks/useAuthWithToast';
 
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const { theme, toggleTheme, isDark } = useTheme();
+  const { user, logout } = useAuthWithToast();
+
+  // Handle logout
+  const handleLogout = () => {
+    logout();
+    navigate('/signin');
+  };
 
   const menuItems = [
     {
@@ -180,8 +189,12 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           </div>
           {!isCollapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-white font-medium text-sm truncate">John Doe</p>
-              <p className="text-slate-400 text-xs truncate">Premium Member</p>
+              <p className="text-white font-medium text-sm truncate">
+                {user?.firstName ? `${user.firstName} ${user.lastName}` : 'User'}
+              </p>
+              <p className="text-slate-400 text-xs truncate">
+                {user?.isAdmin ? 'Admin' : 'Member'}
+              </p>
             </div>
           )}
         </div>
@@ -302,7 +315,10 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           </motion.button>
           
           {/* Logout */}
-          <button className="group flex items-center w-full px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-red-600/20 hover:text-red-400 transition-all duration-200">
+          <button 
+            onClick={handleLogout}
+            className="group flex items-center w-full px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-red-600/20 hover:text-red-400 transition-all duration-200"
+          >
             <LogOut size={20} className="flex-shrink-0" />
             {!isCollapsed && <span className="ml-3">Logout</span>}
           </button>

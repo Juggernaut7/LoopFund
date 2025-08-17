@@ -11,39 +11,80 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../components/ui/Logo';
 import AnimatedNetwork from '../components/ui/AnimatedNetwork';
+import { useToast } from '../context/ToastContext';
+import { useAuthStore } from '../store/useAuthStore';
 
 const SignInPage = () => {
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
-    rememberMe: false
+    password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { setAuthState } = useAuthStore();
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: value
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!isFormValid()) {
+      toast.error('Validation Error', 'Please fill in all required fields.');
+      return;
+    }
+
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+    toast.loading('Signing In', 'Please wait while we authenticate you...');
+
+    try {
+      const response = await fetch('http://localhost:4000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success('Welcome Back!', 'You have been successfully signed in.');
+        
+        // Update auth store state using the new setAuthState function
+        // This will automatically save the token to localStorage
+        setAuthState({
+          user: data.user,
+          token: data.token,
+          isAuthenticated: true
+        });
+        
+        // Navigate to dashboard immediately for smooth UX
+        navigate('/dashboard');
+      } else {
+        toast.error('Sign In Failed', data.error || 'Invalid email or password. Please try again.');
+      }
+    } catch (error) {
+      console.error('Signin error:', error);
+      toast.error('Network Error', 'Unable to connect to the server. Please check your internet connection.');
+    } finally {
       setIsLoading(false);
-      // Navigate to dashboard after successful signin
-      navigate('/dashboard');
-    }, 2000);
+    }
   };
 
   const handleGoogleSignIn = () => {
-    // Simulate Google sign in
-    navigate('/dashboard');
+    // Redirect to backend Google OAuth endpoint
+    window.location.href = 'http://localhost:4000/api/auth/google';
   };
 
   const isFormValid = () => {

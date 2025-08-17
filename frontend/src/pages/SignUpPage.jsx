@@ -13,6 +13,8 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../components/ui/Logo';
 import AnimatedNetwork from '../components/ui/AnimatedNetwork';
+import { useToast } from '../context/ToastContext';
+import { useAuthStore } from '../store/useAuthStore';
 
 const SignUpPage = () => {
   const [formData, setFormData] = useState({
@@ -28,6 +30,8 @@ const SignUpPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { setAuthState } = useAuthStore();
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -39,18 +43,59 @@ const SignUpPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!isFormValid()) {
+      toast.error('Validation Error', 'Please fill in all required fields correctly.');
+      return;
+    }
+
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+    toast.loading('Creating Account', 'Please wait while we create your account...');
+
+    try {
+      const response = await fetch('http://localhost:4000/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          password: formData.password
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success('Account Created!', 'Welcome to LoopFund! Your account has been successfully created.');
+        
+        // Update auth store state using the new setAuthState function
+        // This will automatically save the token to localStorage
+        setAuthState({
+          user: data.user,
+          token: data.token,
+          isAuthenticated: true
+        });
+        
+        // Navigate to dashboard immediately for smooth UX
+        navigate('/dashboard');
+      } else {
+        toast.error('Signup Failed', data.error || 'Failed to create account. Please try again.');
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      toast.error('Network Error', 'Unable to connect to the server. Please check your internet connection.');
+    } finally {
       setIsLoading(false);
-      // Navigate to dashboard after successful signup
-      navigate('/dashboard');
-    }, 2000);
+    }
   };
 
   const handleGoogleSignUp = () => {
-    // Simulate Google sign up
-    navigate('/dashboard');
+    // Redirect to backend Google OAuth endpoint
+    window.location.href = 'http://localhost:4000/api/auth/google';
   };
 
   const isFormValid = () => {

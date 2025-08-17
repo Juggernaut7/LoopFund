@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
@@ -15,13 +15,23 @@ import {
   LogOut
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuthWithToast } from '../../hooks/useAuthWithToast';
 
 const TopNav = ({ toggleSidebar, isCollapsed }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const { theme, toggleTheme, isDark } = useTheme();
+  const { user, isAuthenticated, logout } = useAuthWithToast();
+
+  // Handle logout
+  const handleLogout = () => {
+    logout();
+    setIsUserMenuOpen(false);
+    navigate('/signin');
+  };
 
   // Get page title from current path
   const getPageTitle = () => {
@@ -87,7 +97,7 @@ const TopNav = ({ toggleSidebar, isCollapsed }) => {
               {getPageTitle()}
             </h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              Welcome back, John! Here's what's happening today.
+              Welcome back, {user?.firstName || user?.name || 'User'}! Here's what's happening today.
             </p>
           </div>
         </div>
@@ -201,10 +211,10 @@ const TopNav = ({ toggleSidebar, isCollapsed }) => {
               </div>
               <div className="hidden sm:block text-left">
                 <p className="text-sm font-medium text-slate-900 dark:text-white">
-                  John Doe
+                  {user?.name || 'Guest'}
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Premium
+                  {user?.role || 'User'}
                 </p>
               </div>
               <ChevronDown size={16} className="text-slate-600 dark:text-slate-300" />
@@ -222,10 +232,10 @@ const TopNav = ({ toggleSidebar, isCollapsed }) => {
                 >
                   <div className="p-4 border-b border-slate-200 dark:border-slate-700">
                     <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      John Doe
+                      {user?.name || 'Guest'}
                     </p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      john.doe@example.com
+                      {user?.email || 'No email available'}
                     </p>
                   </div>
                   <div className="py-2">
@@ -243,7 +253,10 @@ const TopNav = ({ toggleSidebar, isCollapsed }) => {
                     </button>
                   </div>
                   <div className="border-t border-slate-200 dark:border-slate-700 py-2">
-                    <button className="w-full flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+                    <button 
+                      onClick={handleLogout}
+                      className="w-full flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    >
                       <LogOut size={16} className="mr-3" />
                       Sign out
                     </button>
