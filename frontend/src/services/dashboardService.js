@@ -98,6 +98,115 @@ class DashboardService {
     }
   }
 
+  // Fetch user achievements
+  async getUserAchievements() {
+    try {
+      const response = await fetch(`${this.baseURL}/achievements`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user achievements');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching user achievements:', error);
+      throw error;
+    }
+  }
+
+  // Check and unlock achievements
+  async checkAchievements() {
+    try {
+      const response = await fetch(`${this.baseURL}/achievements/check`, {
+        method: 'POST',
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to check achievements');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error checking achievements:', error);
+      throw error;
+    }
+  }
+
+  // Get achievement progress
+  async getAchievementProgress() {
+    try {
+      const response = await fetch(`${this.baseURL}/achievements/progress`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch achievement progress');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching achievement progress:', error);
+      throw error;
+    }
+  }
+
+  // Fetch dashboard analytics
+  async getDashboardAnalytics() {
+    try {
+      const response = await fetch(`${this.baseURL}/analytics/dashboard`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch dashboard analytics');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching dashboard analytics:', error);
+      throw error;
+    }
+  }
+
+  // Fetch goal analytics
+  async getGoalAnalytics() {
+    try {
+      const response = await fetch(`${this.baseURL}/analytics/goals`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch goal analytics');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching goal analytics:', error);
+      throw error;
+    }
+  }
+
+  // Fetch contribution analytics
+  async getContributionAnalytics() {
+    try {
+      const response = await fetch(`${this.baseURL}/analytics/contributions`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch contribution analytics');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching contribution analytics:', error);
+      throw error;
+    }
+  }
+
   // Fetch all contributions for user
   async getAllContributions() {
     try {

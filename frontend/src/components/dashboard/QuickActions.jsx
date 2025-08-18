@@ -1,74 +1,80 @@
 import React from 'react';
-import { Plus, DollarSign, Users, Settings } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { 
+  Target, 
+  Users, 
+  Wallet, 
+  Zap,
+  Plus,
+  ArrowRight
+} from 'lucide-react';
 
 const QuickActions = () => {
   const navigate = useNavigate();
 
-  const handleCreateGroup = () => {
-    navigate('/create-group');
-  };
-
-  const handleMakeContribution = () => {
-    // Navigate to first group or show contribution modal
-    navigate('/groups/1');
-  };
-
-  const handleInviteFriends = () => {
-    // Could open a modal or navigate to invite page
-    alert('Invite friends functionality coming soon!');
-  };
-
-  const handleGroupSettings = () => {
-    navigate('/groups/1');
-  };
+  const actions = [
+    {
+      title: 'New Goal',
+      icon: Target,
+      color: 'from-blue-500 to-blue-600',
+      hoverColor: 'from-blue-600 to-blue-700',
+      onClick: () => navigate('/goals/create')
+    },
+    {
+      title: 'Create Group',
+      icon: Users,
+      color: 'from-green-500 to-green-600',
+      hoverColor: 'from-green-600 to-green-700',
+      onClick: () => navigate('/groups/create')
+    },
+    {
+      title: 'Make Payment',
+      icon: Wallet,
+      color: 'from-purple-500 to-purple-600',
+      hoverColor: 'from-purple-600 to-purple-700',
+      onClick: () => navigate('/contributions/pay')
+    },
+    {
+      title: 'Quick Save',
+      icon: Zap,
+      color: 'from-orange-500 to-orange-600',
+      hoverColor: 'from-orange-600 to-orange-700',
+      onClick: () => navigate('/contributions/quick-save')
+    }
+  ];
 
   return (
-    <div className="glass-card p-6">
-      <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
-        Quick Actions
-      </h3>
-      
-      <div className="space-y-3">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+          Quick Actions
+        </h3>
         <button 
-          onClick={handleCreateGroup}
-          className="w-full flex items-center justify-between p-3 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+          onClick={() => navigate('/dashboard')}
+          className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium flex items-center space-x-1"
         >
-          <div className="flex items-center">
-            <Plus className="w-5 h-5 mr-3" />
-            <span>Create New Group</span>
-          </div>
+          <span>View all</span>
+          <ArrowRight className="w-4 h-4" />
         </button>
-        
-        <button 
-          onClick={handleMakeContribution}
-          className="w-full flex items-center justify-between p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/20 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 transition-colors"
-        >
-          <div className="flex items-center">
-            <DollarSign className="w-5 h-5 mr-3" />
-            <span>Make Contribution</span>
-          </div>
-        </button>
-        
-        <button 
-          onClick={handleInviteFriends}
-          className="w-full flex items-center justify-between p-3 rounded-lg bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-300 hover:bg-success-100 dark:hover:bg-success-900/30 transition-colors"
-        >
-          <div className="flex items-center">
-            <Users className="w-5 h-5 mr-3" />
-            <span>Invite Friends</span>
-          </div>
-        </button>
-        
-        <button 
-          onClick={handleGroupSettings}
-          className="w-full flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
-        >
-          <div className="flex items-center">
-            <Settings className="w-5 h-5 mr-3" />
-            <span>Group Settings</span>
-          </div>
-        </button>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {actions.map((action, index) => (
+          <motion.button
+            key={action.title}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={action.onClick}
+            className={`w-full p-4 rounded-xl bg-gradient-to-r ${action.color} hover:${action.hoverColor} text-white transition-all duration-200 shadow-lg hover:shadow-xl flex flex-col items-center space-y-2`}
+          >
+            <action.icon className="w-6 h-6" />
+            <span className="text-sm font-medium">{action.title}</span>
+          </motion.button>
+        ))}
       </div>
     </div>
   );

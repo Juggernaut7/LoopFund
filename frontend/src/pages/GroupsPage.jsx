@@ -8,11 +8,17 @@ import {
   UserPlus,
   Settings,
   X,
-  DollarSign
+  DollarSign,
+  Copy,
+  Share2,
+  QrCode,
+  Link as LinkIcon,
+  Download
 } from 'lucide-react';
 import Layout from '../components/layout/Layout';
 import { useToast } from '../context/ToastContext';
 import dashboardService from '../services/dashboardService';
+import InviteModal from '../components/modals/InviteModal';
 
 const GroupsPage = () => {
   const [groups, setGroups] = useState([]);
@@ -26,6 +32,8 @@ const GroupsPage = () => {
     category: 'friends'
   });
   const { toast } = useToast();
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState(null);
 
   // Fetch groups on component mount
   useEffect(() => {
@@ -116,6 +124,16 @@ const GroupsPage = () => {
       category: 'friends'
     });
     setShowCreateForm(false);
+  };
+
+  const handleInviteMembers = (group) => {
+    setSelectedGroup(group);
+    setShowInviteModal(true);
+  };
+
+  const closeInviteModal = () => {
+    setShowInviteModal(false);
+    setSelectedGroup(null);
   };
 
   // Show loading state
@@ -384,6 +402,16 @@ const GroupsPage = () => {
                   {group.status || 'Active'}
                 </span>
               </div>
+
+              {/* Add invite button to each group card */}
+              <div className="flex space-x-2 mt-4">
+                <button
+                  onClick={() => handleInviteMembers(group)}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Invite
+                </button>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -411,6 +439,17 @@ const GroupsPage = () => {
           </motion.div>
         )}
       </div>
+
+      {/* Invite Modal */}
+      {showInviteModal && selectedGroup && (
+        <InviteModal
+          isOpen={showInviteModal}
+          onClose={closeInviteModal}
+          groupId={selectedGroup._id}
+          groupName={selectedGroup.name}
+          currentMembers={selectedGroup.members || []}
+        />
+      )}
     </Layout>
   );
 };

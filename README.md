@@ -1,5 +1,7 @@
 # 💰 LoopFund - Individual & Group Savings Platform
 
+<!-- This is a test comment to verify auto-accept is disabled -->
+
 A modern, intuitive web application that enables users to save money individually for personal goals or collaboratively with friends and family towards shared financial objectives. Built with cutting-edge frontend technologies and beautiful animations.
 
 ## ✨ Features

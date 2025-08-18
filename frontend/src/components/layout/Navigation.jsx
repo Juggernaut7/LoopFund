@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import Logo from './Logo';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -42,19 +43,7 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3 group">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg"
-            >
-              <span className="text-white font-bold text-lg">LF</span>
-            </motion.div>
-            <div className="hidden sm:block">
-              <span className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                LoopFund
-              </span>
-            </div>
-          </Link>
+          <Logo size="default" />
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">

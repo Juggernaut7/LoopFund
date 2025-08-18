@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
-const { getAllGoals, getAllContributions, getAllUsers } = require('../controllers/admin.controller');
+const { getAllGoals: getAllGoalsController, getAllContributions: getAllContributionsController, getAllUsers: getAllUsersController } = require('../controllers/admin.controller');
 
 const router = Router();
 
@@ -16,7 +16,7 @@ const router = Router();
  *       200:
  *         description: List of all goals
  */
-router.get('/goals', requireAuth, requireAdmin, getAllGoals);
+router.get('/goals', requireAuth, requireAdmin, getAllGoalsController);
 
 /**
  * @openapi
@@ -30,7 +30,7 @@ router.get('/goals', requireAuth, requireAdmin, getAllGoals);
  *       200:
  *         description: List of all contributions
  */
-router.get('/contributions', requireAuth, requireAdmin, getAllContributions);
+router.get('/contributions', requireAuth, requireAdmin, getAllContributionsController);
 
 /**
  * @openapi
@@ -44,6 +44,6 @@ router.get('/contributions', requireAuth, requireAdmin, getAllContributions);
  *       200:
  *         description: List of all users
  */
-router.get('/users', requireAuth, requireAdmin, getAllUsers);
+router.get('/users', requireAuth, requireAdmin, getAllUsersController);
 
 module.exports = router; 

@@ -1,12 +1,52 @@
-# React + Vite
+# LoopFund - Smart Savings Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 🚨 **Academic Project - Final Year Project**
+**This is a confidential academic project for final year studies. NOT open source.**
 
-Currently, two official plugins are available:
+## �� **Project Overview**
+LoopFund is a comprehensive smart savings platform that helps users achieve their financial goals through individual and group savings strategies. Built as a final year academic project demonstrating full-stack development skills.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚨️ **Architecture**
+- **Frontend**: React.js with TypeScript, Tailwind CSS, Framer Motion
+- **Backend**: Node.js with Express.js, MongoDB
+- **Authentication**: JWT with OAuth integration
+- **Real-time Features**: WebSocket integration for live updates
 
-## Expanding the ESLint configuration
+## 🚨 **Key Features**
+- **Individual Goal Setting**: Personal savings targets with progress tracking
+- **Group Savings**: Collaborative saving with friends and family
+- **Smart Notifications**: AI-powered reminders and progress updates
+- **Analytics Dashboard**: Comprehensive financial insights and progress reports
+- **Achievement System**: Gamified savings with badges and milestones
+- **Payment Integration**: Secure contribution processing
+- **Mobile Responsive**: Optimized for all devices
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🔒 **Privacy & Security**
+- **Confidential Project**: This is an academic submission
+- **User Data Protection**: Secure authentication and data encryption
+- **No Public Access**: Private repository for academic purposes only
+
+## 🚨️ **Technical Stack**
+### Frontend
+- React 18+ with Hooks
+- TypeScript for type safety
+- Tailwind CSS for styling
+- Framer Motion for animations
+- React Router for navigation
+- Context API for state management
+
+### Backend
+- Node.js with Express.js
+- MongoDB with Mongoose ODM
+- JWT authentication
+- RESTful API design
+- WebSocket for real-time features
+- Rate limiting and security middleware
+
+### Development Tools
+- Vite for fast development
+- ESLint and Prettier for code quality
+- Git for version control
+- Postman for API testing
+
+## 📁 **Project Structure**

@@ -39,6 +39,41 @@ const AchievementsPage = () => {
     { id: 'streaks', name: 'Streaks', icon: Zap }
   ];
 
+  // Map backend categories to frontend categories
+  const mapBackendCategoryToFrontend = (achievement) => {
+    const type = achievement.type;
+    const category = achievement.category;
+    
+    // Map based on achievement type
+    switch (type) {
+      case 'contribution_milestone':
+        return 'savings';
+      case 'goal_completed':
+      case 'first_goal':
+        return 'goals';
+      case 'team_player':
+        return 'social';
+      case 'streak_milestone':
+        return 'streaks';
+      default:
+        return 'goals'; // fallback
+    }
+  };
+
+  // Filter achievements based on selected category
+  const filteredAchievements = achievements.filter(achievementData => {
+    if (selectedCategory === 'all') return true;
+    
+    const frontendCategory = mapBackendCategoryToFrontend(achievementData.achievement);
+    return frontendCategory === selectedCategory;
+  });
+
+  // Debug logging
+  console.log('Selected category:', selectedCategory);
+  console.log('Total achievements:', achievements.length);
+  console.log('Filtered achievements:', filteredAchievements.length);
+  console.log('Filtered achievement names:', filteredAchievements.map(a => a.achievement?.name));
+
   // Fetch achievements and user stats on component mount
   useEffect(() => {
     fetchAchievements();
@@ -49,24 +84,25 @@ const AchievementsPage = () => {
       setIsLoading(true);
       setError(null);
       
-      // Fetch user data for achievements
-      const [goalsResponse, profileResponse] = await Promise.all([
-        dashboardService.getUserGoals(),
-        dashboardService.getUserProfile()
+      // Fetch achievements from backend
+      const [achievementsResponse, progressResponse] = await Promise.all([
+        dashboardService.getUserAchievements(),
+        dashboardService.getAchievementProgress()
       ]);
       
-      const goals = goalsResponse.data || [];
-      const profile = profileResponse.data || profileResponse;
+      const userAchievements = achievementsResponse.data || [];
+      const progressData = progressResponse.data || [];
+      const stats = progressResponse.stats || {};
       
-      // Calculate user stats
-      const stats = calculateUserStats(goals, profile);
       setUserStats(stats);
+      setAchievements(progressData);
       
-      // Generate achievements based on stats
-      const userAchievements = generateAchievements(stats);
-      setAchievements(userAchievements);
-      
-      console.log('Achievements generated:', userAchievements);
+      console.log('Achievements loaded from backend:', progressData);
+      console.log('Achievement categories found:', progressData.map(a => ({
+        name: a.achievement?.name,
+        type: a.achievement?.type,
+        category: a.achievement?.category
+      })));
     } catch (error) {
       console.error('Error fetching achievements:', error);
       setError(error.message);
@@ -75,6 +111,24 @@ const AchievementsPage = () => {
       setIsLoading(false);
     }
   };
+
+  // Check for new achievements when component mounts
+  useEffect(() => {
+    const checkNewAchievements = async () => {
+      try {
+        const response = await dashboardService.checkAchievements();
+        if (response.newlyUnlocked > 0) {
+          toast.success('New Achievements!', response.message);
+          // Refresh achievements after unlocking new ones
+          fetchAchievements();
+        }
+      } catch (error) {
+        console.error('Error checking achievements:', error);
+      }
+    };
+
+    checkNewAchievements();
+  }, []);
 
   const calculateUserStats = (goals, profile) => {
     const totalGoals = goals.length;
@@ -312,14 +366,9 @@ const AchievementsPage = () => {
     return achievements;
   };
 
-  // Filter achievements by category
-  const filteredAchievements = selectedCategory === 'all' 
-    ? achievements 
-    : achievements.filter(a => a.category === selectedCategory);
-
-  // Calculate achievement stats
+  // Calculate stats from backend data
   const totalAchievements = achievements.length;
-  const unlockedAchievements = achievements.filter(a => a.unlocked).length;
+  const unlockedAchievements = achievements.filter(a => a.isUnlocked).length;
   const completionRate = totalAchievements > 0 ? (unlockedAchievements / totalAchievements) * 100 : 0;
 
   // Show loading state
@@ -356,6 +405,142 @@ const AchievementsPage = () => {
     );
   }
 
+  const getAchievementIcon = (type) => {
+    switch (type) {
+      case 'savings':
+        return DollarSign;
+      case 'goals':
+        return Target;
+      case 'social':
+        return Users;
+      case 'streaks':
+        return Zap;
+      default:
+        return Trophy; // Fallback icon
+    }
+  };
+
+  const getRarityColor = (rarity) => {
+    switch (rarity) {
+      case 'common':
+        return 'bg-slate-200 dark:bg-slate-700 text-slate-500';
+      case 'uncommon':
+        return 'bg-blue-200 dark:bg-blue-700 text-blue-600';
+      case 'rare':
+        return 'bg-purple-200 dark:bg-purple-700 text-purple-600';
+      case 'epic':
+        return 'bg-indigo-200 dark:bg-indigo-700 text-indigo-600';
+      case 'legendary':
+        return 'bg-orange-200 dark:bg-orange-700 text-orange-600';
+      case 'mythic':
+        return 'bg-red-200 dark:bg-red-700 text-red-600';
+      default:
+        return 'bg-slate-200 dark:bg-slate-700 text-slate-500';
+    }
+  };
+
+  const renderAchievement = (achievementData) => {
+    const { achievement, progress, isUnlocked, unlockedAt } = achievementData;
+    
+    if (!achievement) return null;
+
+    const Icon = getAchievementIcon(achievement.type);
+    const rarityColor = getRarityColor(achievement.rarity);
+    const progressPercentage = Math.min(progress || 0, 100);
+
+    return (
+      <motion.div
+        key={achievement._id}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`relative bg-white dark:bg-slate-800 rounded-2xl p-6 border-2 transition-all duration-300 ${
+          isUnlocked 
+            ? 'border-green-200 dark:border-green-700 shadow-lg' 
+            : 'border-slate-200 dark:border-slate-700'
+        }`}
+      >
+        {/* Achievement Header */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
+              isUnlocked 
+                ? 'bg-gradient-to-br from-green-400 to-emerald-500' 
+                : 'bg-slate-200 dark:bg-slate-700'
+            }`}>
+              {achievement.icon || <Icon className="w-6 h-6" />}
+            </div>
+            <div>
+              <h3 className={`font-semibold text-lg ${
+                isUnlocked 
+                  ? 'text-slate-900 dark:text-white' 
+                  : 'text-slate-500 dark:text-slate-400'
+              }`}>
+                {achievement.name}
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                {achievement.description}
+              </p>
+            </div>
+          </div>
+          
+          {/* Rarity Badge */}
+          <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+            isUnlocked ? rarityColor : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+          }`}>
+            {achievement.rarity}
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-4">
+          <div className="flex justify-between text-sm mb-2">
+            <span className="text-slate-600 dark:text-slate-400">Progress</span>
+            <span className="font-medium">{Math.round(progressPercentage)}%</span>
+          </div>
+          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+            <div 
+              className={`h-2 rounded-full transition-all duration-500 ${
+                isUnlocked 
+                  ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
+                  : 'bg-gradient-to-r from-blue-400 to-purple-500'
+              }`}
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Achievement Details */}
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center space-x-4">
+            <span className="text-slate-600 dark:text-slate-400">
+              Points: {achievement.points}
+            </span>
+            <span className="text-slate-600 dark:text-slate-400">
+              Category: {achievement.category}
+            </span>
+          </div>
+          
+          {isUnlocked && unlockedAt && (
+            <span className="text-green-600 dark:text-green-400 font-medium">
+              Unlocked {new Date(unlockedAt).toLocaleDateString()}
+            </span>
+          )}
+        </div>
+
+        {/* Unlock Animation */}
+        {isUnlocked && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center"
+          >
+            <CheckCircle className="w-4 h-4 text-white" />
+          </motion.div>
+        )}
+      </motion.div>
+    );
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -371,63 +556,37 @@ const AchievementsPage = () => {
           </div>
         </div>
 
-        {/* Achievement Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700"
-          >
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center">
-                <Trophy className="w-6 h-6 text-white" />
-              </div>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Total Achievements</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {totalAchievements}
-                </p>
+                <p className="text-slate-600 dark:text-slate-400 text-sm">Total Achievements</p>
+                <p className="text-3xl font-bold text-slate-900 dark:text-white">{totalAchievements}</p>
               </div>
+              <Trophy className="w-8 h-8 text-blue-600" />
             </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700"
-          >
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-white" />
-              </div>
+          </div>
+          
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Unlocked</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {unlockedAchievements}
-                </p>
+                <p className="text-slate-600 dark:text-slate-400 text-sm">Unlocked</p>
+                <p className="text-3xl font-bold text-green-600">{unlockedAchievements}</p>
               </div>
+              <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700"
-          >
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-white" />
-              </div>
+          </div>
+          
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Completion Rate</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {completionRate.toFixed(1)}%
-                </p>
+                <p className="text-slate-600 dark:text-slate-400 text-sm">Completion Rate</p>
+                <p className="text-3xl font-bold text-purple-600">{Math.round(completionRate)}%</p>
               </div>
+              <Target className="w-8 h-8 text-purple-600" />
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Category Filter */}
@@ -455,77 +614,89 @@ const AchievementsPage = () => {
 
         {/* Achievements Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAchievements.map((achievement, index) => (
-            <motion.div
-              key={achievement.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.1 }}
-              className={`bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 transition-all duration-200 ${
-                achievement.unlocked ? 'ring-2 ring-green-500/20' : ''
-              }`}
-            >
-              <div className="text-center">
-                {/* Achievement Icon */}
-                <div className={`w-20 h-20 rounded-full bg-gradient-to-r ${achievement.color} flex items-center justify-center mx-auto mb-4 ${
-                  !achievement.unlocked ? 'grayscale opacity-50' : ''
-                }`}>
-                  <achievement.icon className="w-10 h-10 text-white" />
-                </div>
-                
-                {/* Achievement Info */}
-                <h3 className={`text-lg font-semibold mb-2 ${
-                  achievement.unlocked 
-                    ? 'text-slate-900 dark:text-white' 
-                    : 'text-slate-500 dark:text-slate-400'
-                }`}>
-                  {achievement.title}
-                </h3>
-                
-                <p className={`text-sm mb-4 ${
-                  achievement.unlocked 
-                    ? 'text-slate-600 dark:text-slate-400' 
-                    : 'text-slate-400 dark:text-slate-500'
-                }`}>
-                  {achievement.description}
-                </p>
-                
-                {/* Progress Bar */}
-                <div className="w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-full mb-3">
-                  <div
-                    className={`h-2 rounded-full bg-gradient-to-r ${achievement.color}`}
-                    style={{ width: `${Math.min(achievement.progress, 100)}%` }}
-                  />
-                </div>
-                
-                {/* Status */}
-                <div className="flex items-center justify-center space-x-2">
-                  {achievement.unlocked ? (
-                    <>
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      <span className="text-sm text-green-600 dark:text-green-400 font-medium">
-                        Unlocked
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Clock className="w-4 h-4 text-slate-400" />
-                      <span className="text-sm text-slate-500 dark:text-slate-400">
-                        {achievement.progress.toFixed(0)}% Complete
-                      </span>
-                    </>
+          {filteredAchievements.map((achievementData, index) => {
+            const { achievement, progress, isUnlocked, unlockedAt } = achievementData;
+            
+            if (!achievement) return null;
+
+            return (
+              <motion.div
+                key={achievement._id || `achievement-${index}`}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.1 }}
+                className={`bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 transition-all duration-200 ${
+                  isUnlocked ? 'ring-2 ring-green-500/20' : ''
+                }`}
+              >
+                <div className="text-center">
+                  {/* Achievement Icon */}
+                  <div className={`w-20 h-20 rounded-full bg-gradient-to-r ${
+                    isUnlocked ? 'from-green-500 to-emerald-500' : 'from-slate-300 to-slate-400'
+                  } flex items-center justify-center mx-auto mb-4 ${
+                    !isUnlocked ? 'grayscale opacity-50' : ''
+                  }`}>
+                    <span className="text-3xl">{achievement.icon}</span>
+                  </div>
+                  
+                  {/* Achievement Info */}
+                  <h3 className={`text-lg font-semibold mb-2 ${
+                    isUnlocked 
+                      ? 'text-slate-900 dark:text-white' 
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}>
+                    {achievement.name}
+                  </h3>
+                  
+                  <p className={`text-sm mb-4 ${
+                    isUnlocked 
+                      ? 'text-slate-600 dark:text-slate-400' 
+                      : 'text-slate-400 dark:text-slate-500'
+                  }`}>
+                    {achievement.description}
+                  </p>
+                  
+                  {/* Progress Bar */}
+                  <div className="w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-full mb-3">
+                    <div
+                      className={`h-2 rounded-full ${
+                        isUnlocked 
+                          ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
+                          : 'bg-gradient-to-r from-blue-500 to-purple-500'
+                      }`}
+                      style={{ width: `${Math.min(progress || 0, 100)}%` }}
+                    />
+                  </div>
+                  
+                  {/* Status */}
+                  <div className="flex items-center justify-center space-x-2">
+                    {isUnlocked ? (
+                      <>
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span className="text-sm text-green-600 dark:text-green-400 font-medium">
+                          Unlocked
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="w-4 h-4 text-slate-400" />
+                        <span className="text-sm text-slate-500 dark:text-slate-400">
+                          {Math.round(progress || 0)}% Complete
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  
+                  {/* Unlock Date */}
+                  {isUnlocked && unlockedAt && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                      Unlocked {new Date(unlockedAt).toLocaleDateString()}
+                    </p>
                   )}
                 </div>
-                
-                {/* Unlock Date */}
-                {achievement.unlocked && achievement.unlockedAt && (
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                    Unlocked {new Date(achievement.unlockedAt).toLocaleDateString()}
-                  </p>
-                )}
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Empty State */}

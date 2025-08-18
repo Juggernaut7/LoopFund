@@ -10,7 +10,6 @@ const startServer = async () => {
     console.log('🚀 Starting LoopFund Backend Server...');
     console.log('🔌 Connecting to MongoDB...');
 
-
     await connectToDatabase();
     
     // Start the server

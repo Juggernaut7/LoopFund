@@ -16,15 +16,19 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuthWithToast } from '../../hooks/useAuthWithToast';
+import NotificationsDropdown from '../notifications/NotificationsDropdown';
 
-const TopNav = ({ toggleSidebar, isCollapsed }) => {
+const TopNav = ({ toggleSidebar, isCollapsed, unreadCount = 0 }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const { theme, toggleTheme, isDark } = useTheme();
   const { user, isAuthenticated, logout } = useAuthWithToast();
+
+  // For now, use empty notifications array until we implement the full context
+  const notifications = [];
 
   // Handle logout
   const handleLogout = () => {
@@ -49,34 +53,21 @@ const TopNav = ({ toggleSidebar, isCollapsed }) => {
     return 'LoopFund';
   };
 
-  const notifications = [
-    {
-      id: 1,
-      title: 'Goal Reminder',
-      message: 'Your "Vacation Fund" goal is due in 2 days',
-      time: '2 min ago',
-      type: 'reminder',
-      read: false
-    },
-    {
-      id: 2,
-      title: 'Payment Success',
-      message: 'Your contribution of $50 has been processed',
-      time: '1 hour ago',
-      type: 'success',
-      read: false
-    },
-    {
-      id: 3,
-      title: 'Group Update',
-      message: 'New member joined "Family Savings" group',
-      time: '3 hours ago',
-      type: 'info',
-      read: true
-    }
-  ];
+  const handleViewAll = () => {
+    setShowNotifications(false);
+    navigate('/notifications');
+  };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const handleNotificationClick = (notification) => {
+    // Navigate based on notification type
+    if (notification.metadata?.goalId) {
+      navigate(`/goals/${notification.metadata.goalId}`);
+    } else if (notification.metadata?.groupId) {
+      navigate(`/groups/${notification.metadata.groupId}`);
+    } else if (notification.metadata?.contributionId) {
+      navigate(`/contributions/${notification.metadata.contributionId}`);
+    }
+  };
 
   return (
     <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
@@ -135,7 +126,7 @@ const TopNav = ({ toggleSidebar, isCollapsed }) => {
           {/* Notifications */}
           <div className="relative">
             <button
-              onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+              onClick={() => setShowNotifications(!showNotifications)}
               className="relative p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
             >
               <Bell size={18} className="text-slate-600 dark:text-slate-300" />
@@ -148,54 +139,14 @@ const TopNav = ({ toggleSidebar, isCollapsed }) => {
 
             {/* Notifications Dropdown */}
             <AnimatePresence>
-              {isNotificationsOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 z-50"
-                >
-                  <div className="p-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
-                      Notifications
-                    </h3>
-                  </div>
-                  <div className="max-h-64 overflow-y-auto">
-                    {notifications.map((notification) => (
-                      <div
-                        key={notification.id}
-                        className={`p-4 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer ${
-                          !notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                        }`}
-                      >
-                        <div className="flex items-start space-x-3">
-                          <div className={`w-2 h-2 rounded-full mt-2 ${
-                            notification.type === 'reminder' ? 'bg-yellow-500' :
-                            notification.type === 'success' ? 'bg-green-500' :
-                            'bg-blue-500'
-                          }`} />
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-slate-900 dark:text-white">
-                              {notification.title}
-                            </p>
-                            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                              {notification.message}
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">
-                              {notification.time}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="p-4 border-t border-slate-200 dark:border-slate-700">
-                    <button className="w-full text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-                      View all notifications
-                    </button>
-                  </div>
-                </motion.div>
+              {showNotifications && (
+                <NotificationsDropdown
+                  isOpen={showNotifications}
+                  onClose={() => setShowNotifications(false)}
+                  notifications={notifications}
+                  onNotificationClick={handleNotificationClick}
+                  onViewAll={handleViewAll}
+                />
               )}
             </AnimatePresence>
           </div>

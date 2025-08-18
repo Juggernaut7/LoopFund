@@ -10,7 +10,7 @@ const swaggerSpec = swaggerJSDoc({
       title: 'LoopFund API',
       version,
       description: 'LoopFund REST API Documentation',
-    },
+    }, 
     servers: [
       { url: `http://localhost:${env.port}`, description: 'Local dev' },
     ],

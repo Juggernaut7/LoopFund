@@ -20,12 +20,14 @@ import {
   FileText,
   HelpCircle,
   Sun,
-  Moon
+  Moon,
+  X
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuthWithToast } from '../../hooks/useAuthWithToast';
+import Logo from './Logo';
 
-const Sidebar = ({ isCollapsed, toggleSidebar }) => {
+const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeSubmenu, setActiveSubmenu] = useState(null);
@@ -127,7 +129,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       title: 'Notifications',
       icon: Bell,
       path: '/notifications',
-      badge: '3'
+      badge: unreadCount > 0 ? unreadCount.toString() : null
     },
     {
       title: 'Settings',

@@ -3,14 +3,15 @@ const { Group } = require('../models/Group');
 
 async function createGoal({ name, description, targetAmount, endDate, frequency, amount, customDates, userId, groupId }) {
   const isGroupGoal = !!groupId;
-  let members = [userId];
+  let members = [{ user: userId, role: 'owner' }]; // Fix: Create proper member objects
   let nextDueDate = new Date();
 
   if (isGroupGoal) {
     const group = await Group.findById(groupId);
     if (!group) throw new Error('Group not found');
     if (!group.members.includes(userId)) throw new Error('Not a group member');
-    members = group.members;
+    // Fix: Create proper member objects for group members
+    members = group.members.map(memberId => ({ user: memberId, role: 'member' }));
   }
 
   if (frequency === 'daily') nextDueDate.setDate(nextDueDate.getDate() + 1);
@@ -33,13 +34,23 @@ async function createGoal({ name, description, targetAmount, endDate, frequency,
 }
 
 async function listGoals(userId) {
-  return Goal.find({ $or: [{ createdBy: userId }, { members: userId }] }).populate('group').lean();
+  return Goal.find({ 
+    $or: [
+      { createdBy: userId }, 
+      { 'members.user': userId }  // Fix: Query nested user field
+    ] 
+  }).populate('group').lean();
 }
 
 async function getGoal(goalId, userId) {
   const goal = await Goal.findById(goalId).populate('group').lean();
   if (!goal) throw new Error('Goal not found');
-  if (!goal.members.includes(userId) && goal.createdBy.toString() !== userId) {
+  
+  // Fix: Check nested member structure
+  const isMember = goal.members.some(member => member.user.toString() === userId);
+  const isCreator = goal.createdBy.toString() === userId;
+  
+  if (!isMember && !isCreator) {
     throw new Error('Not authorized');
   }
   return goal;

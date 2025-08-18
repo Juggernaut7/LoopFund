@@ -39,31 +39,27 @@ const AnalyticsPage = () => {
       setIsLoading(true);
       setError(null);
       
-      // Fetch goals and contributions for analytics
-      const [goalsResponse, profileResponse] = await Promise.all([
-        dashboardService.getUserGoals(),
-        dashboardService.getUserProfile()
+      // Fetch analytics from backend
+      const [dashboardAnalytics, goalAnalytics, contributionAnalytics] = await Promise.all([
+        dashboardService.getDashboardAnalytics(),
+        dashboardService.getGoalAnalytics(),
+        dashboardService.getContributionAnalytics()
       ]);
       
-      const goals = goalsResponse.data || [];
-      const allContributions = [];
+      const dashboardData = dashboardAnalytics.data || {};
+      const goalData = goalAnalytics.data || {};
+      const contributionData = contributionAnalytics.data || {};
       
-      // Fetch contributions for all goals
-      for (const goal of goals) {
-        try {
-          const contribResponse = await dashboardService.getGoalContributions(goal._id);
-          const goalContributions = contribResponse.data || [];
-          allContributions.push(...goalContributions.map(c => ({ ...c, goalName: goal.name, goalId: goal._id })));
-        } catch (error) {
-          console.log(`No contributions for goal: ${goal.name}`);
-        }
-      }
+      setAnalytics({
+        summary: dashboardData.summary || {},
+        trends: dashboardData.trends || {},
+        goalProgress: dashboardData.goalProgress || [],
+        recentActivity: dashboardData.recentActivity || [],
+        goalBreakdown: goalData,
+        contributionBreakdown: contributionData
+      });
       
-      // Calculate analytics
-      const analyticsData = calculateAnalytics(goals, allContributions, timeRange);
-      setAnalytics(analyticsData);
-      
-      console.log('Analytics calculated:', analyticsData);
+      console.log('Analytics loaded from backend:', dashboardData);
     } catch (error) {
       console.error('Error fetching analytics:', error);
       setError(error.message);

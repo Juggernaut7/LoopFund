@@ -18,9 +18,10 @@ import {
   Star,
   User,
   Award,
-  Loader
+  Loader,
+  Bell
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import StatsCard from '../components/ui/StatsCard';
 import ProgressRing from '../components/ui/ProgressRing';
@@ -28,6 +29,7 @@ import FloatingActionButton from '../components/ui/FloatingActionButton';
 import WeatherWidget from '../components/ui/WeatherWidget';
 import dashboardService from '../services/dashboardService';
 import { useToast } from '../context/ToastContext';
+import QuickActions from '../components/dashboard/QuickActions';
 
 const DashboardPage = () => {
   const [selectedGoal, setSelectedGoal] = useState(null);
@@ -35,6 +37,7 @@ const DashboardPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Fetch dashboard data on component mount
   useEffect(() => {
@@ -311,6 +314,9 @@ const DashboardPage = () => {
             />
           ))}
         </div>
+
+        {/* Quick Actions */}
+        <QuickActions />
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

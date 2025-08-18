@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { body } = require('express-validator');
 const { requireAuth } = require('../middleware/auth');
-const { addContribution, listContributions } = require('../controllers/contributions.controller');
+const { addContribution: addContributionController, listContributions: listContributionsController } = require('../controllers/contributions.controller');
 const { validateRequest } = require('../middleware/validateRequest');
 
 const router = Router();
@@ -23,6 +23,7 @@ const router = Router();
  *             required: [goalId, amount]
  *             properties:
  *               goalId: { type: string }
+ *               description: { type: string }
  *               amount: { type: number }
  *     responses:
  *       201:
@@ -36,7 +37,7 @@ router.post(
     body('amount').isFloat({ min: 0 }),
   ],
   validateRequest,
-  addContribution
+  addContributionController
 );
 
 /**
@@ -57,6 +58,6 @@ router.post(
  *       200:
  *         description: List of contributions
  */
-router.get('/:goalId', requireAuth, listContributions);
+router.get('/:goalId', requireAuth, listContributionsController);
 
 module.exports = router;

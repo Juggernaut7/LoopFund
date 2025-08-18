@@ -5,12 +5,14 @@ const UserSchema = new mongoose.Schema({
   lastName: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true },
   phone: { type: String, trim: true },
+  bio: { type: String, trim: true },
   passwordHash: { type: String, required: true },
+  googleId: { type: String, sparse: true }, // For Google OAuth users
   profilePicture: { type: String },
   isAdmin: { type: Boolean, default: false },
   isVerified: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true },
-  lastLogin: { type: Date },
+  lastLogin: { Date },
   notificationPreferences: {
     email: { type: Boolean, default: true },
     sms: { type: Boolean, default: false },
@@ -24,9 +26,9 @@ const UserSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// Index for better query performance
-UserSchema.index({ email: 1 });
+// Index for better query performance (removed duplicate email index)
 UserSchema.index({ isActive: 1 });
+UserSchema.index({ googleId: 1 }); // Index for Google OAuth lookups
 
 const User = mongoose.model('User', UserSchema);
 

@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { body } = require('express-validator');
 const { requireAuth } = require('../middleware/auth');
-const { createGoal, listGoals, getGoal } = require('../controllers/goals.controller');
+const { createGoal: createGoalController, listGoals: listGoalsController, getGoal: getGoalController } = require('../controllers/goals.controller');
 const { validateRequest } = require('../middleware/validateRequest');
 
 const router = Router();
@@ -49,7 +49,7 @@ router.post(
     body('customDates.*').optional().isISO8601().toDate(),
   ],
   validateRequest,
-  createGoal
+  createGoalController
 );
 
 /**
@@ -64,7 +64,7 @@ router.post(
  *       200:
  *         description: List of goals
  */
-router.get('/', requireAuth, listGoals);
+router.get('/', requireAuth, listGoalsController);
 
 /**
  * @openapi
@@ -84,6 +84,6 @@ router.get('/', requireAuth, listGoals);
  *       200:
  *         description: Goal details
  */
-router.get('/:id', requireAuth, getGoal);
+router.get('/:id', requireAuth, getGoalController);
 
 module.exports = router;

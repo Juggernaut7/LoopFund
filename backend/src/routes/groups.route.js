@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { body } = require('express-validator');
 const { requireAuth } = require('../middleware/auth');
-const { listGroups, createGroup, joinGroup } = require('../controllers/groups.controller');
+const { createGroup: createGroupController, joinGroup: joinGroupController, listGroups: listGroupsController } = require('../controllers/groups.controller');
 const { validateRequest } = require('../middleware/validateRequest');
 
 const router = Router();
@@ -18,7 +18,7 @@ const router = Router();
  *       200:
  *         description: List of groups
  */
-router.get('/', requireAuth, listGroups);
+router.get('/', requireAuth, listGroupsController);
 
 /**
  * @openapi
@@ -52,7 +52,7 @@ router.post(
     body('targetAmount').optional().isFloat({ min: 0 }),
   ],
   validateRequest,
-  createGroup
+  createGroupController
 );
 
 /**
@@ -81,7 +81,7 @@ router.post(
   requireAuth,
   [body('inviteLink').isString().isLength({ min: 10, max: 10 })],
   validateRequest,
-  joinGroup
+  joinGroupController
 );
 
 module.exports = router;
