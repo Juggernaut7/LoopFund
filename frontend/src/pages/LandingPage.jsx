@@ -1,29 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
   ArrowRight, 
-  CheckCircle, 
+  Target, 
   Users, 
-  User,
-  Target,
-  TrendingUp,
+  TrendingUp, 
   Shield,
   Zap,
+  Award,
+  CheckCircle,
   Star,
-  DollarSign,
-  Calendar,
-  Bell,
-  Heart,
-  Gift,
+  ArrowDown,
+  // Replace with more common icons:
   Home,
   Car,
-  GraduationCap,
+  BookOpen,
   Plane,
-  Lock,
-  Globe,
-  Award,
-  BarChart3,
+  Gift,
+  Heart,
   Play,
   Sparkles,
   Zap as Lightning
@@ -37,6 +32,13 @@ const LandingPage = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [scrollDirection, setScrollDirection] = useState('down');
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const statsRef = useRef(null);
+  const featuresRef = useRef(null);
+  
+  const { scrollYProgress } = useScroll();
+  const isStatsInView = useInView(statsRef, { once: true, margin: "-100px" });
+  const isFeaturesInView = useInView(featuresRef, { once: true, margin: "-50px" });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -64,63 +66,152 @@ const LandingPage = () => {
     };
   }, [lastScrollY]);
 
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
+
+  // GetAnchor-style falling animation variants
+  const fallingStatsVariants = {
+    hidden: {
+      y: -200,
+      opacity: 0,
+      rotateX: 45,
+      scale: 0.8
+    },
+    visible: (i) => ({
+      y: 0,
+      opacity: 1,
+      rotateX: 0,
+      scale: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15,
+        mass: 1,
+        delay: i * 0.1,
+        duration: 0.8
+      }
+    })
+  };
+
+  const heroVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.8,
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 20
+      }
+    }
+  };
+
+  const featuresVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const featureCardVariants = {
+    hidden: { opacity: 0, x: -50 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 20
+      }
+    }
   };
 
   const stats = [
-    { label: 'Active Users', value: '10,000+', icon: Users },
-    { label: 'Total Saved', value: '$2.5M+', icon: DollarSign },
-    { label: 'Goals Achieved', value: '15,000+', icon: Target },
-    { label: 'Success Rate', value: '94%', icon: TrendingUp }
+    {
+      icon: Target,
+      value: "10,000+",
+      label: "Goals Achieved",
+      color: "from-blue-500 to-cyan-500"
+    },
+    {
+      icon: Users,
+      value: "5,000+",
+      label: "Active Groups",
+      color: "from-purple-500 to-pink-500"
+    },
+    {
+      icon: TrendingUp,
+      value: "$2.5M+",
+      label: "Total Saved",
+      color: "from-green-500 to-emerald-500"
+    },
+    {
+      icon: Award,
+      value: "98%",
+      label: "Success Rate",
+      color: "from-orange-500 to-red-500"
+    }
   ];
 
   const features = [
     {
-      icon: User,
-      title: 'Individual Savings',
-      description: 'Save for your personal goals - vacations, gadgets, education, or anything you dream of.',
-      color: 'from-blue-500 to-cyan-500'
+      icon: Target,
+      title: "Smart Goal Setting",
+      description: "Set personalized savings goals with AI-powered recommendations",
+      color: "text-blue-600"
     },
     {
       icon: Users,
-      title: 'Group Savings',
-      description: 'Save together with friends and family for shared goals like trips, gifts, or investments.',
-      color: 'from-purple-500 to-pink-500'
+      title: "Group Savings",
+      description: "Save together with friends and family for shared goals",
+      color: "text-purple-600"
     },
     {
-      icon: Target,
-      title: 'Goal Tracking',
-      description: 'Set specific targets and track your progress with beautiful visualizations.',
-      color: 'from-green-500 to-emerald-500'
+      icon: TrendingUp,
+      title: "Progress Tracking",
+      description: "Real-time analytics and insights to keep you motivated",
+      color: "text-green-600"
     },
     {
       icon: Shield,
-      title: 'Secure & Private',
-      description: 'Bank-level security with complete privacy for your financial data.',
-      color: 'from-orange-500 to-red-500'
+      title: "Secure & Private",
+      description: "Bank-level security to protect your financial data",
+      color: "text-orange-600"
     },
     {
       icon: Zap,
-      title: 'Smart Automation',
-      description: 'Automated savings, reminders, and smart suggestions to help you reach goals faster.',
-      color: 'from-indigo-500 to-purple-500'
+      title: "Quick Actions",
+      description: "One-click payments and automated savings",
+      color: "text-red-600"
     },
     {
-      icon: BarChart3,
-      title: 'Progress Analytics',
-      description: 'Detailed insights and analytics to understand your saving patterns and optimize.',
-      color: 'from-teal-500 to-blue-500'
+      icon: Award,
+      title: "Achievement System",
+      description: "Gamified experience with badges and milestones",
+      color: "text-indigo-600"
     }
   ];
 
   const goalExamples = [
     { icon: Home, title: 'Home Down Payment', amount: '$50,000', type: 'individual' },
     { icon: Car, title: 'New Car', amount: '$25,000', type: 'individual' },
-    { icon: GraduationCap, title: 'Education Fund', amount: '$15,000', type: 'individual' },
+    { icon: BookOpen, title: 'Education Fund', amount: '$15,000', type: 'individual' },
     { icon: Plane, title: 'Family Vacation', amount: '$8,000', type: 'group' },
     { icon: Gift, title: 'Wedding Gift', amount: '$5,000', type: 'group' },
     { icon: Heart, title: 'Emergency Fund', amount: '$10,000', type: 'individual' }
@@ -150,25 +241,11 @@ const LandingPage = () => {
     }
   ];
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.5
-      }
-    }
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   return (
@@ -325,7 +402,7 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <motion.div
-              variants={containerVariants}
+              variants={heroVariants}
               initial="hidden"
               animate="visible"
               className="space-y-8"
@@ -377,14 +454,13 @@ const LandingPage = () => {
       </section>
 
       {/* Stats Section - Moved from Hero */}
-      <section className="py-16 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section ref={statsRef} className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 50 }}
+            animate={isStatsInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-16"
           >
             <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-4">
               Trusted by Thousands
@@ -394,21 +470,27 @@ const LandingPage = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {stats.map((stat, index) => (
               <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="text-center"
+                key={stat.label}
+                custom={index}
+                variants={fallingStatsVariants}
+                initial="hidden"
+                animate={isStatsInView ? "visible" : "hidden"}
+                className="relative group"
               >
-                <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl shadow-lg">
-                  <stat.icon className="w-8 h-8 text-white" />
+                <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200 dark:border-slate-700 group-hover:scale-105">
+                  <div className={`w-12 h-12 bg-gradient-to-r ${stat.color} rounded-xl flex items-center justify-center mb-4 mx-auto`}>
+                    <stat.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                    {stat.value}
+                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    {stat.label}
+                  </div>
                 </div>
-                <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{stat.value}</div>
-                <div className="text-sm text-slate-600 dark:text-slate-400 font-medium">{stat.label}</div>
               </motion.div>
             ))}
           </div>
@@ -416,46 +498,49 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section ref={featuresRef} className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-800">
+        <div className="max-w-7xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 50 }}
+            animate={isFeaturesInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-20"
+            className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-6">
               Save Your Way
             </h2>
-            <p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
               Whether you prefer to save individually or collaborate with others, 
               LoopFund provides the perfect tools for your financial journey.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <motion.div
+            variants={featuresVariants}
+            initial="hidden"
+            animate={isFeaturesInView ? "visible" : "hidden"}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
             {features.map((feature, index) => (
               <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="group p-8 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+                key={feature.title}
+                variants={featureCardVariants}
+                className="group"
               >
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${feature.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                  <feature.icon className="w-8 h-8 text-white" />
+                <div className="bg-slate-50 dark:bg-slate-700 rounded-2xl p-6 hover:bg-white dark:hover:bg-slate-600 transition-all duration-300 border border-slate-200 dark:border-slate-600 group-hover:shadow-lg">
+                  <div className={`w-12 h-12 bg-slate-200 dark:bg-slate-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                    <feature.icon className={`w-6 h-6 ${feature.color}`} />
+                  </div>
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">
+                    {feature.title}
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-400">
+                    {feature.description}
+                  </p>
                 </div>
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">
-                  {feature.title}
-                </h3>
-                <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                  {feature.description}
-                </p>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -615,51 +700,17 @@ const LandingPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-16 bg-slate-900 text-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-12">
-            <div className="md:col-span-2">
-              <h3 className="text-2xl font-bold mb-6">LoopFund</h3>
-              <p className="text-slate-400 text-lg leading-relaxed mb-6">
-                Making financial goals achievable, one save at a time. 
-                Whether you're saving individually or with others, we're here to help you succeed.
-              </p>
-              <div className="flex space-x-4">
-                <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-slate-700 transition-colors">
-                  <Globe className="w-5 h-5" />
-                </div>
-                <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-slate-700 transition-colors">
-                  <Heart className="w-5 h-5" />
-                </div>
-                <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-slate-700 transition-colors">
-                  <Award className="w-5 h-5" />
-                </div>
+      <footer className="bg-slate-900 text-white py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-3 mb-4">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">LF</span>
               </div>
+              <span className="text-xl font-bold">LoopFund</span>
             </div>
-            <div>
-              <h4 className="font-semibold mb-6 text-lg">Features</h4>
-              <ul className="space-y-3 text-slate-400">
-                <li className="hover:text-white transition-colors">Individual Savings</li>
-                <li className="hover:text-white transition-colors">Group Savings</li>
-                <li className="hover:text-white transition-colors">Goal Tracking</li>
-                <li className="hover:text-white transition-colors">Progress Analytics</li>
-                <li className="hover:text-white transition-colors">Smart Automation</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-6 text-lg">Support</h4>
-              <ul className="space-y-3 text-slate-400">
-                <li className="hover:text-white transition-colors">Help Center</li>
-                <li className="hover:text-white transition-colors">Contact Us</li>
-                <li className="hover:text-white transition-colors">Privacy Policy</li>
-                <li className="hover:text-white transition-colors">Terms of Service</li>
-                <li className="hover:text-white transition-colors">Security</li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-slate-800 mt-12 pt-8 text-center">
             <p className="text-slate-400">
-              © 2024 LoopFund. All rights reserved. Making dreams achievable, one save at a time.
+              © 2024 LoopFund. All rights reserved. Academic Project.
             </p>
           </div>
         </div>
