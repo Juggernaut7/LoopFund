@@ -106,7 +106,7 @@ async function archiveMultipleNotifications(req, res, next) {
       return res.status(400).json({
         success: false,
         error: 'Notification IDs array is required'
-      });
+      }); 
     }
 
     const result = await notificationService.archiveMultipleNotifications(notificationIds, userId);

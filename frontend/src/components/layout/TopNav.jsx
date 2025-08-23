@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -17,6 +17,8 @@ import {
 import { useTheme } from '../../context/ThemeContext';
 import { useAuthWithToast } from '../../hooks/useAuthWithToast';
 import NotificationsDropdown from '../notifications/NotificationsDropdown';
+import { useAuthStore } from '../../store/useAuthStore';
+import logo from '../../assets/logo.jpg';
 
 const TopNav = ({ toggleSidebar, isCollapsed, unreadCount = 0 }) => {
   const location = useLocation();
@@ -26,15 +28,49 @@ const TopNav = ({ toggleSidebar, isCollapsed, unreadCount = 0 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const { theme, toggleTheme, isDark } = useTheme();
   const { user, isAuthenticated, logout } = useAuthWithToast();
+  const userMenuRef = useRef(null);
 
   // For now, use empty notifications array until we implement the full context
   const notifications = [];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Handle logout
   const handleLogout = () => {
     logout();
     setIsUserMenuOpen(false);
     navigate('/signin');
+  };
+
+  // Handle profile navigation
+  const handleProfileClick = () => {
+    setIsUserMenuOpen(false);
+    navigate('/profile');
+  };
+
+  // Handle settings navigation
+  const handleSettingsClick = () => {
+    setIsUserMenuOpen(false);
+    navigate('/settings');
+  };
+
+  // Handle help & support
+  const handleHelpClick = () => {
+    setIsUserMenuOpen(false);
+    // You can implement help modal or navigate to help page
+    console.log('Help & Support clicked');
   };
 
   // Get page title from current path
@@ -152,7 +188,7 @@ const TopNav = ({ toggleSidebar, isCollapsed, unreadCount = 0 }) => {
           </div>
 
           {/* User Menu */}
-          <div className="relative">
+          <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
               className="flex items-center space-x-2 p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
@@ -190,15 +226,24 @@ const TopNav = ({ toggleSidebar, isCollapsed, unreadCount = 0 }) => {
                     </p>
                   </div>
                   <div className="py-2">
-                    <button className="w-full flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <button 
+                      onClick={handleProfileClick}
+                      className="w-full flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    >
                       <User size={16} className="mr-3" />
                       Profile
                     </button>
-                    <button className="w-full flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <button 
+                      onClick={handleSettingsClick}
+                      className="w-full flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    >
                       <Settings size={16} className="mr-3" />
                       Settings
                     </button>
-                    <button className="w-full flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <button 
+                      onClick={handleHelpClick}
+                      className="w-full flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    >
                       <HelpCircle size={16} className="mr-3" />
                       Help & Support
                     </button>
@@ -206,7 +251,7 @@ const TopNav = ({ toggleSidebar, isCollapsed, unreadCount = 0 }) => {
                   <div className="border-t border-slate-200 dark:border-slate-700 py-2">
                     <button 
                       onClick={handleLogout}
-                      className="w-full flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      className="w-full flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                     >
                       <LogOut size={16} className="mr-3" />
                       Sign out

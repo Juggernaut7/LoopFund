@@ -3,39 +3,46 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, 
   Plus, 
+  Search, 
+  Filter,
+  Calendar,
+  DollarSign,
+  Target,
+  MoreVertical,
+  Edit,
+  Trash2,
+  UserPlus,
+  Eye,
   Loader,
   AlertCircle,
-  UserPlus,
-  Settings,
-  X,
-  DollarSign,
-  Copy,
-  Share2,
-  QrCode,
+  Mail, 
+  Users as UsersIcon, 
+  CheckCircle, 
+  XCircle, 
+  Clock, 
+  User,
+  Calendar as CalendarIcon,
+  X, 
+  Copy, 
   Link as LinkIcon,
-  Download
+  RefreshCw
 } from 'lucide-react';
 import Layout from '../components/layout/Layout';
 import { useToast } from '../context/ToastContext';
-import dashboardService from '../services/dashboardService';
-import InviteModal from '../components/modals/InviteModal';
+import InviteModal from '../components/invitations/InviteModal';
 
 const GroupsPage = () => {
   const [groups, setGroups] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    targetAmount: '',
-    category: 'friends'
-  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('all');
   const { toast } = useToast();
-  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
 
-  // Fetch groups on component mount
+  // Fetch groups from backend
   useEffect(() => {
     fetchGroups();
   }, []);
@@ -45,10 +52,22 @@ const GroupsPage = () => {
       setIsLoading(true);
       setError(null);
       
-      const response = await dashboardService.getUserGroups();
-      setGroups(response.data || []);
+      const response = await fetch('http://localhost:4000/api/groups', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch groups');
+      }
+
+      const data = await response.json();
+      setGroups(data.data || []);
       
-      console.log('Groups fetched:', response);
+      console.log('Groups fetched:', data);
     } catch (error) {
       console.error('Error fetching groups:', error);
       setError(error.message);
@@ -58,85 +77,89 @@ const GroupsPage = () => {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const createGroup = async (groupData) => {
+    try {
+      const response = await fetch('http://localhost:4000/api/groups', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(groupData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create group');
+      }
+
+      const data = await response.json();
+      toast.success('Group Created', 'Your group has been successfully created.');
+      fetchGroups(); // Refresh the list
+      return data.data;
+    } catch (error) {
+      console.error('Error creating group:', error);
+      toast.error('Create Error', 'Failed to create group. Please try again.');
+      throw error;
+    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!formData.name || !formData.targetAmount) {
-      toast.error('Validation Error', 'Please fill in all required fields.');
+  const deleteGroup = async (groupId) => {
+    if (!window.confirm('Are you sure you want to delete this group? This action cannot be undone.')) {
       return;
     }
 
     try {
-      const groupData = {
-        ...formData,
-        targetAmount: parseFloat(formData.targetAmount)
-      };
-
-      await createGroup(groupData);
-      toast.success('Group Created', 'Your new group has been successfully created.');
-      
-      // Reset form and refresh groups
-      setFormData({
-        name: '',
-        description: '',
-        targetAmount: '',
-        category: 'friends'
+      const response = await fetch(`http://localhost:4000/api/groups/${groupId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
       });
-      setShowCreateForm(false);
-      fetchGroups();
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete group');
+      }
+
+      toast.success('Group Deleted', 'Your group has been successfully deleted.');
+      fetchGroups(); // Refresh the list
     } catch (error) {
-      console.error('Error creating group:', error);
-      toast.error('Create Error', 'Failed to create group. Please try again.');
+      console.error('Error deleting group:', error);
+      toast.error('Delete Error', 'Failed to delete group. Please try again.');
     }
   };
 
-  const createGroup = async (groupData) => {
-    const response = await fetch('http://localhost:4000/api/groups', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-      },
-      body: JSON.stringify(groupData)
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to create group');
-    }
-
-    return response.json();
+  const getProgressPercentage = (group) => {
+    if (!group.targetAmount || group.targetAmount === 0) return 0;
+    return Math.min((group.currentAmount / group.targetAmount) * 100, 100);
   };
 
-  const cancelCreate = () => {
-    setFormData({
-      name: '',
-      description: '',
-      targetAmount: '',
-      category: 'friends'
-    });
-    setShowCreateForm(false);
+  const getStatusColor = (group) => {
+    const progress = getProgressPercentage(group);
+    if (progress >= 100) return 'text-green-600 bg-green-100 dark:bg-green-900/20';
+    if (progress >= 80) return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/20';
+    if (progress >= 50) return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20';
+    return 'text-gray-600 bg-gray-100 dark:bg-gray-900/20';
   };
 
-  const handleInviteMembers = (group) => {
+  const filteredGroups = groups.filter(group => {
+    const matchesSearch = group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         group.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterType === 'all' || group.status === filterType;
+    return matchesSearch && matchesFilter;
+  });
+
+  const handleInviteClick = (group) => {
     setSelectedGroup(group);
-    setShowInviteModal(true);
+    setIsInviteModalOpen(true);
   };
 
-  const closeInviteModal = () => {
-    setShowInviteModal(false);
-    setSelectedGroup(null);
+  const handleInviteSent = () => {
+    // Refresh groups or show success message
+    fetchGroups();
   };
 
-  // Show loading state
   if (isLoading) {
     return (
       <Layout>
@@ -150,7 +173,6 @@ const GroupsPage = () => {
     );
   }
 
-  // Show error state
   if (error) {
     return (
       <Layout>
@@ -177,10 +199,10 @@ const GroupsPage = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-              My Groups
+              Groups
             </h1>
             <p className="text-slate-600 dark:text-slate-400 mt-2">
-              Manage your group savings and collaborations
+              Collaborate with others to achieve shared savings goals
             </p>
           </div>
           <motion.button
@@ -194,125 +216,33 @@ const GroupsPage = () => {
           </motion.button>
         </div>
 
-        {/* Create Group Form */}
-        <AnimatePresence>
-          {showCreateForm && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
-                  Create New Group
-                </h2>
-                <button
-                  onClick={cancelCreate}
-                  className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                >
-                  ✕
-                </button>
-              </div>
+        {/* Search and Filter */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search groups..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            />
+          </div>
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+          >
+            <option value="all">All Groups</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+            <option value="paused">Paused</option>
+          </select>
+        </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Group Name */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      Group Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                      placeholder="e.g., Family Vacation Fund"
-                      required
-                    />
-                  </div>
-
-                  {/* Category */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      Category
-                    </label>
-                    <select
-                      name="category"
-                      value={formData.category}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                    >
-                      <option value="family">Family</option>
-                      <option value="friends">Friends</option>
-                      <option value="business">Business</option>
-                      <option value="community">Community</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-
-                  {/* Target Amount */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      Target Amount *
-                    </label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                      <input
-                        type="number"
-                        name="targetAmount"
-                        value={formData.targetAmount}
-                        onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                        placeholder="5000"
-                        min="0"
-                        step="0.01"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      Description
-                    </label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                      placeholder="Describe your group's purpose..."
-                    />
-                  </div>
-                </div>
-
-                {/* Submit Button */}
-                <div className="flex justify-end space-x-4">
-                  <button
-                    type="button"
-                    onClick={cancelCreate}
-                    className="px-6 py-3 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200"
-                  >
-                    Create Group
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Groups List */}
+        {/* Groups Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {groups.map((group) => (
+          {filteredGroups.map((group) => (
             <motion.div
               key={group._id}
               initial={{ opacity: 0, y: 20 }}
@@ -322,51 +252,52 @@ const GroupsPage = () => {
               {/* Group Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-                    <Users className="w-5 h-5 text-white" />
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                    <Users className="w-6 h-6 text-white" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-slate-900 dark:text-white">
                       {group.name}
                     </h3>
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
-                      Group
-                    </span>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      {group.members?.length || 0} members
+                    </p>
                   </div>
                 </div>
                 
-                {/* Actions Menu */}
                 <div className="flex items-center space-x-2">
-                  <button className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors">
-                    <UserPlus className="w-4 h-4" />
+                  <button 
+                    onClick={() => deleteGroup(group._id)}
+                    className="p-2 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </button>
-                  <button className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors">
-                    <Settings className="w-4 h-4" />
+                  <button
+                    onClick={() => handleInviteClick(group)}
+                    className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
+                  >
+                    <Mail className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
               {/* Group Description */}
-              {group.description && (
-                <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
-                  {group.description}
-                </p>
-              )}
+              <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
+                {group.description}
+              </p>
 
-              {/* Group Progress */}
+              {/* Progress Bar */}
               <div className="mb-4">
                 <div className="flex items-center justify-between text-sm mb-2">
                   <span className="text-slate-600 dark:text-slate-400">Progress</span>
                   <span className="font-medium text-slate-900 dark:text-white">
-                    {group.targetAmount > 0 ? Math.round((group.currentAmount / group.targetAmount) * 100) : 0}%
+                    {getProgressPercentage(group).toFixed(1)}%
                   </span>
                 </div>
                 <div className="w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-full">
                   <div
-                    className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
-                    style={{ 
-                      width: `${group.targetAmount > 0 ? (group.currentAmount / group.targetAmount) * 100 : 0}%` 
-                    }}
+                    className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600"
+                    style={{ width: `${getProgressPercentage(group)}%` }}
                   />
                 </div>
               </div>
@@ -385,39 +316,61 @@ const GroupsPage = () => {
                     ${(group.targetAmount || 0).toLocaleString()}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-500 dark:text-slate-400">Members:</span>
-                  <span className="font-medium text-slate-900 dark:text-white">
-                    {group.members?.length || 0}
-                  </span>
+                {group.deadline && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-500 dark:text-slate-400">Deadline:</span>
+                    <span className="font-medium text-slate-900 dark:text-white">
+                      {new Date(group.deadline).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Group Members */}
+              {group.members && group.members.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Members
+                  </h4>
+                  <div className="flex -space-x-2">
+                    {group.members.slice(0, 4).map((member) => (
+                      <div
+                        key={member._id}
+                        className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-medium border-2 border-white dark:border-slate-800"
+                        title={member.name}
+                      >
+                        {member.name ? member.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U'}
+                      </div>
+                    ))}
+                    {group.members.length > 4 && (
+                      <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-slate-600 dark:text-slate-400 text-xs font-medium border-2 border-white dark:border-slate-800">
+                        +{group.members.length - 4}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Group Footer */}
+              {/* Group Actions */}
               <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700">
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  Created: {new Date(group.createdAt).toLocaleDateString()}
-                </span>
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  {group.status || 'Active'}
-                </span>
-              </div>
-
-              {/* Add invite button to each group card */}
-              <div className="flex space-x-2 mt-4">
-                <button
-                  onClick={() => handleInviteMembers(group)}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
-                >
-                  Invite
-                </button>
+                <div className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(group)}`}>
+                  {group.status || 'active'}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors">
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button className="p-2 text-slate-500 hover:text-green-600 dark:text-slate-400 dark:hover:text-green-400 transition-colors">
+                    <UserPlus className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))}
         </div>
 
         {/* Empty State */}
-        {groups.length === 0 && !isLoading && (
+        {filteredGroups.length === 0 && !isLoading && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -425,32 +378,175 @@ const GroupsPage = () => {
           >
             <Users className="w-16 h-16 text-slate-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
-              No groups yet
+              No groups found
             </h3>
             <p className="text-slate-600 dark:text-slate-400 mb-6">
-              Start collaborating with friends and family by creating a group
+              {searchTerm || filterType !== 'all' 
+                ? 'Try adjusting your search or filters'
+                : 'Start collaborating by creating your first group'
+              }
             </p>
-            <button 
-              onClick={() => setShowCreateForm(true)}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200"
-            >
-              Create Your First Group
-            </button>
+            {!searchTerm && filterType === 'all' && (
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200"
+              >
+                Create Your First Group
+              </button>
+            )}
           </motion.div>
         )}
-      </div>
 
-      {/* Invite Modal */}
-      {showInviteModal && selectedGroup && (
+        {/* Create Group Form Modal */}
+        <AnimatePresence>
+          {showCreateForm && (
+            <CreateGroupModal 
+              onClose={() => setShowCreateForm(false)}
+              onSubmit={createGroup}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Invite Modal */}
         <InviteModal
-          isOpen={showInviteModal}
-          onClose={closeInviteModal}
-          groupId={selectedGroup._id}
-          groupName={selectedGroup.name}
-          currentMembers={selectedGroup.members || []}
+          isOpen={isInviteModalOpen}
+          onClose={() => {
+            setIsInviteModalOpen(false);
+            setSelectedGroup(null);
+          }}
+          group={selectedGroup}
+          onInviteSent={handleInviteSent}
         />
-      )}
+      </div>
     </Layout>
+  );
+};
+
+// Create Group Modal Component
+const CreateGroupModal = ({ onClose, onSubmit }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    targetAmount: '',
+    deadline: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.name || !formData.targetAmount) {
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      await onSubmit({
+        ...formData,
+        targetAmount: parseFloat(formData.targetAmount)
+      });
+      onClose();
+    } catch (error) {
+      // Error is handled in the parent component
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-md"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">
+          Create New Group
+        </h2>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Group Name *
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              placeholder="Enter group name"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Description
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              placeholder="Describe your group goal"
+              rows={3}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Target Amount *
+            </label>
+            <input
+              type="number"
+              value={formData.targetAmount}
+              onChange={(e) => setFormData(prev => ({ ...prev, targetAmount: e.target.value }))}
+              className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Deadline
+            </label>
+            <input
+              type="date"
+              value={formData.deadline}
+              onChange={(e) => setFormData(prev => ({ ...prev, deadline: e.target.value }))}
+              className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            />
+          </div>
+          
+          <div className="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 text-white px-6 py-2 rounded-xl font-medium transition-all duration-200"
+            >
+              {isSubmitting ? 'Creating...' : 'Create Group'}
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
   );
 };
 

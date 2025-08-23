@@ -30,4 +30,13 @@ router.get('/middleware-test', (req, res) => {
   });
 });
 
+router.get('/websocket-test', (req, res) => {
+  const wsCount = global.notificationSocket ? global.notificationSocket.getConnectedClientsCount() : 0;
+  res.json({
+    websocket_available: !!global.notificationSocket,
+    connected_clients: wsCount,
+    endpoint: 'ws://localhost:4000/ws'
+  });
+});
+
 module.exports = router; 

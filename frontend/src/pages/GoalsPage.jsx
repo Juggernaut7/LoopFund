@@ -112,21 +112,37 @@ const GoalsPage = () => {
   };
 
   const createGoal = async (goalData) => {
-    const response = await fetch('http://localhost:4000/api/goals', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-      },
-      body: JSON.stringify(goalData)
-    });
+    try {
+      const response = await fetch('http://localhost:4000/api/goals', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: goalData.name,
+          description: goalData.description,
+          targetAmount: parseFloat(goalData.targetAmount),
+          endDate: goalData.endDate, // Changed from deadline to endDate
+          frequency: goalData.frequency || 'monthly', // Add required field
+          amount: parseFloat(goalData.amount) || 0, // Add required field
+          type: goalData.type || 'individual',
+          category: goalData.category || 'personal'
+        })
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to create goal');
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('Server response:', data);
+        throw new Error(data.error || 'Failed to create goal');
+      }
+
+      return data.data;
+    } catch (error) {
+      console.error('Error creating goal:', error);
+      throw error;
     }
-
-    return response.json();
   };
 
   const updateGoal = async (goalId, goalData) => {
@@ -136,7 +152,16 @@ const GoalsPage = () => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
       },
-      body: JSON.stringify(goalData)
+      body: JSON.stringify({
+        name: goalData.name,
+        description: goalData.description,
+        targetAmount: parseFloat(goalData.targetAmount),
+        endDate: goalData.endDate, // Changed from deadline to endDate
+        frequency: goalData.frequency || 'monthly',
+        amount: parseFloat(goalData.amount) || 0,
+        type: goalData.type || 'individual',
+        category: goalData.category || 'personal'
+      })
     });
 
     if (!response.ok) {
@@ -179,10 +204,10 @@ const GoalsPage = () => {
       name: goal.name,
       description: goal.description || '',
       targetAmount: goal.targetAmount.toString(),
-      endDate: new Date(goal.endDate).toISOString().split('T')[0],
+      endDate: goal.endDate ? new Date(goal.endDate).toISOString().split('T')[0] : '', // Use endDate
       category: goal.category || 'personal',
-      frequency: goal.contributionSchedule?.frequency || 'monthly',
-      amount: goal.contributionSchedule?.amount?.toString() || ''
+      frequency: goal.frequency || 'monthly', // Use frequency
+      amount: goal.amount?.toString() || '' // Use amount
     });
     setShowCreateForm(true);
   };
@@ -580,4 +605,19 @@ const GoalsPage = () => {
   );
 };
 
-export default GoalsPage; 
+export default GoalsPage;   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

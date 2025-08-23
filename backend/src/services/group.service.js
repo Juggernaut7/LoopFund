@@ -54,4 +54,36 @@ async function listGroups(userId) {
   }).lean();
 }
 
-module.exports = { createGroup, joinGroup, listGroups };
+const deleteGroup = async (groupId, userId) => {
+  try {
+    // Check if group exists
+    const group = await Group.findById(groupId);
+    if (!group) {
+      throw new Error('Group not found');
+    }
+
+    // Check if user is the owner
+    const isOwner = group.members.some(member => 
+      member.user.toString() === userId.toString() && member.role === 'owner'
+    );
+
+    if (!isOwner) {
+      throw new Error('Only group owner can delete the group');
+    }
+
+    // Delete the group
+    await Group.findByIdAndDelete(groupId);
+
+    // Also delete related invitations
+    const { Invitation } = require('../models/Invitation');
+    if (Invitation) {
+      await Invitation.deleteMany({ group: groupId });
+    }
+
+    return true;
+  } catch (error) {
+    throw error;
+  }
+};
+
+module.exports = { createGroup, joinGroup, listGroups, deleteGroup };

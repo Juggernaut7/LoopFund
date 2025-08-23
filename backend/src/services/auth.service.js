@@ -3,40 +3,92 @@ const jwt = require('jsonwebtoken');
 const { User } = require('../models/User');
 const { env } = require('../config/env');
 
-async function signup({ firstName, lastName, email, password, isAdmin = false }) {
-  const existing = await User.findOne({ email });
-  if (existing) throw new Error('Email already in use');
+// Add debug logging
+console.log('🔍 Auth service loading...');
 
-  const passwordHash = await bcrypt.hash(password, 10);
-  const user = await User.create({ firstName, lastName, email, passwordHash, isAdmin });
-  const token = jwt.sign({ userId: user._id, isAdmin: user.isAdmin }, env.jwtSecret, { expiresIn: '7d' });
-  return { token, user: { id: user._id, firstName, lastName, email, isAdmin } };
+async function signup({ firstName, lastName, email, password, isAdmin = false }) {
+  console.log('🎯 Signup function called with:', { firstName, lastName, email, isAdmin });
+  
+  try {
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return {
+        success: false,
+        error: 'Email already in use. Please use a different email or sign in.',
+        code: 'EMAIL_EXISTS'
+      };
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await User.create({ firstName, lastName, email, passwordHash, isAdmin });
+    const token = jwt.sign({ userId: user._id, isAdmin: user.isAdmin }, env.jwtSecret, { expiresIn: '7d' });
+    
+    // Fix: Return the format frontend expects
+    return { 
+      success: true,
+      data: {
+        token, 
+        user: { id: user._id, firstName, lastName, email, isAdmin } 
+      }
+    };
+  } catch (error) {
+    console.error('❌ Signup error:', error);
+    return {
+      success: false,
+      error: error.message || 'Signup failed',
+      code: 'SIGNUP_ERROR'
+    };
+  }
 }
 
 async function login({ email, password }) {
-  const user = await User.findOne({ email });
-  if (!user) throw new Error('Invalid credentials');
+  console.log('🎯 Login function called with:', { email });
+  
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return {
+        success: false,
+        error: 'Invalid credentials',
+        code: 'INVALID_CREDENTIALS'
+      };
+    }
 
-  const valid = await bcrypt.compare(password, user.passwordHash);
-  if (!valid) throw new Error('Invalid credentials');
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) {
+      return {
+        success: false,
+        error: 'Invalid credentials',
+        code: 'INVALID_CREDENTIALS'
+      };
+    }
 
-  const token = jwt.sign({ userId: user._id, isAdmin: user.isAdmin }, env.jwtSecret, { expiresIn: '7d' });
-  return { token, user: { id: user._id, firstName: user.firstName, lastName: user.lastName, email: user.email, isAdmin: user.isAdmin } };
+    const token = jwt.sign({ userId: user._id, isAdmin: user.isAdmin }, env.jwtSecret, { expiresIn: '7d' });
+    
+    // Fix: Return the format frontend expects
+    return { 
+      success: true,
+      data: {
+        token, 
+        user: { id: user._id, firstName: user.firstName, lastName: user.lastName, email: user.email, isAdmin: user.isAdmin } 
+      }
+    };
+  } catch (error) {
+    console.error('❌ Login error:', error);
+    return {
+      success: false,
+      error: error.message || 'Login failed',
+      code: 'LOGIN_ERROR'
+    };
+  }
 }
 
+// Add the missing handleGoogleOAuth function
 async function handleGoogleOAuth(profile) {
   try {
-    console.log('Google OAuth Profile:', JSON.stringify(profile, null, 2));
+    console.log('🎯 Google OAuth function called with profile:', profile);
     
-    // Validate profile structure
-    if (!profile || !profile.emails || !profile.emails[0] || !profile.emails[0].value) {
-      throw new Error('Invalid Google profile structure - missing email information');
-    }
-    
-    if (!profile.name) {
-      throw new Error('Invalid Google profile structure - missing name information');
-    }
-
     // Check if user already exists
     let user = await User.findOne({ email: profile.emails[0].value });
     
@@ -52,26 +104,8 @@ async function handleGoogleOAuth(profile) {
         googleId: profile.id,
         isAdmin: false,
         isVerified: true,
-        profilePicture: profile.photos?.[0]?.value,
-        passwordHash: 'google-oauth-user', // Placeholder for OAuth users
-        notificationPreferences: {
-          email: true,
-          sms: false,
-          push: true,
-          reminderFrequency: 'daily'
-        },
-        preferences: {
-          currency: 'USD',
-          timezone: 'UTC',
-          language: 'en'
-        }
+        passwordHash: 'google-oauth-user' // Placeholder for OAuth users
       });
-    } else {
-      // Update existing user with Google ID if not already set
-      if (!user.googleId) {
-        user.googleId = profile.id;
-        await user.save();
-      }
     }
 
     // Generate JWT token
@@ -82,6 +116,7 @@ async function handleGoogleOAuth(profile) {
     );
 
     return { 
+      success: true,
       token, 
       user: { 
         id: user._id, 
@@ -92,9 +127,20 @@ async function handleGoogleOAuth(profile) {
       } 
     };
   } catch (error) {
-    console.error('Google OAuth Error:', error);
-    throw new Error(`Google OAuth failed: ${error.message}`);
+    console.error('❌ Google OAuth error:', error);
+    return {
+      success: false,
+      error: error.message || 'Google OAuth failed',
+      code: 'OAUTH_ERROR'
+    };
   }
 }
 
-module.exports = { signup, login, handleGoogleOAuth };
+// Make sure the export is correct
+console.log('🔍 Auth service functions defined:', { signup, login, handleGoogleOAuth });
+
+module.exports = { 
+  signup, 
+  login, 
+  handleGoogleOAuth 
+};

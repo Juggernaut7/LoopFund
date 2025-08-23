@@ -1,7 +1,13 @@
 const { Router } = require('express');
 const { body } = require('express-validator');
 const { requireAuth } = require('../middleware/auth');
-const { createGoal: createGoalController, listGoals: listGoalsController, getGoal: getGoalController } = require('../controllers/goals.controller');
+const {
+  createGoalController,
+  getUserGoalsController,
+  getGoalByIdController,
+  updateGoalController,
+  deleteGoalController
+} = require('../controllers/goals.controller');
 const { validateRequest } = require('../middleware/validateRequest');
 
 const router = Router();
@@ -64,7 +70,7 @@ router.post(
  *       200:
  *         description: List of goals
  */
-router.get('/', requireAuth, listGoalsController);
+router.get('/', requireAuth, getUserGoalsController);
 
 /**
  * @openapi
@@ -84,6 +90,61 @@ router.get('/', requireAuth, listGoalsController);
  *       200:
  *         description: Goal details
  */
-router.get('/:id', requireAuth, getGoalController);
+router.get('/:goalId', requireAuth, getGoalByIdController);
+
+/**
+ * @openapi
+ * /api/goals/{id}:
+ *   put:
+ *     summary: Update a specific goal
+ *     tags: [Goals]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name: { type: string }
+ *               description: { type: string }
+ *               targetAmount: { type: number }
+ *               endDate: { type: string, format: date-time }
+ *               groupId: { type: string }
+ *               frequency: { type: string, enum: [daily, weekly, monthly, custom] }
+ *               amount: { type: number }
+ *               customDates: { type: array, items: { type: string, format: date-time } }
+ *     responses:
+ *       200:
+ *         description: Goal updated
+ */
+router.put('/:goalId', requireAuth, updateGoalController);
+
+/**
+ * @openapi
+ * /api/goals/{id}:
+ *   delete:
+ *     summary: Delete a specific goal
+ *     tags: [Goals]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Goal deleted
+ */
+router.delete('/:goalId', requireAuth, deleteGoalController);
 
 module.exports = router;

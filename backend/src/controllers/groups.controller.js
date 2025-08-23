@@ -1,4 +1,4 @@
-const { createGroup, joinGroup, listGroups } = require('../services/group.service');
+const { createGroup, joinGroup, listGroups, deleteGroup } = require('../services/group.service');
 
 async function createGroupController(req, res, next) {
   try {
@@ -27,4 +27,28 @@ async function listGroupsController(req, res, next) {
   }
 }
 
-module.exports = { createGroup: createGroupController, joinGroup: joinGroupController, listGroups: listGroupsController };
+async function deleteGroupController(req, res, next) {
+  try {
+    const { groupId } = req.params;
+    const userId = req.user.userId;
+
+    console.log('️ Deleting group:', groupId, 'by user:', userId);
+
+    const result = await deleteGroup(groupId, userId);
+    
+    res.json({
+      success: true,
+      message: 'Group deleted successfully'
+    });
+  } catch (error) {
+    console.error('❌ Delete group error:', error);
+    next(error);
+  }
+}
+
+module.exports = { 
+  createGroup: createGroupController, 
+  joinGroup: joinGroupController, 
+  listGroups: listGroupsController,
+  deleteGroup: deleteGroupController 
+};

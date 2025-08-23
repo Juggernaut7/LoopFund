@@ -26,6 +26,7 @@ import {
 import { useTheme } from '../../context/ThemeContext';
 import { useAuthWithToast } from '../../hooks/useAuthWithToast';
 import Logo from './Logo';
+import logo from '../../assets/logo.jpg';
 
 const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
   const location = useLocation();

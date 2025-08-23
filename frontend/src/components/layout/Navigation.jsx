@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import Logo from './Logo';
+import logo from '../../assets/logo.jpg'; // Add this import
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -42,8 +43,28 @@ const Navigation = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
-          {/* Logo */}
-          <Logo size="default" />
+          {/* Logo with Real Image */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center space-x-3"
+          >
+            <Link to="/" className="flex items-center space-x-3 group">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="w-10 h-10 rounded-xl overflow-hidden shadow-lg"
+              >
+                <img 
+                  src={logo} 
+                  alt="LoopFund Logo" 
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                LoopFund
+              </span>
+            </Link>
+          </motion.div>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">

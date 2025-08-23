@@ -2,28 +2,54 @@ const { signup, login, handleGoogleOAuth } = require('../services/auth.service')
 const { env } = require('../config/env');
 const jwt = require('jsonwebtoken');
 
+// Add debug logging to see what's being imported
+console.log('🔍 Auth service functions:', { signup, login, handleGoogleOAuth });
+
 async function signupController(req, res, next) {
   try {
+    console.log('🎯 Signup controller called');
     const result = await signup(req.body);
-    // Send token and user directly for frontend compatibility
+    
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        error: result.error,
+        code: result.code
+      });
+    }
+    
     res.status(201).json({
-      token: result.token,
-      user: result.user
+      success: true,
+      data: {
+        token: result.token,
+        user: result.user
+      }
     });
   } catch (error) {
+    console.error('❌ Signup controller error:', error);
     next(error);
   }
 }
 
 async function loginController(req, res, next) {
   try {
+    console.log('🎯 Login controller called');
     const result = await login(req.body);
-    // Send token and user directly for frontend compatibility
+    
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+    
+    // Make sure we're sending the correct format
     res.json({
-      token: result.token,
-      user: result.user
+      success: true,
+      data: {
+        token: result.data.token,
+        user: result.data.user
+      }
     });
   } catch (error) {
+    console.error('❌ Login controller error:', error);
     next(error);
   }
 }

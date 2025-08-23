@@ -1,63 +1,57 @@
 const { Router } = require('express');
-const { body } = require('express-validator');
 const { requireAuth } = require('../middleware/auth');
-const { addContribution: addContributionController, listContributions: listContributionsController } = require('../controllers/contributions.controller');
-const { validateRequest } = require('../middleware/validateRequest');
+const { Contribution } = require('../models/Contribution'); // Add this import
+const {
+  addContributionController,
+  getUserContributionsController,
+  getGoalContributionsController,
+  getContributionStatsController
+} = require('../controllers/contributions.controller');
 
 const router = Router();
 
-/**
- * @openapi
- * /api/contributions:
- *   post:
- *     summary: Add a contribution to a goal
- *     tags: [Contributions]
- *     security:
- *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [goalId, amount]
- *             properties:
- *               goalId: { type: string }
- *               description: { type: string }
- *               amount: { type: number }
- *     responses:
- *       201:
- *         description: Contribution added
- */
-router.post(
-  '/',
-  requireAuth,
-  [
-    body('goalId').isMongoId(),
-    body('amount').isFloat({ min: 0 }),
-  ],
-  validateRequest,
-  addContributionController
-);
+// All routes require authentication
+router.use(requireAuth);
 
-/**
- * @openapi
- * /api/contributions/{goalId}:
- *   get:
- *     summary: List contributions for a goal
- *     tags: [Contributions]
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: goalId
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: List of contributions
- */
-router.get('/:goalId', requireAuth, listContributionsController);
+// Get user contributions with filters and pagination
+router.get('/', getUserContributionsController);
+
+// Add this new route to get all user contributions
+router.get('/user/all', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    console.log('🔍 Fetching contributions for user:', userId);
+    
+    // Get all contributions for the user
+    const contributions = await Contribution.find({ user: userId })
+      .populate('goal', 'name')
+      .sort({ createdAt: -1 });
+    
+    console.log('📊 Found contributions:', contributions.length);
+    console.log('💰 Contribution amounts:', contributions.map(c => c.amount));
+    
+    res.json({
+      success: true,
+      data: contributions
+    });
+    
+  } catch (error) {
+    console.error('❌ Error fetching user contributions:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch contributions'
+    });
+  }
+});
+
+// Get contribution statistics
+router.get('/stats', getContributionStatsController);
+
+// Get contributions for a specific goal
+router.get('/goal/:goalId', getGoalContributionsController);
+
+// Add new contribution
+router.post('/', addContributionController);
 
 module.exports = router;

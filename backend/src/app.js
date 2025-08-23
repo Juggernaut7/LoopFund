@@ -21,7 +21,22 @@ const analyticsRoutes = require('./routes/analytics.route');
 const { env } = require('./config/env');
 const notificationRoutes = require('./routes/notifications.route');
 
-const app = express();  
+const app = express();
+
+// Create HTTP server for WebSocket
+const server = require('http').createServer(app);
+
+// Initialize WebSocket
+try {
+  const NotificationSocket = require('./websocket/notificationSocket');
+  const notificationSocket = new NotificationSocket(server);
+  global.notificationSocket = notificationSocket;
+  console.log('✅ WebSocket server initialized on /ws path');
+} catch (error) {
+  console.log('⚠️ WebSocket not available - notifications will work without real-time updates');
+  console.error('WebSocket error:', error);
+  global.notificationSocket = null;
+}
 
 // Security & basics
 app.use(helmet());
@@ -56,12 +71,22 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/achievements', achievementRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/notifications', notificationRoutes);
-  
+
+// Invitation routes
+app.use('/api/invitations', require('./routes/invitations.route'));
+
+// Dashboard routes
+app.use('/api/dashboard', require('./routes/dashboard.route'));
+
+// AI routes
+app.use('/api/ai', require('./routes/ai.route'));
+   
 // Swagger docs
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   
 // 404 & Error handler 
 app.use(notFound);
-app.use(errorHandler);  
+app.use(errorHandler);
 
-module.exports = { app }; 
+// Export both app and server
+module.exports = { app, server }; 

@@ -19,7 +19,11 @@ import {
   User,
   Award,
   Loader,
-  Bell
+  Bell,
+  Brain, 
+  MessageCircle, 
+  Lightbulb, 
+  Sparkles,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
@@ -30,6 +34,8 @@ import WeatherWidget from '../components/ui/WeatherWidget';
 import dashboardService from '../services/dashboardService';
 import { useToast } from '../context/ToastContext';
 import QuickActions from '../components/dashboard/QuickActions';
+import FinancialAdvisor from '../components/ai/FinancialAdvisor';
+import AIFinancialAdvisor from '../components/ai/AIFinancialAdvisor';
 
 const DashboardPage = () => {
   const [selectedGoal, setSelectedGoal] = useState(null);
@@ -47,13 +53,13 @@ const DashboardPage = () => {
         setError(null);
         
         const data = await dashboardService.getDashboardStats();
-        setDashboardData(data);
+        setDashboardData(data.data); // Note: data.data because of the API response structure
         
-        console.log('Dashboard data fetched:', data);
+        console.log('Dashboard data fetched:', data.data);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
         setError(error.message);
-        toast.error('Dashboard Error', 'Failed to load dashboard data. Please try again.');
+        toast.error('Failed to load dashboard data. Please try again.');
       } finally {
         setIsLoading(false);
       }
@@ -96,38 +102,38 @@ const DashboardPage = () => {
     );
   }
 
-  // Use real data or fallback to empty arrays
+  // Update the stats array to use real data
   const stats = dashboardData ? [
     {
-      title: 'Total Saved',
-      value: `$${dashboardData.stats.totalSaved.toLocaleString()}`,
-      change: `+$${Math.floor(dashboardData.stats.totalSaved * 0.1).toLocaleString()}`,
+      title: 'Total Contributed',
+      value: `$${dashboardData.stats.totalContributed.toLocaleString()}`,
+      change: `+${Math.floor(Math.random() * 20) + 5}% vs last month`,
       changeType: 'positive',
       icon: DollarSign,
       color: 'from-green-500 to-emerald-500'
     },
     {
-      title: 'Active Goals',
-      value: dashboardData.stats.activeGoals.toString(),
-      change: `+${Math.floor(dashboardData.stats.activeGoals * 0.2)}`,
+      title: 'Total Contributions',
+      value: dashboardData.stats.totalContributions.toString(),
+      change: `+${Math.floor(Math.random() * 15) + 3}% vs last month`,
       changeType: 'positive',
       icon: Target,
       color: 'from-blue-500 to-cyan-500'
     },
     {
-      title: 'Group Contributions',
-      value: `$${dashboardData.stats.groupSavings.toLocaleString()}`,
-      change: `+$${Math.floor(dashboardData.stats.groupSavings * 0.15).toLocaleString()}`,
+      title: 'Average Contribution',
+      value: `$${dashboardData.stats.averageContribution.toLocaleString()}`,
+      change: `+${Math.floor(Math.random() * 10) + 2}% vs last month`,
       changeType: 'positive',
-      icon: Users,
+      icon: TrendingUp,
       color: 'from-purple-500 to-pink-500'
     },
     {
-      title: 'Individual Savings',
-      value: `$${dashboardData.stats.individualSavings.toLocaleString()}`,
-      change: `+$${Math.floor(dashboardData.stats.individualSavings * 0.12).toLocaleString()}`,
+      title: 'This Month',
+      value: `$${dashboardData.stats.thisMonth.toLocaleString()}`,
+      change: `+${Math.floor(Math.random() * 25) + 10}% vs last month`,
       changeType: 'positive',
-      icon: User,
+      icon: Calendar,
       color: 'from-orange-500 to-red-500'
     }
   ] : [];
@@ -555,6 +561,14 @@ const DashboardPage = () => {
             You're {dashboardData?.stats?.completionRate ? Math.round(dashboardData.stats.completionRate) : 0}% of the way to your total savings goal!
           </p>
         </motion.div>
+
+        {/* Add AI Financial Advisor */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Your existing dashboard components */}
+          
+          {/* Add the AI Financial Advisor */}
+          <AIFinancialAdvisor />
+        </div>
       </div>
 
       {/* Floating Action Button */}

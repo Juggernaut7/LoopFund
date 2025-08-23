@@ -1,7 +1,12 @@
 const { Router } = require('express');
 const { body } = require('express-validator');
 const { requireAuth } = require('../middleware/auth');
-const { createGroup: createGroupController, joinGroup: joinGroupController, listGroups: listGroupsController } = require('../controllers/groups.controller');
+const { 
+  createGroup: createGroupController, 
+  joinGroup: joinGroupController, 
+  listGroups: listGroupsController,
+  deleteGroup: deleteGroupController  // Add this
+} = require('../controllers/groups.controller');
 const { validateRequest } = require('../middleware/validateRequest');
 
 const router = Router();
@@ -83,5 +88,29 @@ router.post(
   validateRequest,
   joinGroupController
 );
+
+/**
+ * @openapi
+ * /api/groups/{groupId}:
+ *   delete:
+ *     summary: Delete a group
+ *     tags: [Groups]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Group deleted successfully
+ *       403:
+ *         description: Not authorized to delete group
+ *       404:
+ *         description: Group not found
+ */
+router.delete('/:groupId', requireAuth, deleteGroupController);
 
 module.exports = router;
