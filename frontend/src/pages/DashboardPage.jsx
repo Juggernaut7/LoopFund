@@ -562,13 +562,36 @@ const DashboardPage = () => {
           </p>
         </motion.div>
 
-        {/* Add AI Financial Advisor */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Your existing dashboard components */}
-          
-          {/* Add the AI Financial Advisor */}
-          <AIFinancialAdvisor />
-        </div>
+        {/* AI Financial Advisor Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+          className="mb-8"
+        >
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+                  <Brain className="w-5 h-5 text-white" />
+                </div>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                  AI Financial Advisor
+                </h2>
+              </div>
+              <Link 
+                to="/ai-advisor" 
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium"
+              >
+                View Full Page →
+              </Link>
+            </div>
+            <p className="text-slate-600 dark:text-slate-400 mb-4">
+              Get personalized financial advice and savings plans from our AI advisor.
+            </p>
+            <AIFinancialAdvisor />
+          </div>
+        </motion.div>
       </div>
 
       {/* Floating Action Button */}

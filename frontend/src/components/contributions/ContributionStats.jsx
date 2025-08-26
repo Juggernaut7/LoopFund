@@ -3,38 +3,54 @@ import { motion } from 'framer-motion';
 import { DollarSign, TrendingUp, Calendar, Target } from 'lucide-react';
 
 const ContributionStats = ({ stats }) => {
+  // Calculate percentage changes from monthly stats
+  const getPercentageChange = (current, previous) => {
+    if (!previous || previous === 0) return '+0.0%';
+    const change = ((current - previous) / previous) * 100;
+    return `${change >= 0 ? '+' : ''}${change.toFixed(1)}%`;
+  };
+
+  const currentMonth = stats.monthlyStats?.[0]?.total || 0;
+  const previousMonth = stats.monthlyStats?.[1]?.total || 0;
+  const currentTotal = stats.totalContributed || 0;
+  const previousTotal = stats.previousMonthTotal || 0;
+  const currentCount = stats.totalContributions || 0;
+  const previousCount = stats.previousMonthCount || 0;
+  const currentAvg = stats.averageContribution || 0;
+  const previousAvg = stats.previousMonthAverage || 0;
+
   const statCards = [
     {
       title: 'Total Contributed',
-      value: `$${stats.totalContributed.toLocaleString()}`,
+      value: `$${currentTotal.toLocaleString()}`,
       icon: DollarSign,
       color: 'from-green-500 to-emerald-500',
-      change: '+12.5%',
-      changeType: 'positive'
+      change: getPercentageChange(currentTotal, previousTotal),
+      changeType: currentTotal >= previousTotal ? 'positive' : 'negative'
     },
     {
       title: 'Total Contributions',
-      value: stats.totalContributions.toString(),
+      value: currentCount.toString(),
       icon: Target,
       color: 'from-blue-500 to-cyan-500',
-      change: '+8.2%',
-      changeType: 'positive'
+      change: getPercentageChange(currentCount, previousCount),
+      changeType: currentCount >= previousCount ? 'positive' : 'negative'
     },
     {
       title: 'Average Contribution',
-      value: `$${Math.round(stats.averageContribution).toLocaleString()}`,
+      value: `$${Math.round(currentAvg).toLocaleString()}`,
       icon: TrendingUp,
       color: 'from-purple-500 to-pink-500',
-      change: '+5.1%',
-      changeType: 'positive'
+      change: getPercentageChange(currentAvg, previousAvg),
+      changeType: currentAvg >= previousAvg ? 'positive' : 'negative'
     },
     {
       title: 'This Month',
-      value: `$${stats.monthlyStats?.[0]?.total?.toLocaleString() || '0'}`,
+      value: `$${currentMonth.toLocaleString()}`,
       icon: Calendar,
       color: 'from-orange-500 to-red-500',
-      change: '+15.3%',
-      changeType: 'positive'
+      change: getPercentageChange(currentMonth, previousMonth),
+      changeType: currentMonth >= previousMonth ? 'positive' : 'negative'
     }
   ];
 

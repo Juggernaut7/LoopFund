@@ -21,7 +21,10 @@ import {
   HelpCircle,
   Sun,
   Moon,
-  X
+  X,
+  Brain,
+  DollarSign,
+  Shield
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuthWithToast } from '../../hooks/useAuthWithToast';
@@ -99,6 +102,18 @@ const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
       ]
     },
     {
+      title: 'AI Advisor',
+      icon: Brain,
+      path: '/ai-advisor',
+      badge: '🤖',
+      submenu: [
+        { title: 'Chat with AI', path: '/ai-advisor' },
+        { title: 'Savings Plans', path: '/ai-advisor/plans' },
+        { title: 'Budget Analysis', path: '/ai-advisor/budget' },
+        { title: 'Investment Tips', path: '/ai-advisor/investment' }
+      ]
+    },
+    {
       title: 'Achievements',
       icon: Award,
       path: '/achievements',
@@ -122,7 +137,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
       icon: FileText,
       path: '/reports',
       badge: null
-    }
+    },
+
   ];
 
   const bottomMenuItems = [

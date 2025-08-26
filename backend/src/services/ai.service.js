@@ -1,23 +1,29 @@
-const { FinancialAdvisor } = require('../ai/financial_advisor');
-const { SavingsPredictor } = require('../ai/savings_predictor');
-const { BehavioralAnalyzer } = require('../ai/behavioral_analyzer');
+// AI Bridge service endpoints
+const AI_BRIDGE_URL = process.env.AI_BRIDGE_URL || 'http://localhost:5001';
+const fetch = require('node-fetch');
 
 class AIService {
   constructor() {
-    this.financialAdvisor = new FinancialAdvisor();
-    this.savingsPredictor = new SavingsPredictor();
-    this.behavioralAnalyzer = new BehavioralAnalyzer();
+    // AI models are now accessed through the Python bridge service
+    console.log('✅ AI Service initialized - using Python AI Bridge');
   }
 
   // Get personalized financial advice
   async getFinancialAdvice(userQuery, userProfile) {
     try {
-      const advice = await this.financialAdvisor.getAdvice(userQuery, userProfile);
-      return {
-        success: true,
-        data: advice,
-        type: 'financial_advice'
-      };
+      const response = await fetch(`${AI_BRIDGE_URL}/ai/financial-advice`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: userQuery,
+          userProfile: userProfile
+        }),
+      });
+
+      const result = await response.json();
+      return result;
     } catch (error) {
       return {
         success: false,
@@ -30,12 +36,18 @@ class AIService {
   // Predict savings timeline
   async predictSavingsTimeline(userData) {
     try {
-      const prediction = await this.savingsPredictor.predictGoalCompletion(userData);
-      return {
-        success: true,
-        data: prediction,
-        type: 'savings_prediction'
-      };
+      const response = await fetch(`${AI_BRIDGE_URL}/ai/savings-prediction`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userData: userData
+        }),
+      });
+
+      const result = await response.json();
+      return result;
     } catch (error) {
       return {
         success: false,
@@ -48,12 +60,19 @@ class AIService {
   // Analyze behavioral patterns
   async analyzeBehavior(userText, userHistory) {
     try {
-      const analysis = await this.behavioralAnalyzer.analyze(userText, userHistory);
-      return {
-        success: true,
-        data: analysis,
-        type: 'behavioral_analysis'
-      };
+      const response = await fetch(`${AI_BRIDGE_URL}/ai/behavioral-analysis`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userText: userText,
+          userHistory: userHistory
+        }),
+      });
+
+      const result = await response.json();
+      return result;
     } catch (error) {
       return {
         success: false,
@@ -66,12 +85,18 @@ class AIService {
   // Get smart goal recommendations
   async getSmartGoalRecommendations(userProfile) {
     try {
-      const recommendations = await this.financialAdvisor.recommendGoals(userProfile);
-      return {
-        success: true,
-        data: recommendations,
-        type: 'goal_recommendations'
-      };
+      const response = await fetch(`${AI_BRIDGE_URL}/ai/goal-recommendations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userProfile: userProfile
+        }),
+      });
+
+      const result = await response.json();
+      return result;
     } catch (error) {
       return {
         success: false,

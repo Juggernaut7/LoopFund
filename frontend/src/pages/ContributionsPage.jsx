@@ -87,9 +87,27 @@ const ContributionsPage = () => {
       if (response.ok) {
         const data = await response.json();
         setStats(data.data);
+      } else {
+        console.error('Failed to fetch stats:', response.status);
+        // Set default stats structure if API fails
+        setStats({
+          totalContributed: 0,
+          totalContributions: 0,
+          averageContribution: 0,
+          monthlyStats: [],
+          paymentMethods: []
+        });
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
+      // Set default stats structure on error
+      setStats({
+        totalContributed: 0,
+        totalContributions: 0,
+        averageContribution: 0,
+        monthlyStats: [],
+        paymentMethods: []
+      });
     }
   };
 
@@ -167,10 +185,33 @@ const ContributionsPage = () => {
         </div>
 
         {/* Stats Cards */}
-        {stats && <ContributionStats stats={stats} />}
+        {stats ? (
+          <ContributionStats stats={stats} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 animate-pulse">
+                <div className="h-4 bg-slate-200 dark:bg-slate-600 rounded w-24 mb-2"></div>
+                <div className="h-8 bg-slate-200 dark:bg-slate-600 rounded w-16 mb-2"></div>
+                <div className="h-3 bg-slate-200 dark:bg-slate-600 rounded w-20"></div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Charts */}
-        {stats && <ContributionCharts data={stats} />}
+        {stats ? (
+          <ContributionCharts data={stats} />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {[1, 2].map((i) => (
+              <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 animate-pulse">
+                <div className="h-6 bg-slate-200 dark:bg-slate-600 rounded w-32 mb-4"></div>
+                <div className="h-48 bg-slate-200 dark:bg-slate-600 rounded"></div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Filters and Search */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">

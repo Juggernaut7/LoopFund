@@ -19,6 +19,11 @@ import PageTransition from './components/layout/PageTransition';
 import PrivateRoute from './components/auth/PrivateRoute';
 import './App.css';
 import AchievementsPage from './pages/AchievementsPage'; // Added missing import
+import AIAdvisorPage from './pages/AIAdvisorPage'; // AI Financial Advisor page
+import RevenueDashboard from './pages/RevenueDashboard'; // Revenue Dashboard page
+import AdminPage from './pages/AdminPage'; // Admin Dashboard page
+import AdminUsersPage from './pages/admin/AdminUsersPage'; // Admin Users Management page
+import AdminRevenuePage from './pages/admin/AdminRevenuePage'; // Admin Revenue Analytics page
 
 function App() {
   const { isAuthenticated, user } = useAuthStore();
@@ -100,6 +105,45 @@ function App() {
                     <AchievementsPage />
                   </PageTransition>
                 </PrivateRoute>
+              } />
+
+              {/* AI Financial Advisor route */}
+              <Route path="/ai-advisor" element={
+                <PrivateRoute>
+                  <PageTransition>
+                    <AIAdvisorPage />
+                  </PageTransition>
+                </PrivateRoute>
+              } />
+
+              {/* Revenue Dashboard route */}
+              <Route path="/revenue" element={
+                <PrivateRoute>
+                  <PageTransition>
+                    <RevenueDashboard />
+                  </PageTransition>
+                </PrivateRoute>
+              } />
+
+              {/* Admin Dashboard route - Public for now */}
+              <Route path="/admin" element={
+                <PageTransition>
+                  <AdminPage />
+                </PageTransition>
+              } />
+
+              {/* Admin Users Management route */}
+              <Route path="/admin/users" element={
+                <PageTransition>
+                  <AdminUsersPage />
+                </PageTransition>
+              } />
+
+              {/* Admin Revenue Analytics route */}
+              <Route path="/admin/revenue" element={
+                <PageTransition>
+                  <AdminRevenuePage />
+                </PageTransition>
               } />
               
               {/* Redirect to dashboard for authenticated users */}

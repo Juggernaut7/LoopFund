@@ -12,6 +12,8 @@ const UserSchema = new mongoose.Schema({
   isAdmin: { type: Boolean, default: false },
   isVerified: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true },
+  status: { type: String, enum: ['active', 'pending', 'suspended'], default: 'active' },
+  role: { type: String, enum: ['user', 'premium', 'admin'], default: 'user' },
   lastLogin: { Date },
   notificationPreferences: {
     email: { type: Boolean, default: true },
@@ -29,6 +31,8 @@ const UserSchema = new mongoose.Schema({
 // Index for better query performance (removed duplicate email index)
 UserSchema.index({ isActive: 1 });
 UserSchema.index({ googleId: 1 }); // Index for Google OAuth lookups
+UserSchema.index({ status: 1 }); // Index for status filtering
+UserSchema.index({ role: 1 }); // Index for role filtering
 
 const User = mongoose.model('User', UserSchema);
 
