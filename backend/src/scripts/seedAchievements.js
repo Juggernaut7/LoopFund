@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { Achievement } = require('../models/Achievement');
+const Achievement = require('../models/Achievement');
 const { env } = require('../config/env');
 
 const defaultAchievements = [

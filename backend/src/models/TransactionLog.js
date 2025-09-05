@@ -130,4 +130,4 @@ TransactionLogSchema.index({ initiatedAt: -1 });
 
 const TransactionLog = mongoose.model('TransactionLog', TransactionLogSchema);
 
-module.exports = { TransactionLog }; 
+module.exports = TransactionLog; 

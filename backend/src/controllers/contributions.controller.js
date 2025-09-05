@@ -1,5 +1,5 @@
 const contributionService = require('../services/contribution.service');
-const { Goal } = require('../models/Goal');
+const Goal = require('../models/Goal');
 
 const addContributionController = async (req, res, next) => {
   try {

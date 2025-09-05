@@ -1,9 +1,9 @@
 const { Router } = require('express');
 const { requireAuth } = require('../middleware/auth');
-const { Goal } = require('../models/Goal');
-const { Contribution } = require('../models/Contribution');
-const { Group } = require('../models/Group');
-const { User } = require('../models/User');
+const Goal = require('../models/Goal');
+const Contribution = require('../models/Contribution');
+const Group = require('../models/Group');
+const User = require('../models/User');
 
 const router = Router();
 

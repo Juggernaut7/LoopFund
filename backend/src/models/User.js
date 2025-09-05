@@ -25,6 +25,16 @@ const UserSchema = new mongoose.Schema({
     currency: { type: String, default: 'USD' },
     timezone: { type: String, default: 'UTC' },
     language: { type: String, default: 'en' }
+  },
+  interests: [{ type: String }], // Financial interests and goals
+  financialProfile: {
+    income: Number,
+    expenses: Number,
+    savings: Number,
+    debt: Number,
+    riskTolerance: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
+    investmentGoals: [String],
+    preferredCategories: [String]
   }
 }, { timestamps: true });
 
@@ -34,6 +44,16 @@ UserSchema.index({ googleId: 1 }); // Index for Google OAuth lookups
 UserSchema.index({ status: 1 }); // Index for status filtering
 UserSchema.index({ role: 1 }); // Index for role filtering
 
+// Virtual for full name
+UserSchema.virtual('name').get(function() {
+  return `${this.firstName} ${this.lastName}`;
+});
+
+// Virtual for avatar (alias for profilePicture)
+UserSchema.virtual('avatar').get(function() {
+  return this.profilePicture;
+});
+
 const User = mongoose.model('User', UserSchema);
 
-module.exports = { User };
+module.exports = User;

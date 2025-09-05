@@ -3,7 +3,7 @@ const { body } = require('express-validator');
 const { signup, login, googleOAuth } = require('../controllers/auth.controller');
 const { validateRequest } = require('../middleware/validateRequest');
 const passport = require('passport');
-const { User } = require('../models/User');
+const User = require('../models/User');
 const { authenticateToken } = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
 

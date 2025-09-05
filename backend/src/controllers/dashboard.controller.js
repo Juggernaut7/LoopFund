@@ -1,6 +1,6 @@
-const { Contribution } = require('../models/Contribution');
-const { Goal } = require('../models/Goal');
-const { User } = require('../models/User');
+const Contribution = require('../models/Contribution');
+const Goal = require('../models/Goal');
+const User = require('../models/User');
 
 const getDashboardStats = async (req, res) => {
   try {

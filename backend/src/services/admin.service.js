@@ -1,7 +1,7 @@
-const { Goal } = require('../models/Goal');
-const { Contribution } = require('../models/Contribution');
-const { User } = require('../models/User');
-const { Group } = require('../models/Group');
+const Goal = require('../models/Goal');
+const Contribution = require('../models/Contribution');
+const User = require('../models/User');
+const Group = require('../models/Group');
 const { Notification } = require('../models/Notification');
 const mongoose = require('mongoose');
 

@@ -1,4 +1,4 @@
-const { app } = require('./app');
+const { app, server } = require('./app');
 const { connectToDatabase, checkDatabaseHealth, gracefulShutdown } = require('./config/db');
 const { env } = require('./config/env');
 
@@ -12,8 +12,8 @@ const startServer = async () => {
 
     await connectToDatabase();
     
-    // Start the server
-    const server = app.listen(PORT, () => {
+    // Start the server using the server from app.js
+    server.listen(PORT, () => {
       console.log('✅ LoopFund Backend Server Started Successfully!');
       console.log(`📍 Server running on port ${PORT}`);
       console.log(`📚 API Documentation: http://localhost:${PORT}/docs`);
@@ -32,6 +32,7 @@ const startServer = async () => {
       console.log('   • Multi-currency Support');
       console.log('   • Advanced Validation & Security');
       console.log('   • Robust MongoDB Connection with Retry Logic');
+      console.log('   • Google OAuth Authentication');
       console.log('');
       console.log('🎯 Ready for your milestone presentation!');
     });

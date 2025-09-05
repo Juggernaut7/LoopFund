@@ -81,4 +81,4 @@ NotificationSchema.virtual('isExpired').get(function() {
 
 const Notification = mongoose.model('Notification', NotificationSchema);
 
-module.exports = { Notification }; 
+module.exports = Notification; 

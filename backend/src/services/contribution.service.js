@@ -1,6 +1,6 @@
-const { Contribution } = require('../models/Contribution');
-const { Goal } = require('../models/Goal');
-const { Group } = require('../models/Group');
+const Contribution = require('../models/Contribution');
+const Goal = require('../models/Goal');
+const Group = require('../models/Group');
 
 const addContribution = async (contributionData) => {
   try {

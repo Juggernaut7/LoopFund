@@ -1,9 +1,10 @@
-const { Group } = require('../models/Group');
+const Group = require('../models/Group');
 
-async function createGroup({ name, description, targetAmount, userId }) {
-  const inviteLink = Math.random().toString(36).substring(2, 12);
+async function createGroup({ name, description, targetAmount, maxMembers = 10, durationMonths = 1, userId }) {
+  // Generate unique invite code
+  const inviteCode = `INV_${Date.now()}_${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
   
-  // Fix: Create proper member objects that match the schema
+  // Create proper member objects that match the schema
   const members = [{
     user: userId,
     role: 'owner',
@@ -12,20 +13,33 @@ async function createGroup({ name, description, targetAmount, userId }) {
     totalContributed: 0
   }];
   
+  // Calculate end date based on duration
+  const endDate = new Date();
+  endDate.setMonth(endDate.getMonth() + durationMonths);
+  
   const group = await Group.create({ 
     name, 
     description, 
     targetAmount, 
     createdBy: userId, 
-    members, 
-    inviteLink 
+    members,
+    inviteCode,
+    inviteLink: inviteCode, // Set inviteLink for backward compatibility
+    settings: {
+      maxMembers: maxMembers
+    },
+    endDate: endDate
   });
   return group;
 }
 
-async function joinGroup({ inviteLink, userId }) {
-  const group = await Group.findOne({ inviteLink });
-  if (!group) throw new Error('Invalid invite link');
+async function joinGroup({ inviteCode, userId }) {
+  // Try to find group by inviteCode first, then by inviteLink for backward compatibility
+  let group = await Group.findOne({ inviteCode });
+  if (!group) {
+    group = await Group.findOne({ inviteLink: inviteCode });
+  }
+  if (!group) throw new Error('Invalid invite code');
   
   // Fix: Check if user is already a member using the nested structure
   const isAlreadyMember = group.members.some(member => member.user.toString() === userId);
@@ -75,7 +89,7 @@ const deleteGroup = async (groupId, userId) => {
     await Group.findByIdAndDelete(groupId);
 
     // Also delete related invitations
-    const { Invitation } = require('../models/Invitation');
+    const Invitation = require('../models/Invitation');
     if (Invitation) {
       await Invitation.deleteMany({ group: groupId });
     }

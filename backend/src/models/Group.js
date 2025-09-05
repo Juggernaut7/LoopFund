@@ -27,7 +27,9 @@ const GroupSchema = new mongoose.Schema({
     contributionLimit: { type: Number }, // Max contribution per member
     autoComplete: { type: Boolean, default: true } // Auto-complete when target reached
   },
-  inviteCode: { type: String },
+  inviteCode: { type: String, unique: true, sparse: true },
+  // Keep inviteLink for backward compatibility but make it optional
+  inviteLink: { type: String, sparse: true },
   category: { type: String, enum: ['family', 'friends', 'business', 'community', 'other'], default: 'friends' },
   tags: [{ type: String, trim: true }],
   startDate: { type: Date, default: Date.now },
@@ -76,9 +78,14 @@ GroupSchema.pre('save', function(next) {
   // Update active members count
   this.progress.activeMembers = this.activeMembersCount;
   
-  // Generate invite code if not exists
+  // Generate invite code if not exists (only if not already set)
   if (!this.inviteCode) {
-    this.inviteCode = `INV_${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+    this.inviteCode = `INV_${Date.now()}_${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+  }
+  
+  // Generate inviteLink if not exists (for backward compatibility)
+  if (!this.inviteLink) {
+    this.inviteLink = this.inviteCode; // Use inviteCode as inviteLink
   }
   
   next();
@@ -88,9 +95,11 @@ GroupSchema.pre('save', function(next) {
 GroupSchema.index({ createdBy: 1, status: 1 });
 GroupSchema.index({ 'members.user': 1, status: 1 });
 GroupSchema.index({ inviteCode: 1 }, { unique: true, sparse: true });
+// Remove the problematic inviteLink unique index and make it sparse only
+GroupSchema.index({ inviteLink: 1 }, { sparse: true });
 GroupSchema.index({ category: 1 });
 GroupSchema.index({ isPublic: 1, status: 1 });
 
 const Group = mongoose.model('Group', GroupSchema);
 
-module.exports = { Group };
+module.exports = Group;

@@ -1,8 +1,8 @@
-const { User } = require('../models/User');
-const { Goal } = require('../models/Goal');
-const { Group } = require('../models/Group');
-const { Contribution } = require('../models/Contribution');
-const { TransactionLog } = require('../models/TransactionLog');
+const User = require('../models/User');
+const Goal = require('../models/Goal');
+const Group = require('../models/Group');
+const Contribution = require('../models/Contribution');
+const TransactionLog = require('../models/TransactionLog');
 
 class AnalyticsService {
   // User Analytics

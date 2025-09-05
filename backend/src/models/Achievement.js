@@ -47,4 +47,4 @@ const achievementSchema = new mongoose.Schema({
 achievementSchema.index({ user: 1, type: 1 });
 achievementSchema.index({ user: 1, createdAt: -1 });
 
-module.exports = { Achievement: mongoose.model('Achievement', achievementSchema) }; 
+module.exports = mongoose.model('Achievement', achievementSchema); 

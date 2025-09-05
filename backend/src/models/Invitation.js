@@ -57,4 +57,4 @@ invitationSchema.methods.isExpired = function() {
   return new Date() > this.expiresAt;
 };
 
-module.exports = { Invitation: mongoose.model('Invitation', invitationSchema) }; 
+module.exports = mongoose.model('Invitation', invitationSchema); 

@@ -61,4 +61,4 @@ GoalSchema.index({ category: 1 });
 
 const Goal = mongoose.model('Goal', GoalSchema);
 
-module.exports = { Goal };
+module.exports = Goal;

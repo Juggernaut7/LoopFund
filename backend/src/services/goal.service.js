@@ -1,5 +1,5 @@
-const { Goal } = require('../models/Goal');
-const { Group } = require('../models/Group');
+const Goal = require('../models/Goal');
+const Group = require('../models/Group');
 
 const createGoal = async (goalData) => {
   try {

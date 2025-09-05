@@ -1,5 +1,5 @@
 const goalService = require('../services/goal.service');
-const { Goal } = require('../models/Goal');
+const Goal = require('../models/Goal');
 
 const createGoalController = async (req, res, next) => {
   try {

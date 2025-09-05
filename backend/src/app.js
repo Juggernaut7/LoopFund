@@ -20,6 +20,9 @@ const achievementRoutes = require('./routes/achievements.route');
 const analyticsRoutes = require('./routes/analytics.route');
 const { env } = require('./config/env');
 const notificationRoutes = require('./routes/notifications.route');
+const paymentRoutes = require('./routes/payment.route');
+const communityRoutes = require('./routes/community.route');
+const enhancedCommunityRoutes = require('./routes/enhancedCommunity.route');
 
 const app = express();
 
@@ -71,6 +74,9 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/achievements', achievementRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/community', communityRoutes);
+app.use('/api/enhanced-community', enhancedCommunityRoutes);
 
 // Invitation routes
 app.use('/api/invitations', require('./routes/invitations.route'));

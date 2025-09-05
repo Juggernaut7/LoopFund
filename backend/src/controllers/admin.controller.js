@@ -12,6 +12,7 @@ const {
   getRevenueAnalytics,
   getSystemHealth
 } = require('../services/admin.service');
+const Payment = require('../models/Payment');
 
 // Basic admin functions
 async function getAllGoalsController(req, res, next) {
@@ -167,6 +168,112 @@ async function getSystemHealthController(req, res, next) {
   }
 }
 
+// Get revenue statistics
+const getRevenueStats = async (req, res) => {
+  try {
+    const { days } = req.query;
+    
+    let startDate = null;
+    if (days && days !== 'all') {
+      startDate = new Date();
+      startDate.setDate(startDate.getDate() - parseInt(days));
+    }
+
+    const stats = await Payment.getRevenueStats(startDate, new Date());
+    const revenueByType = await Payment.getRevenueByType(startDate, new Date());
+
+    res.json({
+      success: true,
+      data: {
+        ...stats,
+        revenueByType
+      }
+    });
+  } catch (error) {
+    console.error('Get revenue stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get revenue statistics'
+    });
+  }
+};
+
+// Get payment transactions
+const getTransactions = async (req, res) => {
+  try {
+    const { days, type, page = 1, limit = 50 } = req.query;
+    
+    let startDate = null;
+    if (days && days !== 'all') {
+      startDate = new Date();
+      startDate.setDate(startDate.getDate() - parseInt(days));
+    }
+
+    const matchStage = {};
+    if (startDate) {
+      matchStage.createdAt = { $gte: startDate };
+    }
+    if (type && type !== 'all') {
+      matchStage.type = type;
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    const transactions = await Payment.find(matchStage)
+      .populate('userId', 'email firstName lastName')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Payment.countDocuments(matchStage);
+
+    res.json({
+      success: true,
+      data: transactions,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+  } catch (error) {
+    console.error('Get transactions error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get transactions'
+    });
+  }
+};
+
+// Get transaction details
+const getTransactionDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const transaction = await Payment.findById(id)
+      .populate('userId', 'email firstName lastName');
+
+    if (!transaction) {
+      return res.status(404).json({
+        success: false,
+        message: 'Transaction not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: transaction
+    });
+  } catch (error) {
+    console.error('Get transaction details error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get transaction details'
+    });
+  }
+};
+
 module.exports = { 
   getAllGoals: getAllGoalsController, 
   getAllContributions: getAllContributionsController, 
@@ -179,5 +286,8 @@ module.exports = {
   activateUser: activateUserController,
   getUsersWithFilters: getUsersWithFiltersController,
   getRevenueAnalytics: getRevenueAnalyticsController,
-  getSystemHealth: getSystemHealthController
+  getSystemHealth: getSystemHealthController,
+  getRevenueStats,
+  getTransactions,
+  getTransactionDetails
 };

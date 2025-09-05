@@ -64,7 +64,7 @@ router.post(
  * @openapi
  * /api/groups/join:
  *   post:
- *     summary: Join a group via invite link
+ *     summary: Join a group via invite code
  *     tags: [Groups]
  *     security:
  *       - BearerAuth: []
@@ -74,9 +74,9 @@ router.post(
  *         application/json:
  *           schema:
  *             type: object
- *             required: [inviteLink]
+ *             required: [inviteCode]
  *             properties:
- *               inviteLink: { type: string }
+ *               inviteCode: { type: string }
  *     responses:
  *       200:
  *         description: Joined group
@@ -84,7 +84,7 @@ router.post(
 router.post(
   '/join',
   requireAuth,
-  [body('inviteLink').isString().isLength({ min: 10, max: 10 })],
+  [body('inviteCode').isString().isLength({ min: 10, max: 20 })],
   validateRequest,
   joinGroupController
 );

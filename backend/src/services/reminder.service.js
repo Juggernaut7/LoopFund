@@ -1,7 +1,7 @@
 const cron = require('node-cron');
 const mongoose = require('mongoose');
-const { Goal } = require('../models/Goal');
-const { User } = require('../models/User');
+const Goal = require('../models/Goal');
+const User = require('../models/User');
 
 function startReminderCron() {
   // Run every minute to check for due contributions

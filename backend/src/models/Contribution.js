@@ -57,4 +57,4 @@ ContributionSchema.index({ status: 1 });
 
 const Contribution = mongoose.model('Contribution', ContributionSchema);
 
-module.exports = { Contribution };
+module.exports = Contribution;

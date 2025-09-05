@@ -1,7 +1,7 @@
-const { Invitation } = require('../models/Invitation');
-const { Group } = require('../models/Group');
-const { User } = require('../models/User');
-const { Notification } = require('../models/Notification');
+const Invitation = require('../models/Invitation');
+const Group = require('../models/Group');
+const User = require('../models/User');
+const Notification = require('../models/Notification');
 const crypto = require('crypto');
 
 // Add this debug log to check if models are imported

@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { requireAuth } = require('../middleware/auth');
-const { Contribution } = require('../models/Contribution'); // Add this import
+const Contribution = require('../models/Contribution'); // Add this import
 const {
   addContributionController,
   getUserContributionsController,

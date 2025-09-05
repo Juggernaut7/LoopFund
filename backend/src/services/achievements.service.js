@@ -1,5 +1,5 @@
-const { Achievement } = require('../models/Achievement');
-const { User } = require('../models/User');
+const Achievement = require('../models/Achievement');
+const User = require('../models/User');
 
 class AchievementsService {
   // Get user achievements

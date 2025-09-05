@@ -2,16 +2,25 @@ const { createGroup, joinGroup, listGroups, deleteGroup } = require('../services
 
 async function createGroupController(req, res, next) {
   try {
-    const group = await createGroup({ ...req.body, userId: req.user.userId });
+    const { name, description, targetAmount, maxMembers, durationMonths } = req.body;
+    const group = await createGroup({ 
+      name, 
+      description, 
+      targetAmount, 
+      maxMembers, 
+      durationMonths, 
+      userId: req.user.userId 
+    });
     res.status(201).json({ success: true, data: group });
   } catch (error) {
+    console.error('Create group error:', error);
     next(error);
   }
 }
 
 async function joinGroupController(req, res, next) {
   try {
-    const group = await joinGroup({ inviteLink: req.body.inviteLink, userId: req.user.userId });
+    const group = await joinGroup({ inviteCode: req.body.inviteCode, userId: req.user.userId });
     res.json({ success: true, data: group });
   } catch (error) {
     next(error);

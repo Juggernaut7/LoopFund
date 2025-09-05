@@ -12,7 +12,10 @@ const {
   activateUser: activateUserController,
   getUsersWithFilters: getUsersWithFiltersController,
   getRevenueAnalytics: getRevenueAnalyticsController,
-  getSystemHealth: getSystemHealthController
+  getSystemHealth: getSystemHealthController,
+  getRevenueStats,
+  getTransactions,
+  getTransactionDetails
 } = require('../controllers/admin.controller');
 
 const router = Router();
@@ -273,5 +276,80 @@ router.get('/revenue', requireAuth, requireAdmin, getRevenueAnalyticsController)
  *         description: System health status
  */
 router.get('/system/health', requireAuth, requireAdmin, getSystemHealthController);
+
+/**
+ * @openapi
+ * /api/admin/revenue:
+ *   get:
+ *     summary: Get revenue statistics (admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: days
+ *         schema:
+ *           type: string
+ *         description: Number of days to look back (7, 30, 90, all)
+ *     responses:
+ *       200:
+ *         description: Revenue statistics
+ */
+router.get('/revenue', requireAuth, requireAdmin, getRevenueStats);
+
+/**
+ * @openapi
+ * /api/admin/transactions:
+ *   get:
+ *     summary: Get payment transactions (admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: days
+ *         schema:
+ *           type: string
+ *         description: Number of days to look back
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *         description: Filter by payment type
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Items per page
+ *     responses:
+ *       200:
+ *         description: List of transactions
+ */
+router.get('/transactions', requireAuth, requireAdmin, getTransactions);
+
+/**
+ * @openapi
+ * /api/admin/transactions/{id}:
+ *   get:
+ *     summary: Get transaction details (admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: string
+ *         description: Transaction ID
+ *     responses:
+ *       200:
+ *         description: Transaction details
+ */
+router.get('/transactions/:id', requireAuth, requireAdmin, getTransactionDetails);
 
 module.exports = router; 
