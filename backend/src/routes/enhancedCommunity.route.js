@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const enhancedCommunityController = require('../controllers/enhancedCommunity.controller');
-const auth = require('../middleware/auth');
-const validateRequest = require('../middleware/validateRequest');
+const { authenticateToken: auth } = require('../middleware/auth');
+const { validateRequest } = require('../middleware/validateRequest');
 const { body, param, query } = require('express-validator');
 
 // Validation schemas for AI Financial Therapist
@@ -71,68 +71,44 @@ const createGroupValidation = [
 
 // AI Financial Therapist Routes
 router.post('/therapist/initialize', auth, enhancedCommunityController.initializeFinancialTherapist);
-
 router.post('/therapist/analyze-spending', auth, emotionalSpendingValidation, validateRequest, enhancedCommunityController.analyzeEmotionalSpending);
-
 router.post('/therapist/session', auth, therapySessionValidation, validateRequest, enhancedCommunityController.startTherapySession);
-
 router.get('/therapist/insights', auth, enhancedCommunityController.getPredictiveInsights);
-
 router.get('/therapist/profile', auth, enhancedCommunityController.getTherapistProfile);
-
 router.put('/therapist/update-metrics', auth, enhancedCommunityController.updateWellnessMetrics);
 
 // Enhanced Community Routes
 router.get('/feed/personalized', auth, enhancedCommunityController.getPersonalizedCommunityFeed);
-
 router.get('/recommendations', auth, enhancedCommunityController.getCommunityRecommendations);
-
 router.post('/posts/enhanced', auth, enhancedCommunityController.createEnhancedPost);
 
 // Community Challenges Routes
 router.post('/challenges', auth, createChallengeValidation, validateRequest, enhancedCommunityController.createCommunityChallenge);
-
 router.get('/challenges', enhancedCommunityController.getCommunityChallenges);
-
 router.get('/challenges/:challengeId', enhancedCommunityController.getChallengeById);
-
 router.post('/challenges/:challengeId/join', auth, enhancedCommunityController.joinCommunityChallenge);
-
 router.post('/challenges/:challengeId/leave', auth, enhancedCommunityController.leaveCommunityChallenge);
-
 router.put('/challenges/:challengeId/progress', auth, enhancedCommunityController.updateChallengeProgress);
-
 router.post('/challenges/:challengeId/checkin', auth, enhancedCommunityController.addChallengeCheckIn);
 
 // Peer Support Groups Routes
 router.post('/groups', auth, createGroupValidation, validateRequest, enhancedCommunityController.createPeerSupportGroup);
-
 router.get('/groups', enhancedCommunityController.getPeerSupportGroups);
-
 router.get('/groups/:groupId', enhancedCommunityController.getGroupById);
-
 router.post('/groups/:groupId/join', auth, enhancedCommunityController.joinPeerSupportGroup);
-
 router.post('/groups/:groupId/leave', auth, enhancedCommunityController.leavePeerSupportGroup);
-
 router.post('/groups/:groupId/discussions', auth, enhancedCommunityController.addGroupDiscussion);
-
 router.post('/groups/:groupId/resources', auth, enhancedCommunityController.addGroupResource);
-
 router.post('/groups/:groupId/events', auth, enhancedCommunityController.addGroupEvent);
 
 // Enhanced Search and Discovery
 router.get('/search/advanced', enhancedCommunityController.advancedSearch);
-
 router.get('/trending/ai-powered', enhancedCommunityController.getAIPoweredTrending);
-
 router.get('/matching/users', auth, enhancedCommunityController.findCompatibleUsers);
 
 // Community Analytics
 router.get('/analytics/engagement', auth, enhancedCommunityController.getEngagementAnalytics);
-
 router.get('/analytics/emotional-trends', auth, enhancedCommunityController.getEmotionalTrends);
-
 router.get('/analytics/community-health', enhancedCommunityController.getCommunityHealthMetrics);
 
-module.exports = router; 
+module.exports = router;

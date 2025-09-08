@@ -21,11 +21,14 @@ import {
   Heart,
   Play,
   Sparkles,
-  Zap as Lightning
+  Zap as Lightning,
+  Brain,
+  Gamepad2
 } from 'lucide-react';
 import Navigation from '../components/layout/Navigation';
 import Lottie from 'lottie-react';
 import heroAnimation from '../assets/hero-animation.json';
+import RevolutionaryFeaturesSection from '../components/sections/RevolutionaryFeaturesSection';
 
 const LandingPage = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -171,39 +174,39 @@ const LandingPage = () => {
 
   const features = [
     {
-      icon: Target,
-      title: "Smart Goal Setting",
-      description: "Set personalized savings goals with AI-powered recommendations",
-      color: "text-blue-600"
-    },
-    {
-      icon: Users,
-      title: "Group Savings",
-      description: "Save together with friends and family for shared goals",
+      icon: Brain,
+      title: "AI Financial Therapist",
+      description: "Revolutionary AI that understands your money psychology and provides personalized therapy",
       color: "text-purple-600"
     },
     {
-      icon: TrendingUp,
-      title: "Progress Tracking",
-      description: "Real-time analytics and insights to keep you motivated",
-      color: "text-green-600"
+      icon: Users,
+      title: "Financial Wellness Community",
+      description: "Anonymous peer support and shared financial struggles with AI insights",
+      color: "text-blue-600"
     },
     {
       icon: Shield,
-      title: "Secure & Private",
-      description: "Bank-level security to protect your financial data",
+      title: "Behavioral Micro-Interventions",
+      description: "Real-time spending pause and emotional state detection to prevent impulse buying",
+      color: "text-green-600"
+    },
+    {
+      icon: TrendingUp,
+      title: "Predictive Financial Health",
+      description: "6-month forecasts and crisis prevention alerts to secure your financial future",
       color: "text-orange-600"
     },
     {
-      icon: Zap,
-      title: "Quick Actions",
-      description: "One-click payments and automated savings",
+      icon: Gamepad2,
+      title: "Financial Therapy Games",
+      description: "Gamified exercises to reduce financial anxiety and build money confidence",
       color: "text-red-600"
     },
     {
-      icon: Award,
-      title: "Achievement System",
-      description: "Gamified experience with badges and milestones",
+      icon: Target,
+      title: "Smart Goal Setting",
+      description: "Set personalized savings goals with AI-powered recommendations",
       color: "text-indigo-600"
     }
   ];
@@ -408,28 +411,28 @@ const LandingPage = () => {
               className="space-y-8"
             >
               <motion.div variants={itemVariants} className="space-y-6">
-                <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium">
-                  <Star className="w-4 h-4 mr-2" />
-                  Save Individually or Together
+                <div className="inline-flex items-center px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm font-medium">
+                  <Brain className="w-4 h-4 mr-2" />
+                  AI-Powered Financial Wellness Coach
                 </div>
                 <h1 className="text-4xl md:text-6xl font-bold text-slate-900 dark:text-white leading-tight">
-                  Your Financial Goals,{' '}
-                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Our Mission
+                  Your Personal{' '}
+                  <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    AI Financial Therapist
                   </span>
                 </h1>
                 <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl">
-                  Whether you're saving solo for personal dreams or collaborating with loved ones for shared goals, 
-                  LoopFund makes achieving your financial aspirations simple, secure, and rewarding.
+                  The only app that understands your money psychology. Get AI therapy, community support, 
+                  and behavioral interventions to transform your relationship with money.
                 </p>
               </motion.div>
 
               <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4">
                 <Link
                   to="/signup"
-                  className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
                 >
-                  Start Saving Today
+                  Start Your Financial Therapy
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
                 <button className="inline-flex items-center justify-center px-8 py-4 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
@@ -507,11 +510,11 @@ const LandingPage = () => {
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-6">
-              Save Your Way
+              Revolutionary Financial Wellness Features
             </h2>
             <p className="text-lg text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
-              Whether you prefer to save individually or collaborate with others, 
-              LoopFund provides the perfect tools for your financial journey.
+              The only app that combines AI therapy, community support, and behavioral interventions 
+              to transform your relationship with money.
             </p>
           </motion.div>
 
@@ -543,6 +546,9 @@ const LandingPage = () => {
           </motion.div>
         </div>
       </section>
+
+      {/* Revolutionary Features Section */}
+      <RevolutionaryFeaturesSection />
 
       {/* Goal Examples Section */}
       <section className="py-24 bg-white dark:bg-slate-800">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
   Plus, 
@@ -35,12 +36,12 @@ const GroupsPage = () => {
   const [groups, setGroups] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const { toast } = useToast();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const navigate = useNavigate();
 
   // Fetch groups from backend
   useEffect(() => {
@@ -77,31 +78,9 @@ const GroupsPage = () => {
     }
   };
 
-  const createGroup = async (groupData) => {
-    try {
-      const response = await fetch('http://localhost:4000/api/groups', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(groupData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create group');
-      }
-
-      const data = await response.json();
-      toast.success('Group Created', 'Your group has been successfully created.');
-      fetchGroups(); // Refresh the list
-      return data.data;
-    } catch (error) {
-      console.error('Error creating group:', error);
-      toast.error('Create Error', 'Failed to create group. Please try again.');
-      throw error;
-    }
+  // Redirect to CreateGroupPage for payment integration
+  const handleCreateGroup = () => {
+    navigate('/create-group');
   };
 
   const deleteGroup = async (groupId) => {
@@ -208,7 +187,7 @@ const GroupsPage = () => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setShowCreateForm(true)}
+            onClick={handleCreateGroup}
             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200"
           >
             <Plus className="w-5 h-5" />
@@ -388,7 +367,7 @@ const GroupsPage = () => {
             </p>
             {!searchTerm && filterType === 'all' && (
               <button
-                onClick={() => setShowCreateForm(true)}
+                onClick={handleCreateGroup}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200"
               >
                 Create Your First Group
@@ -396,16 +375,6 @@ const GroupsPage = () => {
             )}
           </motion.div>
         )}
-
-        {/* Create Group Form Modal */}
-        <AnimatePresence>
-          {showCreateForm && (
-            <CreateGroupModal 
-              onClose={() => setShowCreateForm(false)}
-              onSubmit={createGroup}
-            />
-          )}
-        </AnimatePresence>
 
         {/* Invite Modal */}
         <InviteModal

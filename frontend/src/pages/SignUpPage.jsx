@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useAuthStore } from '../store/useAuthStore';
+import GoogleOAuthButton from '../components/auth/GoogleOAuthButton';
 import logo from '../assets/logo.jpg';
 
 const SignUpPage = () => {
@@ -225,6 +226,27 @@ const SignUpPage = () => {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl border border-slate-200 dark:border-slate-700"
             >
+              {/* Google OAuth Button */}
+              <div className="mb-6">
+                <GoogleOAuthButton 
+                  text="Sign up with Google" 
+                  variant="outline"
+                  className="mb-4"
+                />
+                
+                {/* Divider */}
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-slate-300 dark:border-slate-600" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                      Or create account with email
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Name Fields */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -20,6 +20,44 @@ export const useAuthStore = create(
         localStorage.setItem('authToken', token);
       },
 
+      loginWithOAuth: async (authData) => {
+        try {
+          console.log('🔐 OAuth login with data:', authData);
+          
+          // Fetch user data from backend using the token
+          const response = await fetch(`http://localhost:4000/api/auth/profile`, {
+            headers: {
+              'Authorization': `Bearer ${authData.token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch user profile');
+          }
+
+          const { user } = await response.json();
+          
+          // Store auth data
+          set({
+            user: user,
+            token: authData.token,
+            isAuthenticated: true
+          });
+          
+          // Also store in localStorage for compatibility
+          localStorage.setItem('token', authData.token);
+          localStorage.setItem('authToken', authData.token);
+          localStorage.setItem('user', JSON.stringify(user));
+          
+          console.log('🔐 OAuth login successful:', user);
+          return { success: true, user };
+        } catch (error) {
+          console.error('🔐 OAuth login error:', error);
+          return { success: false, error: error.message };
+        }
+      },
+
       logout: () => {
         set({
           user: null,
@@ -28,12 +66,19 @@ export const useAuthStore = create(
         });
         localStorage.removeItem('token');
         localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
       },
 
       updateUser: (userData) => {
         set((state) => ({
           user: { ...state.user, ...userData }
         }));
+      },
+
+      // Get user from state
+      getUser: () => {
+        const state = get();
+        return state.user;
       },
 
       // Get token from either state or localStorage

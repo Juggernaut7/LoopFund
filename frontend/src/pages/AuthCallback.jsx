@@ -2,92 +2,102 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, XCircle, Loader } from 'lucide-react';
-import { useAuthWithToast } from '../hooks/useAuthWithToast';
+import { useAuthStore } from '../store/useAuthStore';
 import { useToast } from '../context/ToastContext';
 
 const AuthCallback = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [status, setStatus] = useState('loading'); // loading, success, error
-  const [message, setMessage] = useState('');
-  const { loginWithOAuth } = useAuthWithToast();
+  const [status, setStatus] = useState('loading');
+  const [message, setMessage] = useState('Processing authentication...');
+  const { login } = useAuthStore();
   const { toast } = useToast();
 
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        console.log('AuthCallback: Starting callback handling...');
+        console.log('🔍 AuthCallback: Starting callback handling...');
+        console.log('🔍 Current URL:', window.location.href);
+        console.log('🔍 Search params:', Object.fromEntries(searchParams.entries()));
         
         const token = searchParams.get('token');
         const userId = searchParams.get('userId');
         const error = searchParams.get('error');
 
-        console.log('AuthCallback: Token:', token ? 'Present' : 'Missing');
-        console.log('AuthCallback: UserId:', userId ? 'Present' : 'Missing');
-        console.log('AuthCallback: Error param:', error);
+        console.log('🔍 AuthCallback: Token present:', !!token);
+        console.log('🔍 AuthCallback: UserId present:', !!userId);
+        console.log('🔍 AuthCallback: Error param:', error);
+
+        setMessage('Verifying authentication...');
 
         if (error) {
-          console.log('AuthCallback: Error parameter found, redirecting to signin');
+          console.log('❌ AuthCallback: Error parameter found:', error);
           setStatus('error');
           setMessage('Authentication failed. Please try again.');
-          toast.error('Authentication Failed', 'There was an error during the authentication process. Please try again.');
+          toast.error('Authentication failed. Please try again.');
           setTimeout(() => navigate('/signin'), 3000);
           return;
         }
 
         if (!token || !userId) {
-          console.log('AuthCallback: Missing token or userId');
+          console.log('❌ AuthCallback: Missing token or userId');
           setStatus('error');
           setMessage('Invalid authentication response.');
-          toast.error('Invalid Response', 'The authentication response was invalid. Please try signing in again.');
+          toast.error('Invalid authentication response. Please try signing in again.');
           setTimeout(() => navigate('/signin'), 3000);
           return;
         }
 
-        console.log('AuthCallback: Token and userId present, proceeding with OAuth login...');
+        console.log('✅ AuthCallback: Token and userId present, fetching user profile...');
+        setMessage('Loading your profile...');
 
-        // Store the token
-        localStorage.setItem('authToken', token);
-        console.log('AuthCallback: Token stored in localStorage');
-        
-        // Update auth store with OAuth data
-        console.log('AuthCallback: Calling loginWithOAuth...');
-        const result = await loginWithOAuth({ token, userId });
-        console.log('AuthCallback: loginWithOAuth result:', result);
-        
-        if (result.success) {
-          console.log('AuthCallback: OAuth login successful, setting success status...');
-          setStatus('success');
-          setMessage('Authentication successful! Redirecting to dashboard...');
-          toast.success('Welcome to LoopFund!', 'You have been successfully authenticated and will be redirected to your dashboard.');
-          
-          console.log('AuthCallback: Redirecting to dashboard in 2 seconds...');
-          // Redirect to dashboard
-          setTimeout(() => {
-            console.log('AuthCallback: Executing navigation to dashboard...');
-            navigate('/dashboard');
-          }, 2000);
-        } else {
-          console.log('AuthCallback: OAuth login failed:', result.error);
-          setStatus('error');
-          setMessage('Failed to complete authentication.');
-          toast.error('Authentication Error', 'Failed to complete the authentication process. Please try again.');
-          setTimeout(() => navigate('/signin'), 3000);
+        // Fetch user profile directly using the token
+        const response = await fetch('http://localhost:4000/api/auth/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        console.log('🔍 AuthCallback: Profile response status:', response.status);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch user profile: ${response.status}`);
         }
+
+        const data = await response.json();
+        console.log('🔍 AuthCallback: Profile data:', data);
+
+        if (!data.user) {
+          throw new Error('Invalid profile response');
+        }
+
+        // Store auth data using the regular login method
+        console.log('✅ AuthCallback: Logging in user...');
+        login(data.user, token);
+
+        setStatus('success');
+        setMessage('Welcome! Redirecting to your dashboard...');
+        toast.success('Welcome to LoopFund! You have been successfully signed in.');
+        
+        console.log('🔍 AuthCallback: Redirecting to dashboard in 1.5 seconds...');
+        setTimeout(() => {
+          console.log('🔍 AuthCallback: Executing navigation to dashboard...');
+          navigate('/dashboard', { replace: true });
+        }, 1500);
         
       } catch (error) {
-        console.error('AuthCallback: Unexpected error occurred:', error);
-        console.error('AuthCallback: Error stack:', error.stack);
+        console.error('❌ AuthCallback: Error:', error);
         setStatus('error');
-        setMessage('An unexpected error occurred.');
-        toast.error('Unexpected Error', 'An unexpected error occurred during authentication. Please try again.');
+        setMessage('Authentication failed. Please try again.');
+        toast.error('An error occurred during authentication. Please try again.');
         setTimeout(() => navigate('/signin'), 3000);
       }
     };
 
-    console.log('AuthCallback: useEffect triggered, calling handleCallback...');
+    console.log('🔍 AuthCallback: useEffect triggered');
     handleCallback();
-  }, [searchParams, navigate, loginWithOAuth, toast]);
+  }, [searchParams, navigate, login, toast]);
 
   const getStatusIcon = () => {
     switch (status) {
@@ -130,7 +140,7 @@ const AuthCallback = () => {
         <h1 className={`text-2xl font-bold mb-4 ${getStatusColor()}`}>
           {status === 'loading' && 'Authenticating...'}
           {status === 'success' && 'Success!'}
-          {status === 'error' && 'Error'}
+          {status === 'error' && 'Authentication Failed'}
         </h1>
         
         <p className="text-slate-600 dark:text-slate-400 mb-6">

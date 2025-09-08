@@ -8,6 +8,7 @@ import LandingPage from './pages/LandingPage';
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import AuthCallback from './pages/AuthCallback';
 import DashboardPage from './pages/DashboardPage';
 import GoalsPage from './pages/GoalsPage';
 import GroupsPage from './pages/GroupsPage'; // Make sure this import exists
@@ -20,10 +21,17 @@ import PrivateRoute from './components/auth/PrivateRoute';
 import './App.css';
 import AchievementsPage from './pages/AchievementsPage'; // Added missing import
 import AIAdvisorPage from './pages/AIAdvisorPage'; // AI Financial Advisor page
+import FinancialTherapistPage from './pages/FinancialTherapistPage'; // AI Financial Therapist page
+import CommunityPage from './pages/CommunityPage'; // Financial Wellness Community page
+import MicroInterventionsPage from './pages/MicroInterventionsPage'; // Behavioral Interventions page
+import PredictiveHealthPage from './pages/PredictiveHealthPage'; // Predictive Financial Health page
+import FinancialTherapyGamesPage from './pages/FinancialTherapyGamesPage'; // Financial Therapy Games page
 import RevenueDashboard from './pages/RevenueDashboard'; // Revenue Dashboard page
 import AdminPage from './pages/AdminPage'; // Admin Dashboard page
 import AdminUsersPage from './pages/admin/AdminUsersPage'; // Admin Users Management page
 import AdminRevenuePage from './pages/admin/AdminRevenuePage'; // Admin Revenue Analytics page
+import PaymentVerificationPage from './pages/PaymentVerificationPage'; // Payment verification page
+import CreateGroupPage from './pages/CreateGroupPage'; // Create Group page
 
 function App() {
   const { isAuthenticated, user } = useAuthStore();
@@ -39,6 +47,7 @@ function App() {
               <Route path="/signin" element={<SignInPage />} />
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               
               {/* Protected routes */}
               <Route path="/dashboard" element={
@@ -62,6 +71,15 @@ function App() {
                 <PrivateRoute>
                   <PageTransition>
                     <GroupsPage />
+                  </PageTransition>
+                </PrivateRoute>
+              } />
+              
+              {/* Create Group route */}
+              <Route path="/create-group" element={
+                <PrivateRoute>
+                  <PageTransition>
+                    <CreateGroupPage />
                   </PageTransition>
                 </PrivateRoute>
               } />
@@ -116,6 +134,51 @@ function App() {
                 </PrivateRoute>
               } />
 
+              {/* AI Financial Therapist route */}
+              <Route path="/financial-therapist" element={
+                <PrivateRoute>
+                  <PageTransition>
+                    <FinancialTherapistPage />
+                  </PageTransition>
+                </PrivateRoute>
+              } />
+
+              {/* Financial Wellness Community route */}
+              <Route path="/community" element={
+                <PrivateRoute>
+                  <PageTransition>
+                    <CommunityPage />
+                  </PageTransition>
+                </PrivateRoute>
+              } />
+
+              {/* Behavioral Micro-Interventions route */}
+              <Route path="/micro-interventions" element={
+                <PrivateRoute>
+                  <PageTransition>
+                    <MicroInterventionsPage />
+                  </PageTransition>
+                </PrivateRoute>
+              } />
+
+              {/* Predictive Financial Health route */}
+              <Route path="/predictive-health" element={
+                <PrivateRoute>
+                  <PageTransition>
+                    <PredictiveHealthPage />
+                  </PageTransition>
+                </PrivateRoute>
+              } />
+
+              {/* Financial Therapy Games route */}
+              <Route path="/therapy-games" element={
+                <PrivateRoute>
+                  <PageTransition>
+                    <FinancialTherapyGamesPage />
+                  </PageTransition>
+                </PrivateRoute>
+              } />
+
               {/* Revenue Dashboard route */}
               <Route path="/revenue" element={
                 <PrivateRoute>
@@ -123,6 +186,13 @@ function App() {
                     <RevenueDashboard />
                   </PageTransition>
                 </PrivateRoute>
+              } />
+
+              {/* Payment Verification route */}
+              <Route path="/payment/verify/:reference" element={
+                <PageTransition>
+                  <PaymentVerificationPage />
+                </PageTransition>
               } />
 
               {/* Admin Dashboard route - Public for now */}

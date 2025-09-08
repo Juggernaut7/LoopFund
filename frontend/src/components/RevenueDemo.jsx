@@ -21,7 +21,7 @@ const RevenueDemo = () => {
       description: "3 members saving for vacation",
       goalAmount: 3000,
       memberCount: 3,
-      durationMonths: 6,
+      durationMonths: 1,
       premiumFeatures: ['groupAnalytics']
     },
     {

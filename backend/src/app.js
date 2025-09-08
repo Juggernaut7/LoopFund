@@ -21,8 +21,8 @@ const analyticsRoutes = require('./routes/analytics.route');
 const { env } = require('./config/env');
 const notificationRoutes = require('./routes/notifications.route');
 const paymentRoutes = require('./routes/payment.route');
-const communityRoutes = require('./routes/community.route');
 const enhancedCommunityRoutes = require('./routes/enhancedCommunity.route');
+const communityRoutes = require('./routes/community.route');
 
 const app = express();
 
@@ -67,16 +67,16 @@ app.use('/api/', rateLimit({ windowMs: 60 * 1000, max: 120 }));
 app.use('/api/health', healthRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/groups', groupRoutes); 
+app.use('/api/groups', groupRoutes);
 app.use('/api/goals', goalRoutes);
 app.use('/api/contributions', contributionRoutes);
-app.use('/api/admin', adminRoutes); 
+app.use('/api/admin', adminRoutes);
 app.use('/api/achievements', achievementRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/community', communityRoutes);
 app.use('/api/enhanced-community', enhancedCommunityRoutes);
+app.use('/api/community', communityRoutes);
 
 // Invitation routes
 app.use('/api/invitations', require('./routes/invitations.route'));
@@ -86,13 +86,13 @@ app.use('/api/dashboard', require('./routes/dashboard.route'));
 
 // AI routes
 app.use('/api/ai', require('./routes/ai.route'));
-   
+
 // Swagger docs
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  
-// 404 & Error handler 
+
+// 404 & Error handler
 app.use(notFound);
 app.use(errorHandler);
 
 // Export both app and server
-module.exports = { app, server }; 
+module.exports = { app, server };

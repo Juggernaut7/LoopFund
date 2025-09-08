@@ -1,0 +1,119 @@
+﻿const nodemailer = require('nodemailer');
+const { env } = require('../config/env');
+
+class EmailService {
+  constructor() {
+    this.transporter = null;
+    this.initializeTransporter();
+  }
+
+  async initializeTransporter() {
+    try {
+      this.transporter = nodemailer.createTransport({
+        host: env.email?.host || 'smtp.gmail.com',
+        port: env.email?.port || 587,
+        secure: env.email?.secure || false,
+        auth: {
+          user: env.email?.user,
+          pass: env.email?.password
+        }
+      });
+
+      if (env.email?.user && env.email?.password) {
+        await this.transporter.verify();
+        console.log('✅ Email service initialized successfully');
+      } else {
+        console.log('⚠️ Email service not configured - using development mode');
+      }
+    } catch (error) {
+      console.error('❌ Email service initialization failed:', error.message);
+      this.transporter = null;
+    }
+  }
+
+  async sendVerificationCode(email, code, firstName) {
+    const mailOptions = {
+      from: env.email?.from || env.email?.user || 'noreply@loopfund.com',
+      to: email,
+      subject: 'LoopFund - Email Verification Code',
+      html: this.getVerificationEmailTemplate(code, firstName),
+      text: Your LoopFund verification code is: . This code expires in 10 minutes.
+    };
+
+    try {
+      if (this.transporter && env.email?.user && env.email?.password) {
+        await this.transporter.sendMail(mailOptions);
+        console.log(✅ Verification code sent to );
+        return { success: true, message: 'Verification code sent successfully' };
+      } else {
+        console.log('📧 EMAIL VERIFICATION CODE (Development Mode):');
+        console.log(To: );
+        console.log(Code: );
+        console.log(Subject: );
+        console.log(Expires: 10 minutes);
+        return { success: true, message: 'Verification code logged to console (development mode)' };
+      }
+    } catch (error) {
+      console.error('❌ Failed to send verification email:', error);
+      return { success: false, message: 'Failed to send verification email' };
+    }
+  }
+
+  getVerificationEmailTemplate(code, firstName) {
+    return 
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset='utf-8'>
+        <title>LoopFund Email Verification</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+          .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+          .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 30px; text-align: center; }
+          .header h1 { margin: 0; font-size: 28px; font-weight: bold; }
+          .header p { margin: 10px 0 0 0; opacity: 0.9; }
+          .content { padding: 40px 30px; }
+          .code-box { background: #f8f9fa; border: 2px dashed #667eea; border-radius: 8px; padding: 30px; text-align: center; margin: 30px 0; }
+          .verification-code { font-size: 36px; font-weight: bold; color: #667eea; letter-spacing: 8px; font-family: monospace; margin: 10px 0; }
+          .footer { background: #f8f9fa; padding: 30px; text-align: center; color: #666; font-size: 14px; border-top: 1px solid #eee; }
+          .warning { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 15px; margin: 20px 0; }
+        </style>
+      </head>
+      <body>
+        <div class='container'>
+          <div class='header'>
+            <h1>🎯 LoopFund</h1>
+            <p>Smart Savings Platform</p>
+          </div>
+          <div class='content'>
+            <h2>Hello !</h2>
+            <p>Welcome to LoopFund! To complete your registration and start your smart savings journey, please verify your email address.</p>
+            
+            <div class='code-box'>
+              <p style='margin: 0 0 10px 0; font-weight: bold;'>Your verification code is:</p>
+              <div class='verification-code'></div>
+            </div>
+            
+            <div class='warning'>
+              <strong>Important:</strong>
+              <ul style='margin: 10px 0; padding-left: 20px;'>
+                <li>This code expires in 10 minutes</li>
+                <li>Enter this code in the verification form</li>
+                <li>Do not share this code with anyone</li>
+              </ul>
+            </div>
+            
+            <p>If you didn't create an account with LoopFund, please ignore this email.</p>
+          </div>
+          <div class='footer'>
+            <p>© 2024 LoopFund. All rights reserved.</p>
+            <p>This is an automated message, please do not reply.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    ;
+  }
+}
+
+module.exports = new EmailService();

@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "paystack": "^2.0.1"
+  }
+}

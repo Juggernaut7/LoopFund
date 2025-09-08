@@ -172,6 +172,34 @@ class EnhancedCommunityService {
   }
 
   // Enhanced Community Methods
+  async createEnhancedPost(postData, userId) {
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        return { success: false, error: 'User not found' };
+      }
+
+      const post = new CommunityPost({
+        ...postData,
+        author: userId,
+        displayName: postData.isAnonymous ? (postData.displayName || 'Anonymous User') : undefined,
+        status: 'active',
+      });
+
+      await post.save();
+      await post.populate('author', 'name email avatar');
+
+      return {
+        success: true,
+        data: post,
+        message: 'Post created successfully',
+      };
+    } catch (error) {
+      console.error('Error creating enhanced community post:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
   async createCommunityChallenge(challengeData, userId) {
     try {
       const challenge = new CommunityChallenge({

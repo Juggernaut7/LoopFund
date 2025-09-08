@@ -24,7 +24,9 @@ import {
   X,
   Brain,
   DollarSign,
-  Shield
+  Shield,
+  Heart,
+  Gamepad2
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuthWithToast } from '../../hooks/useAuthWithToast';
@@ -112,6 +114,41 @@ const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
         { title: 'Budget Analysis', path: '/ai-advisor/budget' },
         { title: 'Investment Tips', path: '/ai-advisor/investment' }
       ]
+    },
+    {
+      title: 'Financial Therapist',
+      icon: Heart,
+      path: '/financial-therapist',
+      badge: 'New',
+      highlight: true
+    },
+    {
+      title: 'Community',
+      icon: Users,
+      path: '/community',
+      badge: 'Live',
+      highlight: true
+    },
+    {
+      title: 'Micro-Interventions',
+      icon: Shield,
+      path: '/micro-interventions',
+      badge: 'AI',
+      highlight: true
+    },
+    {
+      title: 'Predictive Health',
+      icon: TrendingUp,
+      path: '/predictive-health',
+      badge: '🔮',
+      highlight: true
+    },
+    {
+      title: 'Therapy Games',
+      icon: Gamepad2,
+      path: '/therapy-games',
+      badge: '🎮',
+      highlight: true
     },
     {
       title: 'Achievements',
