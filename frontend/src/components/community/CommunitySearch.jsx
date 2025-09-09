@@ -139,9 +139,9 @@ const CommunitySearch = () => {
       };
       
       const response = await communityService.advancedSearch(searchParams);
-      if (response.success) {
-        setSearchResults(response.data.results);
-        setHasMore(response.data.pagination.hasNext);
+      if (response.success && response.data) {
+        setSearchResults(response.data.results || []);
+        setHasMore(response.data.pagination?.hasNext || false);
       }
     } catch (error) {
       console.error('Error performing search:', error);
@@ -161,9 +161,9 @@ const CommunitySearch = () => {
       };
       
       const response = await communityService.advancedSearch(searchParams);
-      if (response.success) {
-        setSearchResults(prev => [...prev, ...response.data.results]);
-        setHasMore(response.data.pagination.hasNext);
+      if (response.success && response.data) {
+        setSearchResults(prev => [...(prev || []), ...(response.data.results || [])]);
+        setHasMore(response.data.pagination?.hasNext || false);
         setCurrentPage(prev => prev + 1);
       }
     } catch (error) {
@@ -232,7 +232,7 @@ const CommunitySearch = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
         <motion.div 
@@ -407,7 +407,7 @@ const CommunitySearch = () => {
             </div>
           )}
 
-          {!loading && searchResults.length > 0 && (
+          {!loading && searchResults && searchResults.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

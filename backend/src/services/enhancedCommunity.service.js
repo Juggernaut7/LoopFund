@@ -205,7 +205,16 @@ class EnhancedCommunityService {
       const challenge = new CommunityChallenge({
         ...challengeData,
         creator: userId,
-        participants: [],
+        status: 'active',
+        participants: [{
+          user: userId,
+          joinedAt: new Date(),
+          progress: 0,
+          role: 'creator',
+          milestones: [],
+          checkIns: [],
+          tasks: []
+        }],
         engagement: { likes: [], comments: [], shares: [] }
       });
 
@@ -255,18 +264,27 @@ class EnhancedCommunityService {
 
   async createPeerSupportGroup(groupData, userId) {
     try {
+      console.log('Service: Creating group with data:', groupData);
+      console.log('Service: User ID:', userId);
+      
       const group = new PeerSupportGroup({
         ...groupData,
         creator: userId,
         moderators: [userId],
-        members: [],
+        members: [{
+          user: userId,
+          joinedAt: new Date(),
+          role: 'creator',
+          status: 'active',
+          contributionScore: 0,
+          lastActive: new Date()
+        }],
         discussions: [],
         resources: [],
         events: []
       });
 
-      // Add creator as first member
-      group.addMember(userId, 'creator');
+      console.log('Service: Group object created:', group);
 
       await group.save();
       await group.populate('creator', 'name email avatar');
@@ -278,6 +296,12 @@ class EnhancedCommunityService {
       };
     } catch (error) {
       console.error('Error creating peer support group:', error);
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      if (error.name === 'ValidationError') {
+        console.error('Validation errors:', error.errors);
+        return { success: false, error: 'Validation failed', details: error.errors };
+      }
       return { success: false, error: error.message };
     }
   }
@@ -538,6 +562,104 @@ class EnhancedCommunityService {
     }
   }
 
+  // Challenge Admin Functions
+  async addChallengeTask(challengeId, userId, taskData) {
+    try {
+      const challenge = await CommunityChallenge.findById(challengeId);
+      if (!challenge) {
+        return { success: false, error: 'Challenge not found' };
+      }
+
+      // Check if user is admin or creator
+      const participant = challenge.participants.find(p => p.user.toString() === userId.toString());
+      if (!participant || (participant.role !== 'admin' && participant.role !== 'creator')) {
+        return { success: false, error: 'Only challenge admins can add tasks' };
+      }
+
+      const task = {
+        ...taskData,
+        createdBy: userId,
+        createdAt: new Date()
+      };
+
+      challenge.tasks.push(task);
+      await challenge.save();
+
+      return {
+        success: true,
+        data: challenge.tasks[challenge.tasks.length - 1],
+        message: 'Task added successfully'
+      };
+    } catch (error) {
+      console.error('Error adding challenge task:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async promoteChallengeParticipant(challengeId, adminUserId, participantUserId, newRole) {
+    try {
+      const challenge = await CommunityChallenge.findById(challengeId);
+      if (!challenge) {
+        return { success: false, error: 'Challenge not found' };
+      }
+
+      // Check if user is admin or creator
+      const admin = challenge.participants.find(p => p.user.toString() === adminUserId.toString());
+      if (!admin || (admin.role !== 'admin' && admin.role !== 'creator')) {
+        return { success: false, error: 'Only challenge admins can promote participants' };
+      }
+
+      const participant = challenge.participants.find(p => p.user.toString() === participantUserId.toString());
+      if (!participant) {
+        return { success: false, error: 'Participant not found' };
+      }
+
+      participant.role = newRole;
+      await challenge.save();
+
+      return {
+        success: true,
+        message: `Participant promoted to ${newRole}`
+      };
+    } catch (error) {
+      console.error('Error promoting challenge participant:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async removeChallengeParticipant(challengeId, adminUserId, participantUserId) {
+    try {
+      const challenge = await CommunityChallenge.findById(challengeId);
+      if (!challenge) {
+        return { success: false, error: 'Challenge not found' };
+      }
+
+      // Check if user is admin or creator
+      const admin = challenge.participants.find(p => p.user.toString() === adminUserId.toString());
+      if (!admin || (admin.role !== 'admin' && admin.role !== 'creator')) {
+        return { success: false, error: 'Only challenge admins can remove participants' };
+      }
+
+      // Can't remove the creator
+      if (challenge.creator.toString() === participantUserId.toString()) {
+        return { success: false, error: 'Cannot remove challenge creator' };
+      }
+
+      challenge.participants = challenge.participants.filter(
+        p => p.user.toString() !== participantUserId.toString()
+      );
+      await challenge.save();
+
+      return {
+        success: true,
+        message: 'Participant removed successfully'
+      };
+    } catch (error) {
+      console.error('Error removing challenge participant:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
   async getPeerSupportGroups(filters = {}, page = 1, limit = 10) {
     try {
       const query = { status: 'active' };
@@ -622,25 +744,245 @@ class EnhancedCommunityService {
     }
   }
 
+  async getGroupDiscussions(groupId, page = 1, limit = 20) {
+    try {
+      const group = await PeerSupportGroup.findById(groupId)
+        .populate('discussions.author', 'name email avatar')
+        .populate('discussions.replies.author', 'name email avatar');
+      
+      if (!group) {
+        return { success: false, error: 'Group not found' };
+      }
+
+      const skip = (page - 1) * limit;
+      const discussions = group.discussions
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(skip, skip + limit);
+
+      return {
+        success: true,
+        data: {
+          discussions,
+          pagination: {
+            current: page,
+            total: Math.ceil(group.discussions.length / limit),
+            hasNext: skip + limit < group.discussions.length,
+            hasPrev: page > 1
+          }
+        }
+      };
+    } catch (error) {
+      console.error('Error getting group discussions:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
   async addGroupDiscussion(groupId, userId, discussionData) {
+    try {
+      console.log('Service: Adding discussion to group:', groupId);
+      console.log('Service: User ID:', userId);
+      console.log('Service: Discussion data:', discussionData);
+      
+      const group = await PeerSupportGroup.findById(groupId);
+      if (!group) {
+        console.log('Service: Group not found for ID:', groupId);
+        return { success: false, error: 'Group not found' };
+      }
+
+      console.log('Service: Group found:', group.name);
+      console.log('Service: Group members:', group.members.map(m => ({ user: m.user.toString(), role: m.role })));
+
+      // Check if user is a member
+      const isMember = group.members.some(member => member.user.toString() === userId.toString());
+      console.log('Service: Is user member?', isMember);
+      console.log('Service: User ID to check:', userId);
+      
+      if (!isMember) {
+        console.log('Service: User is not a member of the group');
+        return { success: false, error: 'You must be a member to add discussions' };
+      }
+
+      // Validate discussion data
+      if (!discussionData.title || !discussionData.title.trim()) {
+        return { success: false, error: 'Discussion title is required' };
+      }
+      
+      if (!discussionData.content || !discussionData.content.trim()) {
+        return { success: false, error: 'Discussion content is required' };
+      }
+
+      const discussion = {
+        title: discussionData.title.trim(),
+        content: discussionData.content.trim(),
+        author: userId,
+        createdAt: new Date(),
+        replies: [],
+        likes: [],
+        tags: discussionData.tags || []
+      };
+
+      console.log('Service: Creating discussion:', discussion);
+
+      group.discussions.push(discussion);
+      await group.save();
+      
+      // Populate the discussion with author info
+      await group.populate('discussions.author', 'name email avatar');
+      
+      const newDiscussion = group.discussions[group.discussions.length - 1];
+
+      return {
+        success: true,
+        data: newDiscussion,
+        message: 'Discussion added successfully'
+      };
+    } catch (error) {
+      console.error('Error adding group discussion:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async addDiscussionReply(groupId, discussionId, userId, content) {
+    try {
+      console.log('Service: Adding reply to discussion:', discussionId);
+      console.log('Service: User ID:', userId);
+      console.log('Service: Content:', content);
+      
+      const group = await PeerSupportGroup.findById(groupId);
+      if (!group) {
+        return { success: false, error: 'Group not found' };
+      }
+
+      // Check if user is a member
+      const isMember = group.members.some(member => member.user.toString() === userId.toString());
+      if (!isMember) {
+        return { success: false, error: 'You must be a member to add replies' };
+      }
+
+      // Find the discussion
+      const discussion = group.discussions.id(discussionId);
+      if (!discussion) {
+        return { success: false, error: 'Discussion not found' };
+      }
+
+      const reply = {
+        author: userId,
+        content: content,
+        createdAt: new Date(),
+        likes: []
+      };
+
+      discussion.replies.push(reply);
+      await group.save();
+      
+      // Populate the reply with author info
+      await group.populate('discussions.replies.author', 'name email avatar');
+      
+      const newReply = discussion.replies[discussion.replies.length - 1];
+
+      return {
+        success: true,
+        data: newReply,
+        message: 'Reply added successfully'
+      };
+    } catch (error) {
+      console.error('Error adding discussion reply:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Group Admin Functions
+  async promoteGroupMember(groupId, adminUserId, memberUserId, newRole) {
     try {
       const group = await PeerSupportGroup.findById(groupId);
       if (!group) {
         return { success: false, error: 'Group not found' };
       }
 
-      group.addDiscussion({
-        ...discussionData,
-        author: userId
-      });
+      // Check if user is admin or creator
+      const admin = group.members.find(m => m.user.toString() === adminUserId.toString());
+      if (!admin || (admin.role !== 'admin' && admin.role !== 'creator')) {
+        return { success: false, error: 'Only group admins can promote members' };
+      }
 
+      const member = group.members.find(m => m.user.toString() === memberUserId.toString());
+      if (!member) {
+        return { success: false, error: 'Member not found' };
+      }
+
+      member.role = newRole;
       await group.save();
+
       return {
         success: true,
-        message: 'Discussion added successfully'
+        message: `Member promoted to ${newRole}`
       };
     } catch (error) {
-      console.error('Error adding group discussion:', error);
+      console.error('Error promoting group member:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async removeGroupMember(groupId, adminUserId, memberUserId) {
+    try {
+      const group = await PeerSupportGroup.findById(groupId);
+      if (!group) {
+        return { success: false, error: 'Group not found' };
+      }
+
+      // Check if user is admin or creator
+      const admin = group.members.find(m => m.user.toString() === adminUserId.toString());
+      if (!admin || (admin.role !== 'admin' && admin.role !== 'creator')) {
+        return { success: false, error: 'Only group admins can remove members' };
+      }
+
+      // Can't remove the creator
+      if (group.creator.toString() === memberUserId.toString()) {
+        return { success: false, error: 'Cannot remove group creator' };
+      }
+
+      group.members = group.members.filter(
+        m => m.user.toString() !== memberUserId.toString()
+      );
+      await group.save();
+
+      return {
+        success: true,
+        message: 'Member removed successfully'
+      };
+    } catch (error) {
+      console.error('Error removing group member:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async banGroupMember(groupId, adminUserId, memberUserId, reason) {
+    try {
+      const group = await PeerSupportGroup.findById(groupId);
+      if (!group) {
+        return { success: false, error: 'Group not found' };
+      }
+
+      // Check if user is admin or creator
+      const admin = group.members.find(m => m.user.toString() === adminUserId.toString());
+      if (!admin || (admin.role !== 'admin' && admin.role !== 'creator')) {
+        return { success: false, error: 'Only group admins can ban members' };
+      }
+
+      const member = group.members.find(m => m.user.toString() === memberUserId.toString());
+      if (!member) {
+        return { success: false, error: 'Member not found' };
+      }
+
+      member.status = 'banned';
+      await group.save();
+
+      return {
+        success: true,
+        message: 'Member banned successfully'
+      };
+    } catch (error) {
+      console.error('Error banning group member:', error);
       return { success: false, error: error.message };
     }
   }
@@ -784,16 +1126,82 @@ class EnhancedCommunityService {
 
   async getEngagementAnalytics(userId, period = '30d') {
     try {
-      const therapist = await FinancialTherapist.findOne({ user: userId });
+      const CommunityPost = require('../models/CommunityPost');
+      const CommunityChallenge = require('../models/CommunityChallenge');
+      const PeerSupportGroup = require('../models/PeerSupportGroup');
       
-      // Calculate engagement metrics
+      // Calculate date range based on period
+      const now = new Date();
+      let startDate;
+      switch (period) {
+        case '7d':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case '30d':
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case '90d':
+          startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      }
+
+      // Get community-wide analytics
+      const totalPosts = await CommunityPost.countDocuments({ status: 'active' });
+      const totalLikes = await CommunityPost.aggregate([
+        { $match: { status: 'active' } },
+        { $group: { _id: null, total: { $sum: { $size: '$engagement.likes' } } } }
+      ]);
+      const totalComments = await CommunityPost.aggregate([
+        { $match: { status: 'active' } },
+        { $group: { _id: null, total: { $sum: { $size: '$engagement.comments' } } } }
+      ]);
+      const totalViews = await CommunityPost.aggregate([
+        { $match: { status: 'active' } },
+        { $group: { _id: null, total: { $sum: '$views' } } }
+      ]);
+
+      // Get daily activity for the period
+      const dailyActivity = await CommunityPost.aggregate([
+        { $match: { status: 'active', createdAt: { $gte: startDate } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            posts: { $sum: 1 },
+            likes: { $sum: { $size: '$engagement.likes' } },
+            comments: { $sum: { $size: '$engagement.comments' } },
+            views: { $sum: '$views' }
+          }
+        },
+        { $sort: { _id: 1 } }
+      ]);
+
+      // Get top categories
+      const topCategories = await CommunityPost.aggregate([
+        { $match: { status: 'active' } },
+        { $group: { _id: '$category', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 5 }
+      ]);
+
       const analytics = {
-        postsCreated: 0,
-        commentsMade: 0,
-        challengesJoined: 0,
-        groupsJoined: 0,
-        therapySessions: therapist?.therapySessions?.length || 0,
-        interventionsReceived: therapist?.interventions?.length || 0
+        totalPosts: totalPosts,
+        totalLikes: totalLikes[0]?.total || 0,
+        totalComments: totalComments[0]?.total || 0,
+        totalViews: totalViews[0]?.total || 0,
+        dailyActivity: dailyActivity.map(day => ({
+          date: day._id,
+          posts: day.posts,
+          likes: day.likes,
+          comments: day.comments,
+          views: day.views
+        })),
+        topCategories: topCategories.map(cat => ({
+          name: cat._id,
+          count: cat.count
+        })),
+        topPosts: [] // Can be implemented later
       };
 
       return {
@@ -808,16 +1216,80 @@ class EnhancedCommunityService {
 
   async getEmotionalTrends(userId, period = '30d') {
     try {
-      const therapist = await FinancialTherapist.findOne({ user: userId });
+      // Get emotional trends from community posts instead of therapist profile
+      const CommunityPost = require('../models/CommunityPost');
       
-      if (!therapist) {
-        return { success: false, error: 'Therapist profile not found' };
+      // Calculate date range based on period
+      const now = new Date();
+      let startDate;
+      switch (period) {
+        case '7d':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case '30d':
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case '90d':
+          startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       }
 
+      // Get posts with emotional data
+      const posts = await CommunityPost.find({
+        createdAt: { $gte: startDate },
+        status: 'active'
+      }).select('emotionalData createdAt category');
+
+      // Analyze emotional trends
+      const moodDistribution = {};
+      const sentimentTrends = [];
+      const dailyData = {};
+
+      posts.forEach(post => {
+        if (post.emotionalData) {
+          const mood = post.emotionalData.mood || 'neutral';
+          moodDistribution[mood] = (moodDistribution[mood] || 0) + 1;
+        }
+
+        // Group by day for sentiment trends
+        const day = post.createdAt.toISOString().split('T')[0];
+        if (!dailyData[day]) {
+          dailyData[day] = { positive: 0, negative: 0, neutral: 0 };
+        }
+        
+        const sentiment = post.emotionalData?.sentiment || 'neutral';
+        dailyData[day][sentiment]++;
+      });
+
+      // Convert daily data to array
+      Object.keys(dailyData).sort().forEach(date => {
+        const data = dailyData[date];
+        const total = data.positive + data.negative + data.neutral;
+        sentimentTrends.push({
+          date,
+          positive: total > 0 ? Math.round((data.positive / total) * 100) : 0,
+          negative: total > 0 ? Math.round((data.negative / total) * 100) : 0,
+          neutral: total > 0 ? Math.round((data.neutral / total) * 100) : 0
+        });
+      });
+
+      // Convert mood distribution to array
+      const moodArray = Object.keys(moodDistribution).map(mood => ({
+        mood,
+        count: moodDistribution[mood]
+      }));
+
       const trends = {
-        stressLevels: therapist.emotionalProfile.stressLevels.slice(-10),
-        moodPatterns: therapist.emotionalProfile.moodPatterns.slice(-10),
-        spendingTriggers: therapist.emotionalProfile.spendingTriggers
+        moodDistribution: moodArray,
+        sentimentTrends: sentimentTrends,
+        emotionalInsights: [
+          {
+            title: 'Community Mood Analysis',
+            description: `Based on ${posts.length} posts, the community shows diverse emotional patterns.`
+          }
+        ]
       };
 
       return {

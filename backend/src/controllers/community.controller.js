@@ -3,7 +3,7 @@ const communityService = require('../services/community.service');
 // Create a new community post
 const createPost = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId || req.user.id;
     const postData = req.body;
 
     const result = await communityService.createPost(postData, userId);
@@ -70,7 +70,7 @@ const getPostById = async (req, res) => {
 const toggleLike = async (req, res) => {
   try {
     const { postId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user.userId || req.user.id;
 
     const result = await communityService.toggleLike(postId, userId);
     
@@ -92,7 +92,7 @@ const toggleLike = async (req, res) => {
 const addComment = async (req, res) => {
   try {
     const { postId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user.userId || req.user.id;
     const commentData = req.body;
 
     const result = await communityService.addComment(postId, commentData, userId);
@@ -228,7 +228,7 @@ const getCommunityStats = async (req, res) => {
 const updatePost = async (req, res) => {
   try {
     const { postId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user.userId || req.user.id;
     const updateData = req.body;
 
     const result = await communityService.updatePost(postId, updateData, userId);
@@ -251,7 +251,7 @@ const updatePost = async (req, res) => {
 const deletePost = async (req, res) => {
   try {
     const { postId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user.userId || req.user.id;
 
     const result = await communityService.deletePost(postId, userId);
     

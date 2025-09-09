@@ -193,12 +193,12 @@ const TopNav = ({ toggleSidebar, isCollapsed, unreadCount = 0 }) => {
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
               className="flex items-center space-x-2 p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
             >
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                 <User size={16} className="text-white" />
               </div>
               <div className="hidden sm:block text-left">
                 <p className="text-sm font-medium text-slate-900 dark:text-white">
-                  {user?.name || 'Guest'}
+                  {user?.firstName ? `${user.firstName} ${user.lastName}` : user?.name || 'User'}
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   {user?.role || 'User'}
@@ -219,7 +219,7 @@ const TopNav = ({ toggleSidebar, isCollapsed, unreadCount = 0 }) => {
                 >
                   <div className="p-4 border-b border-slate-200 dark:border-slate-700">
                     <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      {user?.name || 'Guest'}
+                      {user?.firstName ? `${user.firstName} ${user.lastName}` : user?.name || 'User'}
                     </p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
                       {user?.email || 'No email available'}

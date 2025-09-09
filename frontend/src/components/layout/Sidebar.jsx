@@ -210,7 +210,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
       initial={{ width: isCollapsed ? 80 : 280 }}
       animate={{ width: isCollapsed ? 80 : 280 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
-      className="h-full bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border-r border-slate-700/50 shadow-xl flex flex-col"
+      className="h-full max-h-screen bg-slate-900 border-r border-slate-700/50 shadow-xl flex flex-col overflow-hidden"
     >
       {/* Header */}
       <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-slate-700/50">
@@ -221,7 +221,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
         >
           {!isCollapsed && (
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">LF</span>
               </div>
               <span className="text-white font-semibold text-lg">LoopFund</span>
@@ -240,7 +240,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
       {/* User Profile */}
       <div className="flex-shrink-0 p-4 border-b border-slate-700/50">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
             <User size={20} className="text-white" />
           </div>
           {!isCollapsed && (
@@ -257,8 +257,14 @@ const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
       </div>
 
       {/* Navigation Menu */}
-      <div className="flex-1 overflow-y-auto py-4 min-h-0">
-        <nav className="space-y-1 px-3">
+      <div className="flex-1 overflow-y-auto py-4 min-h-0 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-transparent hover:scrollbar-thumb-slate-500 relative">
+        {/* Scroll indicator - top */}
+        <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-slate-900 to-transparent pointer-events-none z-10"></div>
+        
+        {/* Scroll indicator - bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-slate-900 to-transparent pointer-events-none z-10"></div>
+        
+        <nav className="space-y-1 px-3 pb-4 pt-2">
           {menuItems.map((item) => (
             <div key={item.title}>
               <Link
@@ -300,7 +306,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="ml-6 mt-1 space-y-1"
+                      className="ml-6 mt-1 space-y-1 overflow-hidden"
                     >
                       {item.submenu.map((subItem) => (
                         <Link
@@ -324,8 +330,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
         </nav>
       </div>
 
-      {/* Bottom Menu */}
-      <div className="flex-shrink-0 p-4 border-t border-slate-700/50">
+      {/* Bottom Menu - Always visible */}
+      <div className="flex-shrink-0 p-4 border-t border-slate-700/50 bg-slate-900/50 backdrop-blur-sm">
         <nav className="space-y-1">
           {bottomMenuItems.map((item) => (
             <Link
@@ -384,7 +390,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
       {/* Quick Actions */}
       {!isCollapsed && (
         <div className="flex-shrink-0 p-4 border-t border-slate-700/50">
-          <button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-2.5 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2">
+          <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl">
             <Plus size={16} />
             <span>New Goal</span>
           </button>

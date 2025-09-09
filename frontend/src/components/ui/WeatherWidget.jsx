@@ -4,12 +4,13 @@ import { Sun, Cloud, CloudRain, CloudSnow, Wind, Thermometer } from 'lucide-reac
 
 const WeatherWidget = () => {
   const [weather, setWeather] = useState({
-    temperature: 72,
+    temperature: null,
     condition: 'sunny',
-    location: 'New York, NY',
-    humidity: 65,
-    windSpeed: 8
+    location: 'Loading...',
+    humidity: null,
+    windSpeed: null
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   const getWeatherIcon = (condition) => {
     switch (condition) {
@@ -28,29 +29,86 @@ const WeatherWidget = () => {
     }
   };
 
-  const getWeatherGradient = (condition) => {
-    switch (condition) {
-      case 'sunny':
-        return 'from-yellow-400 to-orange-500';
-      case 'cloudy':
-        return 'from-gray-400 to-gray-600';
-      case 'rainy':
-        return 'from-blue-400 to-blue-600';
-      case 'snowy':
-        return 'from-blue-200 to-blue-400';
-      case 'windy':
-        return 'from-gray-300 to-gray-500';
-      default:
-        return 'from-blue-400 to-purple-500';
-    }
-  };
+  // Fetch real weather data
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Get user's location
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(async (position) => {
+            const { latitude, longitude } = position.coords;
+            
+            // Use a free weather API (you'll need to get an API key)
+            // For now, we'll use a mock API call
+            try {
+              // Replace with actual weather API call
+              // const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=YOUR_API_KEY&units=imperial`);
+              // const data = await response.json();
+              
+              // Mock data for now - replace with real API call
+              setWeather({
+                temperature: Math.floor(Math.random() * 30) + 50, // 50-80°F
+                condition: ['sunny', 'cloudy', 'rainy'][Math.floor(Math.random() * 3)],
+                location: 'Your Location',
+                humidity: Math.floor(Math.random() * 40) + 40, // 40-80%
+                windSpeed: Math.floor(Math.random() * 15) + 5 // 5-20 mph
+              });
+            } catch (error) {
+              console.error('Weather API error:', error);
+              // Fallback to default location
+              setWeather({
+                temperature: 72,
+                condition: 'sunny',
+                location: 'Default Location',
+                humidity: 65,
+                windSpeed: 8
+              });
+            }
+          }, () => {
+            // Geolocation failed, use default
+            setWeather({
+              temperature: 72,
+              condition: 'sunny',
+              location: 'Default Location',
+              humidity: 65,
+              windSpeed: 8
+            });
+          });
+        } else {
+          // Geolocation not supported
+          setWeather({
+            temperature: 72,
+            condition: 'sunny',
+            location: 'Default Location',
+            humidity: 65,
+            windSpeed: 8
+          });
+        }
+      } catch (error) {
+        console.error('Weather fetch error:', error);
+        setWeather({
+          temperature: 72,
+          condition: 'sunny',
+          location: 'Default Location',
+          humidity: 65,
+          windSpeed: 8
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchWeather();
+  }, []);
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, delay: 0.7 }}
-      className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-4 text-white relative overflow-hidden"
+      className="bg-blue-600 rounded-xl p-4 text-white relative overflow-hidden"
     >
       {/* Background pattern */}
       <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10" />
@@ -65,22 +123,30 @@ const WeatherWidget = () => {
           {getWeatherIcon(weather.condition)}
         </div>
         
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Thermometer size={16} className="text-blue-200" />
-            <span className="text-2xl font-bold">{weather.temperature}°F</span>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
           </div>
-          <div className="text-right">
-            <p className="text-xs text-blue-200">Humidity: {weather.humidity}%</p>
-            <p className="text-xs text-blue-200">Wind: {weather.windSpeed} mph</p>
-          </div>
-        </div>
-        
-        <div className="mt-3 pt-3 border-t border-white/20">
-          <p className="text-xs text-blue-200">
-            Perfect weather for saving! ☀️
-          </p>
-        </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Thermometer size={16} className="text-blue-200" />
+                <span className="text-2xl font-bold">{weather.temperature}°F</span>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-blue-200">Humidity: {weather.humidity}%</p>
+                <p className="text-xs text-blue-200">Wind: {weather.windSpeed} mph</p>
+              </div>
+            </div>
+            
+            <div className="mt-3 pt-3 border-t border-white/20">
+              <p className="text-xs text-blue-200">
+                Perfect weather for saving! ☀️
+              </p>
+            </div>
+          </>
+        )}
       </div>
     </motion.div>
   );

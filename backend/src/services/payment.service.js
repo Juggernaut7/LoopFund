@@ -34,6 +34,14 @@ class PaymentService {
     }
   }
 
+  // Calculate fee for goal creation (2.5% with min/max limits)
+  calculateGoalFee(targetAmount) {
+    const baseFee = targetAmount * 0.025; // 2.5% fee
+    const minFee = 500; // Minimum ₦500
+    const maxFee = 10000; // Maximum ₦10,000
+    return Math.max(minFee, Math.min(maxFee, baseFee));
+  }
+
   // Calculate dynamic fee based on amount and duration
   calculateGroupCreationFee(targetAmount, durationMonths = 1) {
     // Base fee: 2% of target amount
@@ -110,7 +118,7 @@ class PaymentService {
       const payment = new Payment({
         userId,
         reference: `GROUP_${Date.now()}_${userId}`,
-        amount: feeCalculation.totalFee * 100, // Convert to kobo for Paystack
+        amount: Math.round(feeCalculation.totalFee * 100), // Convert to kobo for Paystack and round to integer
         currency: this.currency,
         type: 'group_creation',
         status: 'pending',
@@ -128,10 +136,10 @@ class PaymentService {
       await payment.save();
       
       const paymentData = {
-        amount: feeCalculation.totalFee * 100, // Convert to kobo for Paystack
+        amount: Math.round(feeCalculation.totalFee * 100), // Convert to kobo for Paystack and round to integer
         email: groupData.userEmail || groupData.userName || 'user@example.com',
         reference: payment.reference,
-        callback_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/verify`,
+        callback_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/verify/${payment.reference}`,
         metadata: {
           userId,
           groupName: groupData.name,
@@ -214,6 +222,126 @@ class PaymentService {
       return {
         success: false,
         error: 'Payment initialization failed. Please try again.'
+      };
+    }
+  }
+
+  // Initialize payment for goal creation
+  async initializeGoalPayment(userId, goalData) {
+    try {
+      console.log('Goal payment data received:', goalData);
+      console.log('UserId received:', userId, typeof userId);
+      
+      // Ensure targetAmount is a number
+      const targetAmount = parseFloat(goalData.targetAmount);
+      console.log('Parsed target amount:', targetAmount);
+      
+      if (isNaN(targetAmount)) {
+        return {
+          success: false,
+          error: 'Invalid target amount provided'
+        };
+      }
+
+      // Calculate fee for goal creation
+      const fee = this.calculateGoalFee(targetAmount);
+      console.log('Calculated fee:', fee);
+
+      // Validate minimum amount
+      if (targetAmount < 1000) {
+        return {
+          success: false,
+          error: 'Minimum target amount is ₦1,000'
+        };
+      }
+
+      // Validate maximum amount
+      if (targetAmount > 10000000) {
+        return {
+          success: false,
+          error: 'Maximum target amount is ₦10,000,000'
+        };
+      }
+
+      // Create payment record in database
+      const payment = new Payment({
+        userId: userId,
+        reference: `GOAL_${Date.now()}_${userId}`,
+        amount: Math.round(fee * 100), // Convert to kobo for Paystack and round to integer
+        currency: this.currency,
+        type: 'goal_creation',
+        status: 'pending',
+        metadata: {
+          goalName: goalData.name,
+          goalTarget: targetAmount,
+          description: goalData.description,
+          category: goalData.category,
+          endDate: goalData.endDate,
+          frequency: goalData.frequency,
+          amount: goalData.amount,
+          fee: fee
+        }
+      });
+
+      await payment.save();
+      
+      // Get user email from database
+      const user = await User.findById(userId);
+      const userEmail = user?.email || 'user@example.com';
+      
+      const paymentData = {
+        amount: Math.round(fee * 100), // Convert to kobo for Paystack and round to integer
+        email: userEmail,
+        reference: payment.reference,
+        callback_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/verify/${payment.reference}`,
+        metadata: {
+          userId,
+          goalName: goalData.name,
+          goalTarget: targetAmount,
+          category: goalData.category,
+          endDate: goalData.endDate,
+          frequency: goalData.frequency,
+          amount: goalData.amount,
+          fee: fee,
+          type: 'goal_creation',
+          paymentId: payment._id
+        }
+      };
+
+      // Initialize payment with Paystack
+      const paystackResponse = await axios.post(
+        `${this.baseURL}/transaction/initialize`,
+        paymentData,
+        {
+          headers: {
+            'Authorization': `Bearer ${this.secretKey}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (paystackResponse.data.status) {
+        return {
+          success: true,
+          data: {
+            reference: payment.reference,
+            authorizationUrl: paystackResponse.data.data.authorization_url,
+            accessCode: paystackResponse.data.data.access_code,
+            fee: fee,
+            goalData: goalData
+          }
+        };
+      } else {
+        return {
+          success: false,
+          error: 'Failed to initialize payment with Paystack'
+        };
+      }
+    } catch (error) {
+      console.error('Goal payment initialization error:', error);
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Payment initialization failed'
       };
     }
   }
@@ -308,6 +436,63 @@ class PaymentService {
                 customer: transaction.customer,
                 paidAt: transaction.paid_at,
                 warning: 'Payment successful but group creation failed. Please contact support.'
+              }
+            };
+          }
+        }
+
+        // Create goal if this is a goal creation payment
+        if (payment.type === 'goal_creation' && payment.metadata.goalName) {
+          try {
+            console.log('Creating goal for payment:', payment.reference);
+            console.log('Goal metadata:', payment.metadata);
+            
+            const Goal = require('../models/Goal');
+            const goal = new Goal({
+              user: payment.userId,
+              name: payment.metadata.goalName,
+              description: payment.metadata.description || '',
+              targetAmount: payment.metadata.goalTarget,
+              currentAmount: payment.metadata.amount || 0,
+              deadline: new Date(payment.metadata.endDate),
+              category: payment.metadata.category || 'personal',
+              type: 'individual',
+              isActive: true
+            });
+
+            await goal.save();
+            console.log('Goal created successfully:', goal._id);
+            
+            // Update payment with goal ID
+            payment.metadata.goalId = goal._id;
+            await payment.save();
+
+            return {
+              success: true,
+              data: {
+                status: transaction.status,
+                amount: transaction.amount,
+                reference: transaction.reference,
+                metadata: transaction.metadata,
+                customer: transaction.customer,
+                paidAt: transaction.paid_at,
+                goalId: goal._id,
+                goalName: goal.name
+              }
+            };
+          } catch (goalError) {
+            console.error('Failed to create goal after payment:', goalError);
+            // Payment was successful but goal creation failed
+            return {
+              success: true,
+              data: {
+                status: transaction.status,
+                amount: transaction.amount,
+                reference: transaction.reference,
+                metadata: transaction.metadata,
+                customer: transaction.customer,
+                paidAt: transaction.paid_at,
+                warning: 'Payment successful but goal creation failed. Please contact support.'
               }
             };
           }

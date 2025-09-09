@@ -21,6 +21,7 @@ import {
 import Layout from '../components/layout/Layout';
 import { useToast } from '../context/ToastContext';
 import dashboardService from '../services/dashboardService';
+import { useAuthStore } from '../store/useAuthStore';
 
 const AchievementsPage = () => {
   const [achievements, setAchievements] = useState([]);
@@ -33,7 +34,7 @@ const AchievementsPage = () => {
   // Achievement categories
   const categories = [
     { id: 'all', name: 'All Achievements', icon: Trophy },
-    { id: 'savings', name: 'Savings', icon: DollarSign },
+    { id: 'savings', name: '$ Savings', icon: DollarSign },
     { id: 'goals', name: 'Goals', icon: Target },
     { id: 'social', name: 'Social', icon: Users },
     { id: 'streaks', name: 'Streaks', icon: Zap }
@@ -41,19 +42,26 @@ const AchievementsPage = () => {
 
   // Map backend categories to frontend categories
   const mapBackendCategoryToFrontend = (achievement) => {
-    const type = achievement.type;
-    const category = achievement.category;
+    // Use the category directly from the backend if available
+    if (achievement.category) {
+      return achievement.category;
+    }
     
-    // Map based on achievement type
+    // Fallback to type-based mapping
+    const type = achievement.type;
     switch (type) {
-      case 'contribution_milestone':
-        return 'savings';
-      case 'goal_completed':
       case 'first_goal':
+      case 'goal_completed':
         return 'goals';
-      case 'team_player':
+      case 'first_contribution':
+      case 'contribution_streak':
+      case 'savings_milestone':
+        return 'savings';
+      case 'group_creator':
+      case 'group_member':
         return 'social';
-      case 'streak_milestone':
+      case 'weekly_saver':
+      case 'monthly_saver':
         return 'streaks';
       default:
         return 'goals'; // fallback
@@ -73,6 +81,12 @@ const AchievementsPage = () => {
   console.log('Total achievements:', achievements.length);
   console.log('Filtered achievements:', filteredAchievements.length);
   console.log('Filtered achievement names:', filteredAchievements.map(a => a.achievement?.name));
+  console.log('All achievement categories:', achievements.map(a => ({
+    name: a.achievement?.name,
+    type: a.achievement?.type,
+    category: a.achievement?.category,
+    mappedCategory: mapBackendCategoryToFrontend(a.achievement)
+  })));
 
   // Fetch achievements and user stats on component mount
   useEffect(() => {
@@ -84,27 +98,63 @@ const AchievementsPage = () => {
       setIsLoading(true);
       setError(null);
       
+      console.log('🔄 Fetching achievements...');
+      
+      // Check authentication status
+      const authStore = useAuthStore.getState();
+      console.log('🔐 Auth store state:', authStore);
+      console.log('🔐 Is authenticated:', authStore.isAuthenticated);
+      console.log('🔐 User data:', authStore.user);
+      console.log('🔐 Token available:', !!authStore.token);
+      
+      // If not authenticated, try to get token from localStorage
+      if (!authStore.isAuthenticated) {
+        const localToken = localStorage.getItem('token');
+        console.log('🔐 Local storage token:', localToken ? 'Available' : 'Not found');
+        
+        if (localToken) {
+          // Try to decode the token to get user info
+          try {
+            const payload = JSON.parse(atob(localToken.split('.')[1]));
+            console.log('🔐 Token payload:', payload);
+            console.log('🔐 User ID from token:', payload.userId);
+          } catch (e) {
+            console.log('🔐 Could not decode token:', e);
+          }
+        }
+      }
+      
       // Fetch achievements from backend
       const [achievementsResponse, progressResponse] = await Promise.all([
         dashboardService.getUserAchievements(),
         dashboardService.getAchievementProgress()
       ]);
       
+      console.log('📊 Achievements Response:', achievementsResponse);
+      console.log('📈 Progress Response:', progressResponse);
+      
       const userAchievements = achievementsResponse.data || [];
-      const progressData = progressResponse.data || [];
-      const stats = progressResponse.stats || {};
+      const progressData = progressResponse.data || {};
+      const achievements = progressData.achievements || [];
+      const stats = progressData.stats || {};
+      
+      console.log('🎯 Processed Data:');
+      console.log('- User Achievements:', userAchievements.length);
+      console.log('- Progress Achievements:', achievements.length);
+      console.log('- Stats:', stats);
       
       setUserStats(stats);
-      setAchievements(progressData);
+      setAchievements(achievements);
       
-      console.log('Achievements loaded from backend:', progressData);
-      console.log('Achievement categories found:', progressData.map(a => ({
+      console.log('✅ Achievements loaded successfully!');
+      console.log('Achievement categories found:', achievements.map(a => ({
         name: a.achievement?.name,
         type: a.achievement?.type,
         category: a.achievement?.category
       })));
     } catch (error) {
-      console.error('Error fetching achievements:', error);
+      console.error('❌ Error fetching achievements:', error);
+      console.error('Error details:', error.response?.data || error.message);
       setError(error.message);
       toast.error('Achievements Error', 'Failed to load achievements. Please try again.');
     } finally {
@@ -116,19 +166,25 @@ const AchievementsPage = () => {
   useEffect(() => {
     const checkNewAchievements = async () => {
       try {
+        console.log('🔍 Checking for new achievements...');
         const response = await dashboardService.checkAchievements();
-        if (response.newlyUnlocked > 0) {
+        console.log('🎉 Check achievements response:', response);
+        if (response.data?.newlyUnlocked > 0) {
           toast.success('New Achievements!', response.message);
           // Refresh achievements after unlocking new ones
           fetchAchievements();
         }
       } catch (error) {
-        console.error('Error checking achievements:', error);
+        console.error('❌ Error checking achievements:', error);
+        console.error('Error details:', error.response?.data || error.message);
       }
     };
 
-    checkNewAchievements();
-  }, []);
+    // Only check if we have achievements loaded
+    if (achievements.length > 0) {
+      checkNewAchievements();
+    }
+  }, [achievements.length]);
 
   const calculateUserStats = (goals, profile) => {
     const totalGoals = goals.length;
@@ -173,7 +229,7 @@ const AchievementsPage = () => {
         description: 'Save your first $1,000',
         category: 'savings',
         icon: DollarSign,
-        color: 'from-green-500 to-emerald-500',
+        color: 'from-blue-500 to-blue-600',
         unlocked: true,
         progress: 100,
         unlockedAt: new Date().toISOString()
@@ -185,7 +241,7 @@ const AchievementsPage = () => {
         description: 'Save your first $500',
         category: 'savings',
         icon: DollarSign,
-        color: 'from-blue-500 to-cyan-500',
+        color: 'from-blue-500 to-blue-600',
         unlocked: true,
         progress: 100,
         unlockedAt: new Date().toISOString()
@@ -211,7 +267,7 @@ const AchievementsPage = () => {
         description: 'Save $5,000 or more',
         category: 'savings',
         icon: DollarSign,
-        color: 'from-purple-500 to-pink-500',
+        color: 'from-blue-500 to-blue-600',
         unlocked: true,
         progress: 100,
         unlockedAt: new Date().toISOString()
@@ -238,7 +294,7 @@ const AchievementsPage = () => {
         description: 'Complete your first goal',
         category: 'goals',
         icon: Target,
-        color: 'from-yellow-500 to-orange-500',
+        color: 'from-blue-500 to-blue-600',
         unlocked: true,
         progress: 100,
         unlockedAt: new Date().toISOString()
@@ -264,7 +320,7 @@ const AchievementsPage = () => {
         description: 'Complete 5 goals',
         category: 'goals',
         icon: Target,
-        color: 'from-indigo-500 to-purple-500',
+        color: 'from-blue-500 to-blue-600',
         unlocked: true,
         progress: 100,
         unlockedAt: new Date().toISOString()
@@ -291,7 +347,7 @@ const AchievementsPage = () => {
         description: 'Join your first group goal',
         category: 'social',
         icon: Users,
-        color: 'from-pink-500 to-rose-500',
+        color: 'from-blue-500 to-blue-600',
         unlocked: true,
         progress: 100,
         unlockedAt: new Date().toISOString()
@@ -318,7 +374,7 @@ const AchievementsPage = () => {
         description: 'Stay active for 30 days',
         category: 'streaks',
         icon: Calendar,
-        color: 'from-teal-500 to-cyan-500',
+        color: 'from-blue-500 to-blue-600',
         unlocked: true,
         progress: 100,
         unlockedAt: new Date().toISOString()
@@ -344,7 +400,7 @@ const AchievementsPage = () => {
         description: 'Stay active for 100 days',
         category: 'streaks',
         icon: Calendar,
-        color: 'from-amber-500 to-yellow-500',
+        color: 'from-blue-500 to-blue-600',
         unlocked: true,
         progress: 100,
         unlockedAt: new Date().toISOString()
@@ -368,7 +424,7 @@ const AchievementsPage = () => {
 
   // Calculate stats from backend data
   const totalAchievements = achievements.length;
-  const unlockedAchievements = achievements.filter(a => a.isUnlocked).length;
+  const unlockedAchievements = achievements.filter(a => a.unlocked).length;
   const completionRate = totalAchievements > 0 ? (unlockedAchievements / totalAchievements) * 100 : 0;
 
   // Show loading state
@@ -440,7 +496,7 @@ const AchievementsPage = () => {
   };
 
   const renderAchievement = (achievementData) => {
-    const { achievement, progress, isUnlocked, unlockedAt } = achievementData;
+    const { achievement, progress, unlocked, unlockedAt } = achievementData;
     
     if (!achievement) return null;
 
@@ -454,7 +510,7 @@ const AchievementsPage = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className={`relative bg-white dark:bg-slate-800 rounded-2xl p-6 border-2 transition-all duration-300 ${
-          isUnlocked 
+          unlocked 
             ? 'border-green-200 dark:border-green-700 shadow-lg' 
             : 'border-slate-200 dark:border-slate-700'
         }`}
@@ -463,15 +519,15 @@ const AchievementsPage = () => {
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3">
             <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
-              isUnlocked 
-                ? 'bg-gradient-to-br from-green-400 to-emerald-500' 
+              unlocked 
+                ? 'bg-gradient-to-br from-blue-500 to-blue-600' 
                 : 'bg-slate-200 dark:bg-slate-700'
             }`}>
               {achievement.icon || <Icon className="w-6 h-6" />}
             </div>
             <div>
               <h3 className={`font-semibold text-lg ${
-                isUnlocked 
+                unlocked 
                   ? 'text-slate-900 dark:text-white' 
                   : 'text-slate-500 dark:text-slate-400'
               }`}>
@@ -485,7 +541,7 @@ const AchievementsPage = () => {
           
           {/* Rarity Badge */}
           <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-            isUnlocked ? rarityColor : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+            unlocked ? rarityColor : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
           }`}>
             {achievement.rarity}
           </div>
@@ -500,9 +556,9 @@ const AchievementsPage = () => {
           <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
             <div 
               className={`h-2 rounded-full transition-all duration-500 ${
-                isUnlocked 
-                  ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
-                  : 'bg-gradient-to-r from-blue-400 to-purple-500'
+                unlocked 
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600' 
+                  : 'bg-gradient-to-r from-blue-400 to-blue-500'
               }`}
               style={{ width: `${progressPercentage}%` }}
             />
@@ -520,7 +576,7 @@ const AchievementsPage = () => {
             </span>
           </div>
           
-          {isUnlocked && unlockedAt && (
+          {unlocked && unlockedAt && (
             <span className="text-green-600 dark:text-green-400 font-medium">
               Unlocked {new Date(unlockedAt).toLocaleDateString()}
             </span>
@@ -528,7 +584,7 @@ const AchievementsPage = () => {
         </div>
 
         {/* Unlock Animation */}
-        {isUnlocked && (
+        {unlocked && (
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -600,7 +656,7 @@ const AchievementsPage = () => {
                   onClick={() => setSelectedCategory(category.id)}
                   className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
                     selectedCategory === category.id
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                      ? 'bg-blue-600 text-white'
                       : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
                   }`}
                 >
@@ -615,7 +671,7 @@ const AchievementsPage = () => {
         {/* Achievements Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredAchievements.map((achievementData, index) => {
-            const { achievement, progress, isUnlocked, unlockedAt } = achievementData;
+            const { achievement, progress, unlocked, unlockedAt } = achievementData;
             
             if (!achievement) return null;
 
@@ -626,22 +682,22 @@ const AchievementsPage = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.1 }}
                 className={`bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 transition-all duration-200 ${
-                  isUnlocked ? 'ring-2 ring-green-500/20' : ''
+                  unlocked ? 'ring-2 ring-green-500/20' : ''
                 }`}
               >
                 <div className="text-center">
                   {/* Achievement Icon */}
                   <div className={`w-20 h-20 rounded-full bg-gradient-to-r ${
-                    isUnlocked ? 'from-green-500 to-emerald-500' : 'from-slate-300 to-slate-400'
+                    unlocked ? 'from-blue-500 to-blue-600' : 'from-slate-300 to-slate-400'
                   } flex items-center justify-center mx-auto mb-4 ${
-                    !isUnlocked ? 'grayscale opacity-50' : ''
+                    !unlocked ? 'grayscale opacity-50' : ''
                   }`}>
                     <span className="text-3xl">{achievement.icon}</span>
                   </div>
                   
                   {/* Achievement Info */}
                   <h3 className={`text-lg font-semibold mb-2 ${
-                    isUnlocked 
+                    unlocked 
                       ? 'text-slate-900 dark:text-white' 
                       : 'text-slate-500 dark:text-slate-400'
                   }`}>
@@ -649,7 +705,7 @@ const AchievementsPage = () => {
                   </h3>
                   
                   <p className={`text-sm mb-4 ${
-                    isUnlocked 
+                    unlocked 
                       ? 'text-slate-600 dark:text-slate-400' 
                       : 'text-slate-400 dark:text-slate-500'
                   }`}>
@@ -660,17 +716,24 @@ const AchievementsPage = () => {
                   <div className="w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-full mb-3">
                     <div
                       className={`h-2 rounded-full ${
-                        isUnlocked 
-                          ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
-                          : 'bg-gradient-to-r from-blue-500 to-purple-500'
+                        unlocked 
+                          ? 'bg-gradient-to-r from-blue-500 to-blue-600' 
+                          : 'bg-gradient-to-r from-blue-400 to-blue-500'
                       }`}
                       style={{ width: `${Math.min(progress || 0, 100)}%` }}
                     />
                   </div>
                   
+                  {/* Criteria */}
+                  {achievementData.criteria && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
+                      {achievementData.criteria}
+                    </p>
+                  )}
+                  
                   {/* Status */}
                   <div className="flex items-center justify-center space-x-2">
-                    {isUnlocked ? (
+                    {unlocked ? (
                       <>
                         <CheckCircle className="w-4 h-4 text-green-500" />
                         <span className="text-sm text-green-600 dark:text-green-400 font-medium">
@@ -688,7 +751,7 @@ const AchievementsPage = () => {
                   </div>
                   
                   {/* Unlock Date */}
-                  {isUnlocked && unlockedAt && (
+                  {unlocked && unlockedAt && (
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
                       Unlocked {new Date(unlockedAt).toLocaleDateString()}
                     </p>

@@ -199,7 +199,7 @@ const AIFinancialAdvisor = () => {
       {/* Floating AI Button */}
       <motion.button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-50"
+        className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-50"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
       >

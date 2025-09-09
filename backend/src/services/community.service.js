@@ -362,9 +362,32 @@ class CommunityService {
         { $sort: { count: -1 } }
       ]);
 
+      // Get total users count
+      const totalUsers = await User.countDocuments({ isVerified: true });
+      
+      // Get posts from today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const postsToday = await CommunityPost.countDocuments({
+        status: 'active',
+        createdAt: { $gte: today }
+      });
+
+      // Get active challenges count
+      const CommunityChallenge = require('../models/CommunityChallenge');
+      const activeChallenges = await CommunityChallenge.countDocuments({ status: 'active' });
+
+      // Get active support groups count
+      const PeerSupportGroup = require('../models/PeerSupportGroup');
+      const supportGroups = await PeerSupportGroup.countDocuments({ status: 'active' });
+
       return {
         success: true,
         data: {
+          totalMembers: totalUsers,
+          postsToday: postsToday,
+          activeChallenges: activeChallenges,
+          supportGroups: supportGroups,
           overall: stats[0] || {
             totalPosts: 0,
             totalLikes: 0,

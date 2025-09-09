@@ -42,6 +42,8 @@ const DashboardPage = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [realAchievements, setRealAchievements] = useState([]);
+  const [achievementsLoading, setAchievementsLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -67,6 +69,35 @@ const DashboardPage = () => {
 
     fetchDashboardData();
   }, [toast]);
+
+  // Fetch real achievements from dashboard service
+  useEffect(() => {
+    const fetchRealAchievements = async () => {
+      try {
+        setAchievementsLoading(true);
+        const [achievementsResponse, progressResponse] = await Promise.all([
+          dashboardService.getUserAchievements(),
+          dashboardService.getAchievementProgress()
+        ]);
+        
+        const progressData = progressResponse.data || {};
+        const achievements = progressData.achievements || [];
+        
+        // Take only the first 4 achievements for dashboard display
+        setRealAchievements(achievements.slice(0, 4));
+      } catch (error) {
+        console.error('Error fetching achievements:', error);
+        // Fallback to empty array if fetch fails
+        setRealAchievements([]);
+      } finally {
+        setAchievementsLoading(false);
+      }
+    };
+
+    if (dashboardData) {
+      fetchRealAchievements();
+    }
+  }, [dashboardData]);
 
   // Show loading state
   if (isLoading) {
@@ -102,7 +133,7 @@ const DashboardPage = () => {
     );
   }
 
-  // Update the stats array to use real data
+  // Update the stats array to use real data with solid blue theme
   const stats = dashboardData ? [
     {
       title: 'Total Contributed',
@@ -110,7 +141,7 @@ const DashboardPage = () => {
       change: `+${Math.floor(Math.random() * 20) + 5}% vs last month`,
       changeType: 'positive',
       icon: DollarSign,
-      color: 'from-green-500 to-emerald-500'
+      color: 'bg-blue-600'
     },
     {
       title: 'Total Contributions',
@@ -118,7 +149,7 @@ const DashboardPage = () => {
       change: `+${Math.floor(Math.random() * 15) + 3}% vs last month`,
       changeType: 'positive',
       icon: Target,
-      color: 'from-blue-500 to-cyan-500'
+      color: 'bg-blue-600'
     },
     {
       title: 'Average Contribution',
@@ -126,7 +157,7 @@ const DashboardPage = () => {
       change: `+${Math.floor(Math.random() * 10) + 2}% vs last month`,
       changeType: 'positive',
       icon: TrendingUp,
-      color: 'from-purple-500 to-pink-500'
+      color: 'bg-blue-600'
     },
     {
       title: 'This Month',
@@ -134,7 +165,7 @@ const DashboardPage = () => {
       change: `+${Math.floor(Math.random() * 25) + 10}% vs last month`,
       changeType: 'positive',
       icon: Calendar,
-      color: 'from-orange-500 to-red-500'
+      color: 'bg-blue-600'
     }
   ] : [];
 
@@ -194,13 +225,14 @@ const DashboardPage = () => {
     };
   });
 
-  const achievements = [
+
+  const achievements = realAchievements.length > 0 ? realAchievements : [
     {
       id: 1,
       title: 'First Goal',
       description: 'Created your first savings goal',
       icon: Target,
-      color: 'from-blue-500 to-cyan-500',
+      color: 'bg-blue-600',
       type: 'individual'
     },
     {
@@ -208,7 +240,7 @@ const DashboardPage = () => {
       title: 'Consistent Saver',
       description: 'Saved for 30 consecutive days',
       icon: Calendar,
-      color: 'from-green-500 to-emerald-500',
+      color: 'bg-blue-600',
       type: 'individual'
     },
     {
@@ -216,7 +248,7 @@ const DashboardPage = () => {
       title: 'Group Leader',
       description: 'Created and managed a successful group',
       icon: Users,
-      color: 'from-purple-500 to-pink-500',
+      color: 'bg-blue-600',
       type: 'group'
     },
     {
@@ -224,15 +256,7 @@ const DashboardPage = () => {
       title: 'Milestone Master',
       description: 'Reached 5 goal milestones',
       icon: Award,
-      color: 'from-orange-500 to-red-500',
-      type: 'both'
-    },
-    {
-      id: 5,
-      title: 'Savings Champion',
-      description: 'Saved over $10,000 total',
-      icon: DollarSign,
-      color: 'from-yellow-500 to-orange-500',
+      color: 'bg-blue-600',
       type: 'both'
     }
   ];
@@ -241,13 +265,13 @@ const DashboardPage = () => {
     switch (status) {
       case 'success':
       case 'completed':
-        return 'text-green-600 bg-green-100 dark:bg-green-900/20';
+        return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20';
       case 'warning':
-        return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/20';
+        return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20';
       case 'info':
         return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20';
       default:
-        return 'text-gray-600 bg-gray-100 dark:bg-gray-900/20';
+        return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20';
     }
   };
 
@@ -287,7 +311,7 @@ const DashboardPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="lg:col-span-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 text-white relative overflow-hidden"
+            className="lg:col-span-3 bg-blue-600 rounded-2xl p-6 text-white relative overflow-hidden"
           >
             <div className="relative z-10">
               <h1 className="text-2xl font-bold mb-2">
@@ -350,8 +374,8 @@ const DashboardPage = () => {
                     className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                   >
                     <div className="flex items-center space-x-4">
-                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${
-                        goal.isGroupGoal ? 'from-purple-500 to-pink-500' : 'from-blue-500 to-cyan-500'
+                      <div className={`w-10 h-10 rounded-lg ${
+                        goal.isGroupGoal ? 'bg-blue-600' : 'bg-blue-600'
                       } flex items-center justify-center`}>
                         <Target className="w-5 h-5 text-white" />
                       </div>
@@ -362,7 +386,7 @@ const DashboardPage = () => {
                         <div className="flex items-center space-x-2 mt-1">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                             goal.isGroupGoal 
-                              ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' 
+                              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' 
                               : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                           }`}>
                             {goal.isGroupGoal ? 'Group' : 'Individual'}
@@ -380,7 +404,7 @@ const DashboardPage = () => {
                       <div className="w-24 h-2 bg-slate-200 dark:bg-slate-600 rounded-full mt-2">
                         <div
                           className={`h-2 rounded-full ${
-                            goal.isGroupGoal ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gradient-to-r from-blue-500 to-cyan-500'
+                            goal.isGroupGoal ? 'bg-blue-600' : 'bg-blue-600'
                           }`}
                           style={{ 
                             width: `${goal.targetAmount > 0 ? ((goal.currentAmount || 0) / goal.targetAmount) * 100 : 0}%` 
@@ -476,7 +500,7 @@ const DashboardPage = () => {
                     <span className="text-lg font-bold text-slate-900 dark:text-white">
                       ${payment.amount}
                     </span>
-                    <span className="px-2 py-1 text-xs font-medium text-yellow-700 bg-yellow-100 dark:bg-yellow-900/20 rounded-full">
+                    <span className="px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 dark:bg-blue-900/20 rounded-full">
                       Due Soon
                     </span>
                   </div>
@@ -496,45 +520,88 @@ const DashboardPage = () => {
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                 Achievements
               </h2>
-              <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium">
+              <Link
+                to="/achievements"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium"
+              >
                 View all
-              </button>
+              </Link>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              {achievements.map((achievement) => (
-                <motion.div
-                  key={achievement.id}
-                  className={`p-4 rounded-lg border-2 transition-all duration-200 ${
-                    achievement.type === 'individual' 
-                      ? 'border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800' 
-                      : 'border-purple-200 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-800'
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className={`p-2 rounded-lg ${
-                      achievement.type === 'individual' 
-                        ? 'bg-blue-100 dark:bg-blue-900/40' 
-                        : 'bg-purple-100 dark:bg-purple-900/40'
-                    }`}>
-                      <achievement.icon 
-                        size={20} 
-                        className={achievement.type === 'individual' ? 'text-blue-600 dark:text-blue-400' : 'text-purple-600 dark:text-purple-400'} 
-                      />
+              {achievementsLoading ? (
+                <div className="col-span-2 flex items-center justify-center py-8">
+                  <Loader className="w-6 h-6 text-blue-600 animate-spin" />
+                  <span className="ml-2 text-slate-600 dark:text-slate-400">Loading achievements...</span>
+                </div>
+              ) : realAchievements.length > 0 ? (
+                realAchievements.map((achievementData, index) => {
+                  const { achievement, progress, unlocked } = achievementData;
+                  if (!achievement) return null;
+                  
+                  return (
+                    <motion.div
+                      key={achievement._id || `achievement-${index}`}
+                      className={`p-4 rounded-lg border-2 transition-all duration-200 ${
+                        unlocked 
+                          ? 'border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800' 
+                          : 'border-slate-200 bg-slate-50 dark:bg-slate-900/20 dark:border-slate-800'
+                      }`}
+                      whileHover={{ scale: 1.05 }}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-2 rounded-lg ${
+                          unlocked 
+                            ? 'bg-blue-100 dark:bg-blue-900/40' 
+                            : 'bg-slate-100 dark:bg-slate-900/40'
+                        }`}>
+                          <span className="text-lg">{achievement.icon}</span>
+                        </div>
+                        <div>
+                          <p className={`text-sm font-medium ${
+                            unlocked ? 'text-blue-800 dark:text-blue-200' : 'text-slate-500 dark:text-slate-400'
+                          }`}>
+                            {achievement.name}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            {achievement.description}
+                          </p>
+                          {unlocked && (
+                            <div className="flex items-center mt-1">
+                              <CheckCircle className="w-3 h-3 text-green-500 mr-1" />
+                              <span className="text-xs text-green-600 dark:text-green-400">Unlocked</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })
+              ) : (
+                achievements.map((achievement) => (
+                  <motion.div
+                    key={achievement.id}
+                    className="p-4 rounded-lg border-2 border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800 transition-all duration-200"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/40">
+                        <achievement.icon 
+                          size={20} 
+                          className="text-blue-600 dark:text-blue-400" 
+                        />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                          {achievement.title}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {achievement.description}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className={`text-sm font-medium ${
-                        achievement.type === 'individual' ? 'text-blue-800 dark:text-blue-200' : 'text-purple-800 dark:text-purple-200'
-                      }`}>
-                        {achievement.title}
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {achievement.description}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                ))
+              )}
             </div>
           </motion.div>
         </div>
@@ -572,7 +639,7 @@ const DashboardPage = () => {
           <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+                <div className="p-2 bg-blue-600 rounded-lg">
                   <Brain className="w-5 h-5 text-white" />
                 </div>
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-white">

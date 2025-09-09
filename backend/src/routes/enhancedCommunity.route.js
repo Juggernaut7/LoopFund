@@ -91,15 +91,27 @@ router.post('/challenges/:challengeId/leave', auth, enhancedCommunityController.
 router.put('/challenges/:challengeId/progress', auth, enhancedCommunityController.updateChallengeProgress);
 router.post('/challenges/:challengeId/checkin', auth, enhancedCommunityController.addChallengeCheckIn);
 
+// Challenge Admin Routes
+router.post('/challenges/:challengeId/tasks', auth, enhancedCommunityController.addChallengeTask);
+router.put('/challenges/:challengeId/participants/:participantId/promote', auth, enhancedCommunityController.promoteChallengeParticipant);
+router.delete('/challenges/:challengeId/participants/:participantId', auth, enhancedCommunityController.removeChallengeParticipant);
+
 // Peer Support Groups Routes
-router.post('/groups', auth, createGroupValidation, validateRequest, enhancedCommunityController.createPeerSupportGroup);
+router.post('/groups', auth, enhancedCommunityController.createPeerSupportGroup);
 router.get('/groups', enhancedCommunityController.getPeerSupportGroups);
 router.get('/groups/:groupId', enhancedCommunityController.getGroupById);
 router.post('/groups/:groupId/join', auth, enhancedCommunityController.joinPeerSupportGroup);
 router.post('/groups/:groupId/leave', auth, enhancedCommunityController.leavePeerSupportGroup);
+router.get('/groups/:groupId/discussions', enhancedCommunityController.getGroupDiscussions);
 router.post('/groups/:groupId/discussions', auth, enhancedCommunityController.addGroupDiscussion);
+router.post('/groups/:groupId/discussions/:discussionId/replies', auth, enhancedCommunityController.addDiscussionReply);
 router.post('/groups/:groupId/resources', auth, enhancedCommunityController.addGroupResource);
 router.post('/groups/:groupId/events', auth, enhancedCommunityController.addGroupEvent);
+
+// Group Admin Routes
+router.put('/groups/:groupId/members/:memberId/promote', auth, enhancedCommunityController.promoteGroupMember);
+router.delete('/groups/:groupId/members/:memberId', auth, enhancedCommunityController.removeGroupMember);
+router.post('/groups/:groupId/members/:memberId/ban', auth, enhancedCommunityController.banGroupMember);
 
 // Enhanced Search and Discovery
 router.get('/search/advanced', enhancedCommunityController.advancedSearch);
@@ -107,8 +119,8 @@ router.get('/trending/ai-powered', enhancedCommunityController.getAIPoweredTrend
 router.get('/matching/users', auth, enhancedCommunityController.findCompatibleUsers);
 
 // Community Analytics
-router.get('/analytics/engagement', auth, enhancedCommunityController.getEngagementAnalytics);
-router.get('/analytics/emotional-trends', auth, enhancedCommunityController.getEmotionalTrends);
+router.get('/analytics/engagement', enhancedCommunityController.getEngagementAnalytics);
+router.get('/analytics/emotional-trends', enhancedCommunityController.getEmotionalTrends);
 router.get('/analytics/community-health', enhancedCommunityController.getCommunityHealthMetrics);
 
 module.exports = router;

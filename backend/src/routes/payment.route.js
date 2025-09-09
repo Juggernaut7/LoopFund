@@ -5,6 +5,101 @@ const Payment = require('../models/Payment');
 const { requireAuth } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 
+// Initialize payment for goal creation
+router.post('/initialize-goal', requireAuth, [
+  body('goalName').notEmpty().withMessage('Goal name is required'),
+  body('targetAmount').isNumeric().withMessage('Target amount must be a number'),
+  body('description').optional().isString(),
+  body('category').optional().isString(),
+  body('endDate').optional().isISO8601().withMessage('End date must be a valid date'),
+  body('frequency').optional().isString(),
+  body('amount').optional().isNumeric()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false, 
+        errors: errors.array() 
+      });
+    }
+
+    const { goalName, targetAmount, description, category, endDate, frequency, amount } = req.body;
+    const userId = req.user.userId;
+
+    console.log('Route received data:', req.body);
+    console.log('Req.user object:', req.user);
+    console.log('UserId from req.user.userId:', userId, typeof userId);
+    console.log('Parsed targetAmount:', parseFloat(targetAmount));
+
+    const goalData = {
+      name: goalName,
+      targetAmount: parseFloat(targetAmount),
+      description,
+      category: category || 'personal',
+      endDate,
+      frequency: frequency || 'monthly',
+      amount: parseFloat(amount) || 0
+    };
+
+    console.log('Goal data being passed to service:', goalData);
+
+    const paymentResult = await paymentService.initializeGoalPayment(userId, goalData);
+
+    if (!paymentResult.success) {
+      return res.status(400).json({
+        success: false,
+        message: paymentResult.error
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Goal payment initialized successfully',
+      data: paymentResult.data
+    });
+  } catch (error) {
+    console.error('Goal payment initialization error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// Calculate fee for goal creation
+router.post('/calculate-goal-fee', requireAuth, [
+  body('targetAmount').isNumeric().withMessage('Target amount must be a number')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false, 
+        errors: errors.array() 
+      });
+    }
+
+    const { targetAmount } = req.body;
+    const fee = paymentService.calculateGoalFee(parseFloat(targetAmount));
+
+    res.json({
+      success: true,
+      data: {
+        targetAmount: parseFloat(targetAmount),
+        fee: fee,
+        percentage: 2.5
+      }
+    });
+  } catch (error) {
+    console.error('Goal fee calculation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
 // Initialize payment for group creation
 router.post('/initialize', requireAuth, [
   body('groupName').notEmpty().withMessage('Group name is required'),
@@ -22,7 +117,7 @@ router.post('/initialize', requireAuth, [
     }
 
     const { groupName, targetAmount, description, durationMonths = 1 } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     // Get user email from request or user object
     const userEmail = req.body.userEmail || req.user.email;
@@ -64,6 +159,8 @@ router.post('/initialize', requireAuth, [
 router.get('/verify/:reference', async (req, res) => {
   try {
     const { reference } = req.params;
+    
+    console.log('Payment verification request for reference:', reference);
     
     if (!reference) {
       return res.status(400).json({
@@ -325,7 +422,7 @@ router.get('/stats', requireAuth, async (req, res) => {
 // Get user's payment history
 router.get('/history', requireAuth, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     const payments = await Payment.find({ userId })
       .sort({ createdAt: -1 })
       .select('reference amount status type createdAt metadata');
@@ -347,7 +444,7 @@ router.get('/history', requireAuth, async (req, res) => {
 router.post('/retry/:paymentId', requireAuth, async (req, res) => {
   try {
     const { paymentId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user.userId;
     
     // Verify payment belongs to user
     const payment = await Payment.findOne({ _id: paymentId, userId });

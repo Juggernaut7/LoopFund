@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { env } = require('../config/env');
+const emailService = require('../services/emailService');
 const router = express.Router();
 
 // Google OAuth Routes
@@ -40,6 +41,10 @@ router.post('/signup', async (req, res) => {
     const saltRounds = 12;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
+    // Generate verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
     // Create new user
     const user = new User({
       firstName,
@@ -47,10 +52,21 @@ router.post('/signup', async (req, res) => {
       email,
       phone,
       passwordHash,
-      isVerified: false
+      isVerified: false,
+      emailVerificationCode: verificationCode,
+      emailVerificationExpires: expiresAt
     });
 
     await user.save();
+
+    // Send verification email
+    try {
+      await emailService.sendVerificationCode(email, verificationCode, firstName);
+      console.log(`✅ Verification email sent to ${email}`);
+    } catch (emailError) {
+      console.error('❌ Failed to send verification email:', emailError);
+      // Don't fail the signup if email fails, just log it
+    }
 
     // Generate JWT token
     const token = jwt.sign(
@@ -75,9 +91,10 @@ router.post('/signup', async (req, res) => {
     };
 
     res.status(201).json({
-      message: 'User created successfully',
+      message: 'User created successfully. Please check your email for verification code.',
       user: userResponse,
-      token
+      token,
+      requiresVerification: true
     });
 
   } catch (error) {

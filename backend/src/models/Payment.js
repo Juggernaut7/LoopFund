@@ -26,14 +26,22 @@ const paymentSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['group_creation', 'premium_upgrade', 'challenge_access', 'other'],
+    enum: ['group_creation', 'goal_creation', 'premium_upgrade', 'challenge_access', 'other'],
     required: true
   },
   metadata: {
     groupName: String,
     groupTarget: Number,
     groupId: { type: mongoose.Schema.Types.ObjectId, ref: 'Group' },
+    goalName: String,
+    goalTarget: Number,
+    goalId: { type: mongoose.Schema.Types.ObjectId, ref: 'Goal' },
     description: String,
+    category: String,
+    endDate: Date,
+    frequency: String,
+    amount: Number,
+    fee: Number,
     customerEmail: String,
     customerName: String,
     durationMonths: Number,
