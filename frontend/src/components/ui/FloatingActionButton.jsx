@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
   Plus, 
   Target, 
@@ -11,31 +12,44 @@ import {
 
 const FloatingActionButton = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const actions = [
     {
       icon: Target,
       label: 'New Goal',
-      color: 'bg-blue-500 hover:bg-blue-600',
-      action: () => console.log('Create new goal')
+      color: 'bg-blue-600 hover:bg-blue-700',
+      action: () => {
+        navigate('/goals/create');
+        setIsOpen(false);
+      }
     },
     {
       icon: Users,
       label: 'Create Group',
-      color: 'bg-green-500 hover:bg-green-600',
-      action: () => console.log('Create new group')
+      color: 'bg-blue-600 hover:bg-blue-700',
+      action: () => {
+        navigate('/groups/create');
+        setIsOpen(false);
+      }
     },
     {
       icon: Wallet,
       label: 'Make Payment',
-      color: 'bg-purple-500 hover:bg-purple-600',
-      action: () => console.log('Make payment')
+      color: 'bg-blue-600 hover:bg-blue-700',
+      action: () => {
+        navigate('/contributions/pay');
+        setIsOpen(false);
+      }
     },
     {
       icon: Sparkles,
       label: 'Quick Save',
-      color: 'bg-orange-500 hover:bg-orange-600',
-      action: () => console.log('Quick save')
+      color: 'bg-blue-600 hover:bg-blue-700',
+      action: () => {
+        navigate('/contributions/quick-save');
+        setIsOpen(false);
+      }
     }
   ];
 
@@ -73,7 +87,7 @@ const FloatingActionButton = () => {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+        className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
       >
         <AnimatePresence mode="wait">
           {isOpen ? (

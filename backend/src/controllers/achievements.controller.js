@@ -18,13 +18,18 @@ const getUserAchievements = async (req, res, next) => {
 const getAchievementProgress = async (req, res, next) => {
   try {
     const userId = req.user.userId;
+    console.log('🎯 getAchievementProgress - User ID:', userId);
+    console.log('🎯 getAchievementProgress - User object:', req.user);
+    
     const progress = await achievementsService.getAchievementProgress(userId);
+    console.log('🎯 getAchievementProgress - Progress data:', progress);
     
     res.json({
       success: true,
       data: progress
     });
   } catch (error) {
+    console.error('❌ getAchievementProgress error:', error);
     next(error);
   }
 };
@@ -43,8 +48,24 @@ const getAchievementDetails = async (req, res, next) => {
   }
 };
 
+const checkAchievements = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    const result = await achievementsService.checkAndUnlockAchievements(userId);
+    
+    res.json({
+      success: true,
+      data: result,
+      message: result.newlyUnlocked > 0 ? `Unlocked ${result.newlyUnlocked} new achievements!` : 'No new achievements unlocked'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getUserAchievements,
   getAchievementProgress,
-  getAchievementDetails
+  getAchievementDetails,
+  checkAchievements
 }; 

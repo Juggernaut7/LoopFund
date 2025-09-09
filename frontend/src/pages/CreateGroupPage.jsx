@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Target, FileText, CreditCard, CheckCircle, Calendar, TrendingUp, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, Target, FileText, CreditCard, CheckCircle, Calendar, TrendingUp, AlertCircle, ArrowLeft } from 'lucide-react';
 import PaymentModal from '../components/payment/PaymentModal';
 import FeeCalculator from '../components/payment/FeeCalculator';
 import { useAuthStore } from '../store/useAuthStore';
@@ -8,18 +9,64 @@ import api from '../services/api';
 
 const CreateGroupPage = () => {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     targetAmount: '',
     description: '',
     maxMembers: 10,
-    durationMonths: 1
+    durationType: 'weekly',
+    durationValue: 1
   });
   const [feeData, setFeeData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  const getDurationOptions = (type) => {
+    switch (type) {
+      case 'weekly':
+        return [
+          { value: 1, label: '1 week' },
+          { value: 2, label: '2 weeks' },
+          { value: 3, label: '3 weeks' },
+          { value: 4, label: '4 weeks' }
+        ];
+      case 'monthly':
+        return [
+          { value: 1, label: '1 month' },
+          { value: 2, label: '2 months' },
+          { value: 3, label: '3 months' },
+          { value: 6, label: '6 months' },
+          { value: 9, label: '9 months' },
+          { value: 12, label: '12 months' }
+        ];
+      case 'yearly':
+        return [
+          { value: 1, label: '1 year' },
+          { value: 2, label: '2 years' },
+          { value: 3, label: '3 years' },
+          { value: 5, label: '5 years' }
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const calculateTotalDurationInMonths = () => {
+    const { durationType, durationValue } = formData;
+    switch (durationType) {
+      case 'weekly':
+        return Math.ceil(durationValue / 4); // Convert weeks to months
+      case 'monthly':
+        return durationValue;
+      case 'yearly':
+        return durationValue * 12;
+      default:
+        return 1;
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -59,7 +106,7 @@ const CreateGroupPage = () => {
       setSuccess('Payment successful! Your group is being created...');
       
       // Clear form data
-      setFormData({ name: '', targetAmount: '', description: '', maxMembers: 10, durationMonths: 1 });
+      setFormData({ name: '', targetAmount: '', description: '', maxMembers: 10, durationType: 'weekly', durationValue: 1 });
       setFeeData(null);
       
       // Redirect to groups page after a delay
@@ -86,15 +133,29 @@ const CreateGroupPage = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 text-center"
+          className="mb-8"
         >
-          <h1 className="text-4xl font-bold text-neutral-900 dark:text-white mb-4">
-            Create New Savings Group
-          </h1>
-          <p className="text-xl text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
-            Start a new savings challenge with friends and family. 
-            <span className="text-blue-600 dark:text-blue-400 font-medium"> Dynamic fees based on amount and duration</span> - fair and transparent pricing.
-          </p>
+          {/* Back Navigation */}
+          <div className="mb-6">
+            <button
+              onClick={() => navigate('/groups')}
+              className="flex items-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="font-medium">Back to Groups</span>
+            </button>
+          </div>
+          
+          {/* Title and Description */}
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-neutral-900 dark:text-white mb-4">
+              Create New Savings Group
+            </h1>
+            <p className="text-xl text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
+              Start a new savings challenge with friends and family. 
+              <span className="text-blue-600 dark:text-blue-400 font-medium"> Dynamic fees based on amount and duration</span> - fair and transparent pricing.
+            </p>
+          </div>
         </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-8">
@@ -106,33 +167,81 @@ const CreateGroupPage = () => {
             className="space-y-6"
           >
             {/* Duration Selection */}
-            <div className="glass-card p-6 bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20">
-              <div className="flex items-center space-x-3 mb-4">
-                <Calendar className="text-purple-600 dark:text-purple-400" size={20} />
-                <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-100">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                   Savings Duration
                 </h3>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {[
-                  { value: 1, label: '1 month' },
-                  { value: 3, label: '3 months' },
-                  { value: 6, label: '6 months' },
-                  { value: 12, label: '12 months' }
-                ].map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => setFormData(prev => ({ ...prev, durationMonths: option.value }))}
-                    className={`p-3 rounded-lg border-2 transition-all ${
-                      formData.durationMonths === option.value
-                        ? 'border-purple-500 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300'
-                        : 'border-gray-200 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-600'
-                    }`}
-                  >
-                    <div className="text-lg font-bold">{option.value}</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">{option.label.includes('month') ? 'month' : 'months'}</div>
-                  </button>
-                ))}
+              
+              {/* Duration Type Selection */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                  Choose Duration Type
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { value: 'weekly', label: 'Weekly', icon: '📅' },
+                    { value: 'monthly', label: 'Monthly', icon: '📆' },
+                    { value: 'yearly', label: 'Yearly', icon: '🗓️' }
+                  ].map((type) => (
+                    <button
+                      key={type.value}
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, durationType: type.value, durationValue: 1 }))}
+                      className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                        formData.durationType === type.value
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                          : 'border-slate-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-600 text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      <div className="text-2xl mb-2">{type.icon}</div>
+                      <div className="font-medium">{type.label}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Duration Value Selection */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                  Select {formData.durationType === 'weekly' ? 'Weeks' : formData.durationType === 'monthly' ? 'Months' : 'Years'}
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {getDurationOptions(formData.durationType).map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, durationValue: option.value }))}
+                      className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                        formData.durationValue === option.value
+                          ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300'
+                          : 'border-slate-200 dark:border-slate-600 hover:border-orange-300 dark:hover:border-orange-600 text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      <div className="text-2xl font-bold">{option.value}</div>
+                      <div className="text-sm text-slate-600 dark:text-slate-400">
+                        {option.label.split(' ')[1]}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Duration Summary */}
+              <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Duration:</span>
+                  <span className="text-lg font-bold text-slate-900 dark:text-white">
+                    {formData.durationValue} {formData.durationType === 'weekly' ? 'week' : formData.durationType === 'monthly' ? 'month' : 'year'}{formData.durationValue > 1 ? 's' : ''}
+                    <span className="text-sm text-slate-500 dark:text-slate-400 ml-2">
+                      ({calculateTotalDurationInMonths()} month{calculateTotalDurationInMonths() > 1 ? 's' : ''})
+                    </span>
+                  </span>
+                </div>
               </div>
             </div>
             <div className="glass-card p-8">
@@ -241,7 +350,7 @@ const CreateGroupPage = () => {
                 <button 
                   type="submit"
                   disabled={isLoading || !feeData}
-                  className="w-full btn-primary flex items-center justify-center space-x-2 py-4 text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-2 py-4 text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
                   {isLoading ? (
                     <>
@@ -274,7 +383,7 @@ const CreateGroupPage = () => {
             {/* Dynamic Fee Calculator */}
             <FeeCalculator
               targetAmount={formData.targetAmount}
-              durationMonths={formData.durationMonths}
+              durationMonths={calculateTotalDurationInMonths()}
               onFeeCalculated={handleFeeCalculated}
             />
 
@@ -331,7 +440,10 @@ const CreateGroupPage = () => {
       <PaymentModal
         isOpen={showPaymentModal}
         onClose={handleClosePaymentModal}
-        groupData={formData}
+        groupData={{
+          ...formData,
+          durationMonths: calculateTotalDurationInMonths()
+        }}
         onSuccess={handlePaymentSuccess}
       />
     </div>

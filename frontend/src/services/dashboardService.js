@@ -19,12 +19,14 @@ class DashboardService {
     const token = this.getAuthToken();
     console.log('🔑 DashboardService: Getting auth headers');
     console.log('🔑 DashboardService: Token available:', !!token);
+    console.log('🔑 DashboardService: Token value:', token ? token.substring(0, 20) + '...' : 'null');
     
     const headers = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     };
     
+    console.log('🔑 DashboardService: Headers:', headers);
     return headers;
   }
 
@@ -103,17 +105,29 @@ class DashboardService {
   // Fetch user achievements
   async getUserAchievements() {
     try {
+      console.log('🔄 Fetching user achievements from:', `${this.baseURL}/achievements`);
+      const headers = this.getAuthHeaders();
+      console.log('🔑 Using headers:', headers);
+      
       const response = await fetch(`${this.baseURL}/achievements`, {
-        headers: this.getAuthHeaders()
+        headers: headers
       });
 
+      console.log('📊 Response status:', response.status);
+      console.log('📊 Response ok:', response.ok);
+
       if (!response.ok) {
-        throw new Error('Failed to fetch user achievements');
+        const errorText = await response.text();
+        console.error('❌ Response error:', errorText);
+        throw new Error(`Failed to fetch user achievements: ${response.status} ${errorText}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      console.log('✅ User achievements data:', data);
+      return data;
     } catch (error) {
-      console.error('Error fetching user achievements:', error);
+      console.error('❌ Error fetching user achievements:', error);
+      console.error('❌ Error details:', error.message);
       throw error;
     }
   }
@@ -140,17 +154,29 @@ class DashboardService {
   // Get achievement progress
   async getAchievementProgress() {
     try {
+      console.log('🔄 Fetching achievement progress from:', `${this.baseURL}/achievements/progress`);
+      const headers = this.getAuthHeaders();
+      console.log('🔑 Using headers:', headers);
+      
       const response = await fetch(`${this.baseURL}/achievements/progress`, {
-        headers: this.getAuthHeaders()
+        headers: headers
       });
 
+      console.log('📊 Response status:', response.status);
+      console.log('📊 Response ok:', response.ok);
+
       if (!response.ok) {
-        throw new Error('Failed to fetch achievement progress');
+        const errorText = await response.text();
+        console.error('❌ Response error:', errorText);
+        throw new Error(`Failed to fetch achievement progress: ${response.status} ${errorText}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      console.log('✅ Achievement progress data:', data);
+      return data;
     } catch (error) {
-      console.error('Error fetching achievement progress:', error);
+      console.error('❌ Error fetching achievement progress:', error);
+      console.error('❌ Error details:', error.message);
       throw error;
     }
   }

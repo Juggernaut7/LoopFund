@@ -25,19 +25,36 @@ const PaymentVerificationPage = () => {
       setVerificationStatus('verifying');
       setError('');
 
+      console.log('Verifying payment with reference:', reference);
       const response = await api.get(`/payments/verify/${reference}`);
+      
+      console.log('Payment verification response:', response.data);
       
       if (response.data.success) {
         const data = response.data.data;
         setPaymentData(data);
+        console.log('Payment data:', data);
         
         if (data.status === 'success') {
           setVerificationStatus('success');
+          
+          console.log('Payment successful, checking for created items:', {
+            groupId: data.groupId,
+            goalId: data.goalId,
+            fullData: data
+          });
           
           // If group was created, redirect after a delay
           if (data.groupId) {
             setTimeout(() => {
               navigate(`/groups/${data.groupId}`);
+            }, 3000);
+          }
+          
+          // If goal was created, redirect to goals page
+          if (data.goalId) {
+            setTimeout(() => {
+              navigate('/goals');
             }, 3000);
           }
         } else if (data.status === 'pending') {
@@ -92,9 +109,13 @@ const PaymentVerificationPage = () => {
   const getStatusMessage = () => {
     switch (verificationStatus) {
       case 'success':
-        return paymentData?.groupId 
-          ? 'Your group has been created successfully! Redirecting...'
-          : 'Payment was successful but group creation is pending. Please contact support.';
+        if (paymentData?.groupId) {
+          return 'Your group has been created successfully! Redirecting...';
+        } else if (paymentData?.goalId) {
+          return 'Your goal has been created successfully! Redirecting...';
+        } else {
+          return 'Payment was successful but creation is pending. Please contact support.';
+        }
       case 'failed':
         return 'Your payment could not be processed. Please try again or contact support.';
       case 'pending':

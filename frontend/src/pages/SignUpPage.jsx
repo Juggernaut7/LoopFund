@@ -15,6 +15,7 @@ import {
 import { useToast } from '../context/ToastContext';
 import { useAuthStore } from '../store/useAuthStore';
 import GoogleOAuthButton from '../components/auth/GoogleOAuthButton';
+import EmailVerification from '../components/auth/EmailVerification';
 import logo from '../assets/logo.jpg';
 
 const SignUpPage = () => {
@@ -30,6 +31,8 @@ const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
   const navigate = useNavigate();
   const { login } = useAuthStore();
   const { toast } = useToast();
@@ -90,8 +93,15 @@ const SignUpPage = () => {
         
         login(data.data.user, data.data.token);
         
-        toast.success('Account created successfully! Welcome to LoopFund!');
-        navigate('/dashboard');
+        // Check if email verification is required
+        if (data.requiresVerification) {
+          setUserEmail(formData.email);
+          setShowEmailVerification(true);
+          toast.success('Account created! Please verify your email to continue.');
+        } else {
+          toast.success('Account created successfully! Welcome to LoopFund!');
+          navigate('/dashboard');
+        }
       } else {
         throw new Error(data.error || 'Signup failed - invalid response format');
       }
@@ -108,6 +118,31 @@ const SignUpPage = () => {
       setIsLoading(false);
     }
   };
+
+  const handleEmailVerified = (verifiedUser) => {
+    // Update the user in the store with verified status
+    login(verifiedUser, localStorage.getItem('token'));
+    toast.success('Email verified successfully! Welcome to LoopFund!');
+    navigate('/dashboard');
+  };
+
+  const handleBackToSignup = () => {
+    setShowEmailVerification(false);
+    setUserEmail('');
+  };
+
+  // Show email verification if needed
+  if (showEmailVerification) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
+        <EmailVerification
+          email={userEmail}
+          onVerified={handleEmailVerified}
+          onBack={handleBackToSignup}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">

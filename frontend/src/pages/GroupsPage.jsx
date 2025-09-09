@@ -188,7 +188,7 @@ const GroupsPage = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleCreateGroup}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl"
           >
             <Plus className="w-5 h-5" />
             <span>Create Group</span>
@@ -231,7 +231,7 @@ const GroupsPage = () => {
               {/* Group Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center">
                     <Users className="w-6 h-6 text-white" />
                   </div>
                   <div>
@@ -275,7 +275,7 @@ const GroupsPage = () => {
                 </div>
                 <div className="w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-full">
                   <div
-                    className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600"
+                    className="h-2 rounded-full bg-blue-600"
                     style={{ width: `${getProgressPercentage(group)}%` }}
                   />
                 </div>
@@ -315,7 +315,7 @@ const GroupsPage = () => {
                     {group.members.slice(0, 4).map((member) => (
                       <div
                         key={member._id}
-                        className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-medium border-2 border-white dark:border-slate-800"
+                        className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center text-white text-xs font-medium border-2 border-white dark:border-slate-800"
                         title={member.name}
                       >
                         {member.name ? member.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U'}
@@ -368,7 +368,7 @@ const GroupsPage = () => {
             {!searchTerm && filterType === 'all' && (
               <button
                 onClick={handleCreateGroup}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200"
+                className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
               >
                 Create Your First Group
               </button>
@@ -508,7 +508,7 @@ const CreateGroupModal = ({ onClose, onSubmit }) => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 text-white px-6 py-2 rounded-xl font-medium transition-all duration-200"
+              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-6 py-2 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               {isSubmitting ? 'Creating...' : 'Create Group'}
             </button>

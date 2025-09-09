@@ -13,6 +13,9 @@ router.get('/', achievementsController.getUserAchievements);
 // Add the progress route BEFORE the :achievementId route
 router.get('/progress', achievementsController.getAchievementProgress);
 
+// Check and unlock achievements
+router.post('/check', achievementsController.checkAchievements);
+
 // Get achievement details - This must come AFTER specific routes
 router.get('/:achievementId', achievementsController.getAchievementDetails);
 

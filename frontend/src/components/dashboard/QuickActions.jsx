@@ -17,29 +17,29 @@ const QuickActions = () => {
     {
       title: 'New Goal',
       icon: Target,
-      color: 'from-blue-500 to-blue-600',
-      hoverColor: 'from-blue-600 to-blue-700',
+      color: 'bg-blue-600',
+      hoverColor: 'bg-blue-700',
       onClick: () => navigate('/goals/create')
     },
     {
       title: 'Create Group',
       icon: Users,
-      color: 'from-green-500 to-green-600',
-      hoverColor: 'from-green-600 to-green-700',
+      color: 'bg-blue-600',
+      hoverColor: 'bg-blue-700',
       onClick: () => navigate('/groups/create')
     },
     {
       title: 'Make Payment',
       icon: Wallet,
-      color: 'from-purple-500 to-purple-600',
-      hoverColor: 'from-purple-600 to-purple-700',
+      color: 'bg-blue-600',
+      hoverColor: 'bg-blue-700',
       onClick: () => navigate('/contributions/pay')
     },
     {
       title: 'Quick Save',
       icon: Zap,
-      color: 'from-orange-500 to-orange-600',
-      hoverColor: 'from-orange-600 to-orange-700',
+      color: 'bg-blue-600',
+      hoverColor: 'bg-blue-700',
       onClick: () => navigate('/contributions/quick-save')
     }
   ];
@@ -69,7 +69,7 @@ const QuickActions = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={action.onClick}
-            className={`w-full p-4 rounded-xl bg-gradient-to-r ${action.color} hover:${action.hoverColor} text-white transition-all duration-200 shadow-lg hover:shadow-xl flex flex-col items-center space-y-2`}
+            className={`w-full p-4 rounded-xl ${action.color} hover:${action.hoverColor} text-white transition-all duration-200 shadow-lg hover:shadow-xl flex flex-col items-center space-y-2`}
           >
             <action.icon className="w-6 h-6" />
             <span className="text-sm font-medium">{action.title}</span>

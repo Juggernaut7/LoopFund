@@ -45,6 +45,11 @@ const communityChallengeSchema = new mongoose.Schema({
       min: 0,
       max: 100
     },
+    role: {
+      type: String,
+      enum: ['participant', 'moderator', 'admin', 'creator'],
+      default: 'participant'
+    },
     milestones: [{
       milestone: String,
       completed: Boolean,
@@ -55,6 +60,20 @@ const communityChallengeSchema = new mongoose.Schema({
       mood: String,
       progress: Number,
       notes: String
+    }],
+    tasks: [{
+      taskId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ChallengeTask'
+      },
+      completed: Boolean,
+      completedAt: Date,
+      submission: String,
+      approved: Boolean,
+      approvedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
     }]
   }],
   duration: {
@@ -82,6 +101,38 @@ const communityChallengeSchema = new mongoose.Schema({
     recognition: String,
     communityFeatures: [String]
   },
+  tasks: [{
+    title: {
+      type: String,
+      required: true
+    },
+    description: {
+      type: String,
+      required: true
+    },
+    type: {
+      type: String,
+      enum: ['daily', 'weekly', 'milestone', 'custom'],
+      default: 'custom'
+    },
+    points: {
+      type: Number,
+      default: 10
+    },
+    isRequired: {
+      type: Boolean,
+      default: false
+    },
+    dueDate: Date,
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   rules: [String],
   tags: [String],
   status: {

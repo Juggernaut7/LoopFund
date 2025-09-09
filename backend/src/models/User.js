@@ -12,6 +12,10 @@ const UserSchema = new mongoose.Schema({
   isAdmin: { type: Boolean, default: false },
   isVerified: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true },
+  // Email verification fields
+  emailVerificationCode: { type: String },
+  emailVerificationExpires: { type: Date },
+  emailVerifiedAt: { type: Date },
   status: { type: String, enum: ['active', 'pending', 'suspended'], default: 'active' },
   role: { type: String, enum: ['user', 'premium', 'admin'], default: 'user' },
   lastLogin: { Date },

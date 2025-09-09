@@ -48,7 +48,7 @@ const peerSupportGroupSchema = new mongoose.Schema({
     },
     role: {
       type: String,
-      enum: ['member', 'moderator', 'creator'],
+      enum: ['member', 'moderator', 'admin', 'creator'],
       default: 'member'
     },
     status: {

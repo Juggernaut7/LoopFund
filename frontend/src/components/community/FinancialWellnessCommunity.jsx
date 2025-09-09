@@ -416,7 +416,7 @@ const FinancialWellnessCommunity = () => {
                 {/* Post Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold">
                       {post.isAnonymous ? 'A' : post.author.name.charAt(0)}
                     </div>
                     <div>
@@ -468,7 +468,7 @@ const FinancialWellnessCommunity = () => {
 
                 {/* Financial Metrics */}
                 {post.financialMetrics && Object.keys(post.financialMetrics).length > 0 && (
-                  <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg mb-4">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg mb-4">
                     <h4 className="font-semibold text-gray-900 mb-2">Financial Impact</h4>
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                       {post.financialMetrics.savingsAmount && (

@@ -18,6 +18,15 @@ const env = {
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
   // Frontend URL for OAuth redirects
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
+  // Email Configuration
+  email: {
+    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.EMAIL_PORT || '587', 10),
+    secure: process.env.EMAIL_SECURE === 'true',
+    user: process.env.EMAIL_USER,
+    password: process.env.EMAIL_PASSWORD,
+    from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@loopfund.com'
+  }
 };
 
 module.exports = { env }; 

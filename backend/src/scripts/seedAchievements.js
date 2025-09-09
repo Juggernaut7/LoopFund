@@ -4,15 +4,10 @@ const { env } = require('../config/env');
 
 const defaultAchievements = [
   {
-    name: 'First Steps',
+    title: 'First Steps',
     description: 'Create your first savings goal',
     type: 'first_goal',
-    category: 'beginner',
-    icon: '🎯',
-    color: '#10B981',
-    criteria: { goalsCompleted: 1 },
-    points: 10,
-    rarity: 'common'
+    data: { category: 'beginner', icon: '🎯', color: '#10B981', criteria: { goalsCompleted: 1 }, points: 10, rarity: 'common' }
   },
   {
     name: 'Goal Getter',

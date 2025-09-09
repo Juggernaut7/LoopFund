@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
 class CommunityService {
   constructor() {
@@ -80,7 +80,7 @@ class CommunityService {
 
   async createPost(postData) {
     try {
-      const response = await this.api.post('/enhanced-community/posts/enhanced', postData);
+      const response = await this.api.post('/community', postData);
       return response.data;
     } catch (error) {
       console.error('Error creating post:', error);
@@ -195,10 +195,44 @@ class CommunityService {
 
   async createGroup(groupData) {
     try {
+      console.log('API: Creating group with data:', groupData);
       const response = await this.api.post('/enhanced-community/groups', groupData);
+      console.log('API: Group creation response:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error creating group:', error);
+      console.error('Error response:', error.response?.data);
+      throw error;
+    }
+  }
+
+  // Group Discussions
+  async getGroupDiscussions(groupId, page = 1, limit = 20) {
+    try {
+      const response = await this.api.get(`/enhanced-community/groups/${groupId}/discussions?page=${page}&limit=${limit}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching group discussions:', error);
+      throw error;
+    }
+  }
+
+  async addGroupDiscussion(groupId, discussionData) {
+    try {
+      const response = await this.api.post(`/enhanced-community/groups/${groupId}/discussions`, discussionData);
+      return response.data;
+    } catch (error) {
+      console.error('Error adding group discussion:', error);
+      throw error;
+    }
+  }
+
+  async addDiscussionReply(groupId, discussionId, content) {
+    try {
+      const response = await this.api.post(`/enhanced-community/groups/${groupId}/discussions/${discussionId}/replies`, { content });
+      return response.data;
+    } catch (error) {
+      console.error('Error adding discussion reply:', error);
       throw error;
     }
   }
@@ -219,16 +253,6 @@ class CommunityService {
       return response.data;
     } catch (error) {
       console.error('Error leaving group:', error);
-      throw error;
-    }
-  }
-
-  async addGroupDiscussion(groupId, discussionData) {
-    try {
-      const response = await this.api.post(`/enhanced-community/groups/${groupId}/discussions`, discussionData);
-      return response.data;
-    } catch (error) {
-      console.error('Error adding group discussion:', error);
       throw error;
     }
   }
