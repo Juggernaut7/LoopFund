@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { 
   Users, 
@@ -16,7 +17,7 @@ import {
 import { useToast } from '../context/ToastContext';
 
 const JoinGroupPage = () => {
-  const { groupId } = useParams();
+  const { inviteCode: urlInviteCode } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -24,50 +25,95 @@ const JoinGroupPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState(null);
-  const [inviteCode, setInviteCode] = useState('');
-  const [showCodeInput, setShowCodeInput] = useState(false);
+  const [inviteCode, setInviteCode] = useState(urlInviteCode || '');
+  const [showCodeInput, setShowCodeInput] = useState(!urlInviteCode);
 
   useEffect(() => {
-    fetchGroupDetails();
-  }, [groupId]);
+    if (urlInviteCode) {
+      fetchGroupDetails(urlInviteCode);
+    } else {
+      setIsLoading(false);
+    }
+  }, [urlInviteCode]);
 
-  const fetchGroupDetails = async () => {
+  const fetchGroupDetails = async (code) => {
     try {
       setIsLoading(true);
-      // TODO: Replace with actual API call
-      const response = await fetch(`/api/groups/${groupId}/invite`);
-      if (!response.ok) throw new Error('Group not found or invite expired');
+      const response = await fetch(`http://localhost:4000/api/invitations/group/${code}`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Group not found or invite expired');
+      }
       
       const data = await response.json();
-      setGroup(data);
+      
+      if (data.success) {
+        setGroup(data.data);
+        setInviteCode(code);
+      } else {
+        throw new Error(data.error || 'Failed to fetch group details');
+      }
     } catch (err) {
+      console.error('Error fetching group details:', err);
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleCodeSubmit = async () => {
+    if (!inviteCode.trim()) {
+      toast.error('Please enter the invite code');
+      return;
+    }
+
+    // Fetch group details first
+    await fetchGroupDetails(inviteCode.trim());
+  };
+
   const handleJoinGroup = async () => {
     if (!inviteCode.trim()) {
-      toast.error('Invalid Code', 'Please enter the invite code');
+      toast.error('Please enter the invite code');
+      return;
+    }
+
+    // Check if user is authenticated
+    const token = localStorage.getItem('token');
+    if (!token) {
+      // Store invite code in localStorage and redirect to signup
+      localStorage.setItem('pendingInviteCode', inviteCode.trim());
+      toast.info('Please sign up to join the group');
+      navigate('/signup');
       return;
     }
 
     try {
       setIsJoining(true);
-      // TODO: Replace with actual API call
-      const response = await fetch(`/api/groups/${groupId}/join`, {
+      const response = await fetch('http://localhost:4000/api/invitations/join', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ inviteCode })
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ inviteCode: inviteCode.trim() })
       });
 
-      if (!response.ok) throw new Error('Failed to join group');
+      const data = await response.json();
 
-      toast.success('Success!', 'You have successfully joined the group!');
-      navigate('/dashboard');
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to join group');
+      }
+
+      if (data.success) {
+        toast.success('Successfully joined the group!');
+        navigate('/groups');
+      } else {
+        throw new Error(data.error || 'Failed to join group');
+      }
     } catch (err) {
-      toast.error('Join Failed', err.message);
+      console.error('Join group error:', err);
+      toast.error(err.message || 'Failed to join group');
     } finally {
       setIsJoining(false);
     }
@@ -116,13 +162,24 @@ const JoinGroupPage = () => {
           transition={{ duration: 0.6 }}
           className="max-w-2xl mx-auto"
         >
+          {/* Back Navigation */}
+          <div className="mb-6">
+            <Link
+              to="/join-group"
+              className="inline-flex items-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="font-medium">Back to Join Groups</span>
+            </Link>
+          </div>
+
           {/* Header */}
           <div className="text-center mb-8">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: "spring" }}
-              className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6"
+              className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6"
             >
               <Users className="w-10 h-10 text-white" />
             </motion.div>
@@ -229,10 +286,10 @@ const JoinGroupPage = () => {
             className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-8"
           >
             <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">
-              Join the Group
+              {group ? 'Join the Group' : 'Enter Invite Code'}
             </h3>
 
-            {!showCodeInput ? (
+            {!group && !showCodeInput ? (
               <div className="text-center">
                 <p className="text-slate-600 dark:text-slate-400 mb-6">
                   You'll need the invite code to join this group. 
@@ -246,7 +303,7 @@ const JoinGroupPage = () => {
                   Enter Invite Code
                 </button>
               </div>
-            ) : (
+            ) : !group && showCodeInput ? (
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -255,10 +312,9 @@ const JoinGroupPage = () => {
                   <input
                     type="text"
                     value={inviteCode}
-                    onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                    placeholder="Enter the 6-digit code"
+                    onChange={(e) => setInviteCode(e.target.value)}
+                    placeholder="Enter the invite code"
                     className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-center text-lg font-mono tracking-widest"
-                    maxLength={6}
                   />
                 </div>
 
@@ -270,9 +326,50 @@ const JoinGroupPage = () => {
                     Cancel
                   </button>
                   <button
-                    onClick={handleJoinGroup}
-                    disabled={isJoining || !inviteCode.trim()}
+                    onClick={handleCodeSubmit}
+                    disabled={isLoading || !inviteCode.trim()}
                     className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white rounded-lg font-medium transition-colors disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    {isLoading ? (
+                      <>
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"
+                        />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        Find Group
+                        <ArrowRight className="w-5 h-5 ml-2" />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : group ? (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <p className="text-slate-600 dark:text-slate-400 mb-6">
+                    Ready to join <strong>{group.name}</strong>? Click the button below to become a member.
+                  </p>
+                </div>
+
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => {
+                      setGroup(null);
+                      setShowCodeInput(true);
+                    }}
+                    className="flex-1 px-6 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={handleJoinGroup}
+                    disabled={isJoining}
+                    className="flex-1 px-6 py-3 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-400 text-white rounded-lg font-medium transition-colors disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     {isJoining ? (
                       <>
@@ -292,7 +389,7 @@ const JoinGroupPage = () => {
                   </button>
                 </div>
               </div>
-            )}
+            ) : null}
           </motion.div>
 
           {/* Footer */}

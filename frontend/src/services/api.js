@@ -50,8 +50,8 @@ export const endpoints = {
   
   // User
   user: {
-    profile: '/user/profile',
-    updateProfile: '/user/profile',
+    profile: '/auth/profile',
+    updateProfile: '/auth/profile',
     preferences: '/user/preferences',
     notificationSettings: '/user/notifications',
   },
@@ -106,6 +106,42 @@ export const endpoints = {
     preferences: '/notifications/preferences',
   },
   
+  // AI
+  ai: {
+    advice: '/ai/advice',
+    predict: '/ai/predict',
+    goals: '/ai/goals',
+    behavior: '/ai/behavior',
+    therapy: {
+      session: '/ai/therapy/session',
+      analyzeEmotion: '/ai/therapy/analyze-emotion',
+      interventions: '/ai/therapy/interventions',
+      progress: '/ai/therapy/progress',
+    },
+    predictive: {
+      forecast: '/ai/predictive/forecast',
+      crisisAlerts: '/ai/predictive/crisis-alerts',
+      opportunityCosts: '/ai/predictive/opportunity-costs',
+      lifeEvents: '/ai/predictive/life-events',
+    },
+    community: {
+      analyzePost: '/ai/community/analyze-post',
+      recommendations: '/ai/community/recommendations',
+      successStories: '/ai/community/success-stories',
+    },
+    interventions: {
+      trigger: '/ai/interventions/trigger',
+      pause: '/ai/interventions/pause',
+      habitStacking: '/ai/interventions/habit-stacking',
+    },
+    games: {
+      anxietyReduction: '/ai/games/anxiety-reduction',
+      triggerIdentification: '/ai/games/trigger-identification',
+      mindsetTransformation: '/ai/games/mindset-transformation',
+      confidenceBuilding: '/ai/games/confidence-building',
+    },
+  },
+  
   // Health check
   health: '/health',
   test: '/test',
@@ -143,6 +179,12 @@ export const apiService = {
   updateGroup: (id, groupData) => api.put(endpoints.groups.update(id), groupData),
   deleteGroup: (id) => api.delete(endpoints.groups.delete(id)),
   getGroupDetails: (id) => api.get(endpoints.groups.details(id)),
+  
+  // AI methods
+  getAIAdvice: (query, userProfile, context) => api.post(endpoints.ai.advice, { query, userProfile, context }),
+  getAIPrediction: (data) => api.post(endpoints.ai.predict, data),
+  getAIGoals: (data) => api.post(endpoints.ai.goals, data),
+  analyzeBehavior: (data) => api.post(endpoints.ai.behavior, data),
   
   // Health check
   healthCheck: () => api.get(endpoints.health),

@@ -85,6 +85,36 @@ class EmailService {
     }
   }
 
+  async sendPasswordResetEmail(email, resetToken, firstName) {
+    const resetUrl = `${env.frontendUrl}/reset-password?token=${resetToken}`;
+    
+    const mailOptions = {
+      from: env.email?.from || env.email?.user || 'noreply@loopfund.com',
+      to: email,
+      subject: 'LoopFund - Password Reset Request',
+      html: this.getPasswordResetEmailTemplate(resetUrl, firstName),
+      text: `Hi ${firstName}, you requested a password reset. Click this link to reset your password: ${resetUrl}. This link expires in 1 hour.`
+    };
+
+    try {
+      if (this.transporter && env.email?.user && env.email?.password) {
+        await this.transporter.sendMail(mailOptions);
+        console.log(`✅ Password reset email sent to ${email}`);
+        return { success: true, message: 'Password reset email sent successfully' };
+      } else {
+        console.log('📧 PASSWORD RESET EMAIL (Development Mode):');
+        console.log(`To: ${email}`);
+        console.log(`Subject: LoopFund - Password Reset Request`);
+        console.log(`Reset URL: ${resetUrl}`);
+        console.log(`Expires: 1 hour`);
+        return { success: true, message: 'Password reset email logged to console (development mode)' };
+      }
+    } catch (error) {
+      console.error('❌ Failed to send password reset email:', error);
+      return { success: false, message: 'Failed to send password reset email' };
+    }
+  }
+
   async sendPasswordResetEmail(email, resetCode, firstName) {
     const mailOptions = {
       from: env.email?.from || env.email?.user || 'noreply@loopfund.com',

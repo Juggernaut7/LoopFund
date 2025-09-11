@@ -34,11 +34,26 @@ const GroupSchema = new mongoose.Schema({
   tags: [{ type: String, trim: true }],
   startDate: { type: Date, default: Date.now },
   endDate: { type: Date },
+  durationMonths: { type: Number, default: 1 },
   progress: {
     percentage: { type: Number, default: 0, min: 0, max: 100 },
     daysRemaining: { type: Number },
     activeMembers: { type: Number, default: 0 },
     totalContributions: { type: Number, default: 0 }
+  },
+  // Account/Payment Information
+  accountInfo: {
+    bankName: { type: String, trim: true },
+    accountName: { type: String, trim: true },
+    accountNumber: { type: String, trim: true },
+    routingNumber: { type: String, trim: true },
+    swiftCode: { type: String, trim: true },
+    paymentMethod: { 
+      type: String, 
+      enum: ['bank_transfer', 'mobile_money', 'crypto', 'other'], 
+      default: 'bank_transfer' 
+    },
+    additionalInfo: { type: String, trim: true }
   }
 }, { 
   timestamps: true,

@@ -12,7 +12,7 @@ import AuthCallback from './pages/AuthCallback';
 import DashboardPage from './pages/DashboardPage';
 import GoalsPage from './pages/GoalsPage';
 import GroupsPage from './pages/GroupsPage'; // Make sure this import exists
-import ContributionsPage from './pages/ContributionsPage';
+import GroupDetailsPage from './pages/GroupDetailsPage'; // Group Details page
 import NotificationsPage from './pages/NotificationsPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
@@ -20,8 +20,10 @@ import PageTransition from './components/layout/PageTransition';
 import PrivateRoute from './components/auth/PrivateRoute';
 import './App.css';
 import AchievementsPage from './pages/AchievementsPage'; // Added missing import
+import AnalyticsPage from './pages/AnalyticsPage'; // Analytics page
+import HelpPage from './pages/HelpPage'; // Help page
+import CalendarPage from './pages/CalendarPage'; // Calendar page
 import AIAdvisorPage from './pages/AIAdvisorPage'; // AI Financial Advisor page
-import FinancialTherapistPage from './pages/FinancialTherapistPage'; // AI Financial Therapist page
 import CommunityPage from './pages/CommunityPage'; // Financial Wellness Community page
 import MicroInterventionsPage from './pages/MicroInterventionsPage'; // Behavioral Interventions page
 import PredictiveHealthPage from './pages/PredictiveHealthPage'; // Predictive Financial Health page
@@ -32,6 +34,8 @@ import AdminUsersPage from './pages/admin/AdminUsersPage'; // Admin Users Manage
 import AdminRevenuePage from './pages/admin/AdminRevenuePage'; // Admin Revenue Analytics page
 import PaymentVerificationPage from './pages/PaymentVerificationPage'; // Payment verification page
 import CreateGroupPage from './pages/CreateGroupPage'; // Create Group page
+import JoinGroupPage from './pages/JoinGroupPage'; // Join Group page
+import JoinGroupLandingPage from './pages/JoinGroupLandingPage'; // Join Group Landing page
 
 function App() {
   const { isAuthenticated, user } = useAuthStore();
@@ -58,6 +62,14 @@ function App() {
                 </PrivateRoute>
               } />
               
+              <Route path="/analytics" element={
+                <PrivateRoute>
+                  <PageTransition>
+                    <AnalyticsPage />
+                  </PageTransition>
+                </PrivateRoute>
+              } />
+              
               <Route path="/goals" element={
                 <PrivateRoute>
                   <PageTransition>
@@ -75,6 +87,14 @@ function App() {
                 </PrivateRoute>
               } />
               
+              <Route path="/groups/:groupId" element={
+                <PrivateRoute>
+                  <PageTransition>
+                    <GroupDetailsPage />
+                  </PageTransition>
+                </PrivateRoute>
+              } />
+              
               {/* Create Group route */}
               <Route path="/create-group" element={
                 <PrivateRoute>
@@ -84,13 +104,21 @@ function App() {
                 </PrivateRoute>
               } />
               
-              <Route path="/contributions" element={
-                <PrivateRoute>
-                  <PageTransition>
-                    <ContributionsPage />
-                  </PageTransition>
-                </PrivateRoute>
+              {/* Join Group Landing page - Public route */}
+              <Route path="/join-group" element={
+                <PageTransition>
+                  <JoinGroupLandingPage />
+                </PageTransition>
               } />
+              
+              {/* Join Group route - Public route for invite links */}
+              <Route path="/join-group/:inviteCode" element={
+                <PageTransition>
+                  <JoinGroupPage />
+                </PageTransition>
+              } />
+              
+              
               
               <Route path="/notifications" element={
                 <PrivateRoute>
@@ -116,6 +144,24 @@ function App() {
                 </PrivateRoute>
               } />
 
+              {/* Help page route */}
+              <Route path="/help" element={
+                <PrivateRoute>
+                  <PageTransition>
+                    <HelpPage />
+                  </PageTransition>
+                </PrivateRoute>
+              } />
+
+              {/* Calendar page route */}
+              <Route path="/calendar" element={
+                <PrivateRoute>
+                  <PageTransition>
+                    <CalendarPage />
+                  </PageTransition>
+                </PrivateRoute>
+              } />
+
               {/* Add the missing achievements route */}
               <Route path="/achievements" element={
                 <PrivateRoute>
@@ -134,14 +180,6 @@ function App() {
                 </PrivateRoute>
               } />
 
-              {/* AI Financial Therapist route */}
-              <Route path="/financial-therapist" element={
-                <PrivateRoute>
-                  <PageTransition>
-                    <FinancialTherapistPage />
-                  </PageTransition>
-                </PrivateRoute>
-              } />
 
               {/* Financial Wellness Community route */}
               <Route path="/community" element={

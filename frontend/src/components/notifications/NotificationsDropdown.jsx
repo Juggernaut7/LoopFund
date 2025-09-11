@@ -112,6 +112,9 @@ const NotificationsDropdown = ({ isOpen, onClose, notifications = [] }) => {
       case 'error': return <X className="w-5 h-5 text-red-500" />;
       case 'info': return <Info className="w-5 h-5 text-blue-500" />;
       case 'achievement': return <Star className="w-5 h-5 text-purple-500" />;
+      case 'contribution': return <Check className="w-5 h-5 text-green-500" />;
+      case 'group_join': return <Check className="w-5 h-5 text-blue-500" />;
+      case 'group_member_joined': return <Check className="w-5 h-5 text-orange-500" />;
       default: return <Bell className="w-5 h-5 text-slate-500" />;
     }
   };
@@ -123,6 +126,9 @@ const NotificationsDropdown = ({ isOpen, onClose, notifications = [] }) => {
       case 'error': return 'border-l-red-500 bg-red-50 dark:bg-red-900/20';
       case 'info': return 'border-l-blue-500 bg-blue-50 dark:bg-blue-900/20';
       case 'achievement': return 'border-l-purple-500 bg-purple-50 dark:bg-purple-900/20';
+      case 'contribution': return 'border-l-green-500 bg-green-50 dark:bg-green-900/20';
+      case 'group_join': return 'border-l-blue-500 bg-blue-50 dark:bg-blue-900/20';
+      case 'group_member_joined': return 'border-l-orange-500 bg-orange-50 dark:bg-orange-900/20';
       default: return 'border-l-slate-500 bg-slate-50 dark:bg-slate-900/20';
     }
   };
@@ -133,13 +139,20 @@ const NotificationsDropdown = ({ isOpen, onClose, notifications = [] }) => {
   };
 
   const handleNotificationClick = (notification) => {
-    // Navigate based on notification type
-    if (notification.metadata?.goalId) {
+    // Navigate based on notification type and data
+    if (notification.data?.groupId || notification.relatedId) {
+      const groupId = notification.data?.groupId || notification.relatedId;
+      navigate(`/groups/${groupId}`);
+    } else if (notification.metadata?.goalId) {
       navigate(`/goals/${notification.metadata.goalId}`);
-    } else if (notification.metadata?.groupId) {
-      navigate(`/groups/${notification.metadata.groupId}`);
     } else if (notification.metadata?.achievementId) {
       navigate('/achievements');
+    } else if (notification.type === 'contribution' && notification.data?.groupId) {
+      navigate(`/groups/${notification.data.groupId}`);
+    } else if (notification.type === 'group_join' && notification.data?.groupId) {
+      navigate(`/groups/${notification.data.groupId}`);
+    } else if (notification.type === 'group_member_joined' && notification.data?.groupId) {
+      navigate(`/groups/${notification.data.groupId}`);
     } else {
       navigate('/notifications');
     }

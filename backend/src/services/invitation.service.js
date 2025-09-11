@@ -152,9 +152,10 @@ class InvitationService {
   // Join group with invite code
   async joinGroupWithCode(inviteCode, userId) {
     try {
+      // Look for both pending and active invitations
       const invitation = await Invitation.findOne({ 
         inviteCode, 
-        status: 'pending',
+        status: { $in: ['pending', 'active'] },
         expiresAt: { $gt: new Date() }
       }).populate('group');
 
@@ -162,15 +163,32 @@ class InvitationService {
         throw new Error('Invalid or expired invite code');
       }
 
-      // Check if user is already a member
-      if (invitation.group.members.includes(userId)) {
+      // Check if user is already a member using the nested structure
+      const isAlreadyMember = invitation.group.members.some(member => 
+        member.user && member.user.toString() === userId
+      );
+      
+      if (isAlreadyMember) {
         throw new Error('You are already a member of this group');
       }
 
-      // Add user to group
-      await Group.findByIdAndUpdate(invitation.group._id, {
-        $addToSet: { members: userId }
-      });
+      // Check if group is full
+      if (invitation.group.members.length >= invitation.group.maxMembers) {
+        throw new Error('This group is full');
+      }
+
+      // Add user to group with proper structure
+      const updatedGroup = await Group.findByIdAndUpdate(invitation.group._id, {
+        $push: {
+          members: {
+            user: userId,
+            role: 'member',
+            joinedAt: new Date(),
+            isActive: true,
+            totalContributed: 0
+          }
+        }
+      }, { new: true });
 
       // Update invitation status
       invitation.status = 'accepted';
@@ -180,6 +198,9 @@ class InvitationService {
 
       // Send notification to group admins
       await this.sendJoinNotification(invitation);
+
+      // Send notification to all group members about new member
+      await this.sendNewMemberNotification(invitation, userId);
 
       return invitation.group;
     } catch (error) {
@@ -326,6 +347,43 @@ class InvitationService {
       await Notification.insertMany(notifications);
     } catch (error) {
       console.error('Failed to send join notification:', error);
+    }
+  }
+
+  async sendNewMemberNotification(invitation, userId) {
+    try {
+      const User = require('../models/User');
+      const newMember = await User.findById(userId);
+      const group = await Group.findById(invitation.group)
+        .populate('members.user', 'firstName lastName');
+
+      if (!newMember || !group) return;
+
+      const newMemberName = `${newMember.firstName} ${newMember.lastName}`;
+
+      // Notify all existing group members about the new member
+      const notifications = group.members
+        .filter(member => member.user && member.user._id.toString() !== userId)
+        .map(member => ({
+          user: member.user._id,
+          title: 'New Group Member',
+          message: `${newMemberName} joined ${group.name}`,
+          type: 'group_member_joined',
+          relatedId: invitation.group,
+          relatedType: 'group',
+          data: {
+            groupId: invitation.group,
+            newMemberId: userId,
+            newMemberName: newMemberName,
+            groupName: group.name
+          }
+        }));
+
+      if (notifications.length > 0) {
+        await Notification.insertMany(notifications);
+      }
+    } catch (error) {
+      console.error('Failed to send new member notification:', error);
     }
   }
 

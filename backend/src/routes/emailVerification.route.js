@@ -68,7 +68,7 @@ router.post(
 router.post(
   '/verify',
   [
-    body('email').isEmail().normalizeEmail(),
+    body('email').isEmail(),
     body('code').isString().isLength({ min: 6, max: 6 }),
   ],
   validateRequest,

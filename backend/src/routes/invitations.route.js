@@ -4,28 +4,28 @@ const invitationController = require('../controllers/invitation.controller');
 
 const router = Router();
 
-// All routes require authentication
-router.use(requireAuth);
+// Get group details by invite code (public route - no auth required)
+router.get('/group/:inviteCode', invitationController.getGroupByInviteCode);
 
 // Create invitation
-router.post('/', invitationController.createInvitation);
+router.post('/', requireAuth, invitationController.createInvitation);
 
 // Generate public invite link
-router.post('/group/:groupId/public-link', invitationController.generatePublicInviteLink);
+router.post('/group/:groupId/public-link', requireAuth, invitationController.generatePublicInviteLink);
 
 // Join group with invite code
-router.post('/join', invitationController.joinGroupWithCode);
+router.post('/join', requireAuth, invitationController.joinGroupWithCode);
 
 // Accept invitation
-router.put('/:invitationId/accept', invitationController.acceptInvitation);
+router.put('/:invitationId/accept', requireAuth, invitationController.acceptInvitation);
 
 // Decline invitation
-router.put('/:invitationId/decline', invitationController.declineInvitation);
+router.put('/:invitationId/decline', requireAuth, invitationController.declineInvitation);
 
 // Get user's invitations
-router.get('/user', invitationController.getUserInvitations);
+router.get('/user', requireAuth, invitationController.getUserInvitations);
 
 // Get group's invitations
-router.get('/group/:groupId', invitationController.getGroupInvitations);
+router.get('/group/:groupId', requireAuth, invitationController.getGroupInvitations);
 
 module.exports = router; 

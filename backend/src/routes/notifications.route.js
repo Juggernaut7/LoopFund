@@ -14,34 +14,31 @@ const {
 
 const router = Router();
 
-// All routes require authentication
-router.use(requireAuth);
-
 // Get user notifications with filters and pagination
-router.get('/', getUserNotifications);
+router.get('/', requireAuth, getUserNotifications);
 
 // Get notification statistics
-router.get('/stats', getNotificationStats);
+router.get('/stats', requireAuth, getNotificationStats);
 
 // Get unread count for header badge
-router.get('/unread-count', getUnreadCount);
+router.get('/unread-count', requireAuth, getUnreadCount);
 
 // Mark notification as read
-router.put('/:notificationId/read', markAsRead);
+router.put('/:notificationId/read', requireAuth, markAsRead);
 
 // Mark all notifications as read
-router.put('/mark-all-read', markAllAsRead);
+router.put('/mark-all-read', requireAuth, markAllAsRead);
 
 // Archive notification
-router.put('/:notificationId/archive', archiveNotification);
+router.put('/:notificationId/archive', requireAuth, archiveNotification);
 
 // Archive multiple notifications
-router.put('/archive', archiveMultipleNotifications);
+router.put('/archive', requireAuth, archiveMultipleNotifications);
 
 // Delete notification
-router.delete('/:notificationId', deleteNotification);
+router.delete('/:notificationId', requireAuth, deleteNotification);
 
 // Create notification (for testing/admin purposes)
-router.post('/', createNotification);
+router.post('/', requireAuth, createNotification);
 
 module.exports = router;

@@ -10,11 +10,8 @@ const {
 
 const router = Router();
 
-// All routes require authentication
-router.use(requireAuth);
-
 // Get user contributions with filters and pagination
-router.get('/', getUserContributionsController);
+router.get('/', requireAuth, getUserContributionsController);
 
 // Add this new route to get all user contributions
 router.get('/user/all', requireAuth, async (req, res) => {
@@ -46,12 +43,12 @@ router.get('/user/all', requireAuth, async (req, res) => {
 });
 
 // Get contribution statistics
-router.get('/stats', getContributionStatsController);
+router.get('/stats', requireAuth, getContributionStatsController);
 
 // Get contributions for a specific goal
-router.get('/goal/:goalId', getGoalContributionsController);
+router.get('/goal/:goalId', requireAuth, getGoalContributionsController);
 
 // Add new contribution
-router.post('/', addContributionController);
+router.post('/', requireAuth, addContributionController);
 
 module.exports = router;

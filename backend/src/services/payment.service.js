@@ -129,6 +129,7 @@ class PaymentService {
           customerEmail: groupData.userEmail,
           customerName: groupData.userName || 'User',
           durationMonths: groupData.durationMonths,
+          accountInfo: groupData.accountInfo,
           feeBreakdown: feeCalculation
         }
       });
@@ -382,17 +383,67 @@ class PaymentService {
         // Create group if this is a group creation payment
         if (payment.type === 'group_creation' && payment.metadata.groupName) {
           try {
+            // Check if group already exists for this payment
+            if (payment.metadata.groupId) {
+              const existingGroup = await Group.findById(payment.metadata.groupId);
+              if (existingGroup) {
+                console.log('Group already exists for this payment:', payment.metadata.groupId);
+                return {
+                  success: true,
+                  data: {
+                    status: transaction.status,
+                    amount: transaction.amount,
+                    reference: transaction.reference,
+                    metadata: transaction.metadata,
+                    customer: transaction.customer,
+                    paidAt: transaction.paid_at,
+                    groupId: existingGroup._id,
+                    groupName: existingGroup.name
+                  }
+                };
+              }
+            }
+
+            // Check if a group with the same name already exists for this user
+            const existingGroupByName = await Group.findOne({
+              name: payment.metadata.groupName,
+              createdBy: payment.userId
+            });
+            
+            if (existingGroupByName) {
+              console.log('Group with same name already exists for this user:', payment.metadata.groupName);
+              return {
+                success: true,
+                data: {
+                  status: transaction.status,
+                  amount: transaction.amount,
+                  reference: transaction.reference,
+                  metadata: transaction.metadata,
+                  customer: transaction.customer,
+                  paidAt: transaction.paid_at,
+                  groupId: existingGroupByName._id,
+                  groupName: existingGroupByName.name
+                }
+              };
+            }
+
+            const durationMonths = payment.metadata.durationMonths || 1;
+            const endDate = new Date();
+            endDate.setMonth(endDate.getMonth() + durationMonths);
+
             const group = new Group({
               name: payment.metadata.groupName,
               description: payment.metadata.description || '',
               targetAmount: payment.metadata.groupTarget,
-              durationMonths: 1, // Default duration
+              durationMonths: durationMonths,
               createdBy: payment.userId,
+              accountInfo: payment.metadata.accountInfo || {},
               members: [{
                 user: payment.userId,
                 role: 'owner',
                 joinedAt: new Date(),
-                isActive: true
+                isActive: true,
+                totalContributed: 0
               }],
               settings: {
                 isPublic: false,
@@ -401,7 +452,7 @@ class PaymentService {
                 maxMembers: 10
               },
               startDate: new Date(),
-              endDate: new Date(Date.now() + (6 * 30 * 24 * 60 * 60 * 1000)) // 6 months from now
+              endDate: endDate
             });
 
             await group.save();

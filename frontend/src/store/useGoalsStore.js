@@ -23,7 +23,7 @@ const useGoalsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch('/api/goals', {
+          const response = await fetch('http://localhost:4000/api/goals', {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -46,7 +46,7 @@ const useGoalsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch('/api/goals', {
+          const response = await fetch('http://localhost:4000/api/goals', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ const useGoalsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`/api/goals/${goalId}`, {
+          const response = await fetch(`http://localhost:4000/api/goals/${goalId}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ const useGoalsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`/api/goals/${goalId}`, {
+          const response = await fetch(`http://localhost:4000/api/goals/${goalId}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -143,7 +143,7 @@ const useGoalsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`/api/goals/${goalId}/contributions`, {
+          const response = await fetch(`http://localhost:4000/api/goals/${goalId}/contributions`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

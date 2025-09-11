@@ -411,13 +411,13 @@ const LandingPage = () => {
               className="space-y-8"
             >
               <motion.div variants={itemVariants} className="space-y-6">
-                <div className="inline-flex items-center px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm font-medium">
+                <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium">
                   <Brain className="w-4 h-4 mr-2" />
                   AI-Powered Financial Wellness Coach
                 </div>
                 <h1 className="text-4xl md:text-6xl font-bold text-slate-900 dark:text-white leading-tight">
                   Your Personal{' '}
-                  <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  <span className="text-blue-600">
                     AI Financial Therapist
                   </span>
                 </h1>
@@ -430,7 +430,7 @@ const LandingPage = () => {
               <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4">
                 <Link
                   to="/signup"
-                  className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
                 >
                   Start Your Financial Therapy
                   <ArrowRight className="ml-2 w-5 h-5" />
@@ -741,10 +741,10 @@ const LandingPage = () => {
         aria-label="Scroll to top"
       >
         {/* Background Glow */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-lg opacity-50 group-hover:opacity-75 transition-opacity duration-300"></div>
+        <div className="absolute inset-0 bg-blue-500 rounded-full blur-lg opacity-50 group-hover:opacity-75 transition-opacity duration-300"></div>
         
         {/* Main Button */}
-        <div className="relative w-14 h-14 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 transform hover:scale-110 flex items-center justify-center overflow-hidden">
+        <div className="relative w-14 h-14 bg-blue-600 hover:bg-blue-700 rounded-full shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 transform hover:scale-110 flex items-center justify-center overflow-hidden">
           {/* Animated Background Pattern */}
           <motion.div
             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"

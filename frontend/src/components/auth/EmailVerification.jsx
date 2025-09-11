@@ -44,8 +44,13 @@ const EmailVerification = ({ email, onVerified, onBack, onResend }) => {
       });
 
       if (response.data.success) {
+        // Store the new token
+        if (response.data.token) {
+          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('authToken', response.data.token);
+        }
         toast.success('Email verified successfully!');
-        onVerified(response.data.user);
+        onVerified(response.data.user, response.data.token);
       } else {
         toast.error(response.data.error || 'Verification failed');
       }

@@ -28,6 +28,7 @@ const PaymentModal = ({ isOpen, onClose, groupData, onSuccess }) => {
         targetAmount: parseFloat(groupData.targetAmount),
         durationMonths: parseInt(groupData.durationMonths),
         description: groupData.description,
+        accountInfo: groupData.accountInfo,
         userEmail: user.email,
         userName: user.name || user.email
       });
