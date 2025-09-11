@@ -5,7 +5,10 @@ const {
   createGroup: createGroupController, 
   joinGroup: joinGroupController, 
   listGroups: listGroupsController,
-  deleteGroup: deleteGroupController  // Add this
+  deleteGroup: deleteGroupController,
+  getGroupDetails: getGroupDetailsController,
+  addGroupContribution: addGroupContributionController,
+  getGroupContributions: getGroupContributionsController
 } = require('../controllers/groups.controller');
 const { validateRequest } = require('../middleware/validateRequest');
 
@@ -112,5 +115,91 @@ router.post(
  *         description: Group not found
  */
 router.delete('/:groupId', requireAuth, deleteGroupController);
+
+/**
+ * @openapi
+ * /api/groups/{groupId}:
+ *   get:
+ *     summary: Get group details
+ *     tags: [Groups]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Group details retrieved successfully
+ *       404:
+ *         description: Group not found
+ */
+router.get('/:groupId', requireAuth, getGroupDetailsController);
+
+/**
+ * @openapi
+ * /api/groups/{groupId}/contributions:
+ *   get:
+ *     summary: Get group contributions
+ *     tags: [Groups]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Group contributions retrieved successfully
+ *       404:
+ *         description: Group not found
+ */
+router.get('/:groupId/contributions', requireAuth, getGroupContributionsController);
+
+/**
+ * @openapi
+ * /api/groups/{groupId}/contributions:
+ *   post:
+ *     summary: Add contribution to group
+ *     tags: [Groups]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [amount]
+ *             properties:
+ *               amount: { type: number }
+ *               method: { type: string, enum: ['bank_transfer', 'card_payment', 'cash', 'other'] }
+ *               description: { type: string }
+ *     responses:
+ *       201:
+ *         description: Contribution added successfully
+ *       400:
+ *         description: Invalid contribution data
+ *       403:
+ *         description: Not authorized to contribute to this group
+ *       404:
+ *         description: Group not found
+ */
+router.post('/:groupId/contributions', requireAuth, [
+  body('amount').isNumeric().withMessage('Amount must be a number'),
+  body('amount').isFloat({ min: 0.01 }).withMessage('Amount must be greater than 0'),
+  body('method').optional().isIn(['bank_transfer', 'card_payment', 'cash', 'other']).withMessage('Invalid payment method'),
+  body('description').optional().isString().trim().isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
+], validateRequest, addGroupContributionController);
 
 module.exports = router;

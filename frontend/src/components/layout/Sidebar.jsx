@@ -5,7 +5,6 @@ import {
   Home, 
   Target, 
   Users, 
-  Wallet, 
   BarChart3, 
   Bell, 
   Settings, 
@@ -19,8 +18,6 @@ import {
   Calendar,
   FileText,
   HelpCircle,
-  Sun,
-  Moon,
   X,
   Brain,
   DollarSign,
@@ -28,7 +25,6 @@ import {
   Heart,
   Gamepad2
 } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
 import { useAuthWithToast } from '../../hooks/useAuthWithToast';
 import Logo from './Logo';
 import logo from '../../assets/logo.jpg';
@@ -37,7 +33,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeSubmenu, setActiveSubmenu] = useState(null);
-  const { theme, toggleTheme, isDark } = useTheme();
   const { user, logout } = useAuthWithToast();
 
   // Handle logout
@@ -79,19 +74,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
       ]
     },
     {
-      title: 'Contributions',
-      icon: Wallet,
-      path: '/contributions',
-      badge: null,
-      submenu: [
-        { title: 'History', path: '/contributions' },
-        { title: 'Make Payment', path: '/contributions/pay' },
-        { title: 'Scheduled', path: '/contributions/scheduled' },
-        { title: 'Individual Savings', path: '/contributions/individual' },
-        { title: 'Group Contributions', path: '/contributions/groups' }
-      ]
-    },
-    {
       title: 'Analytics',
       icon: BarChart3,
       path: '/analytics',
@@ -114,13 +96,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
         { title: 'Budget Analysis', path: '/ai-advisor/budget' },
         { title: 'Investment Tips', path: '/ai-advisor/investment' }
       ]
-    },
-    {
-      title: 'Financial Therapist',
-      icon: Heart,
-      path: '/financial-therapist',
-      badge: 'New',
-      highlight: true
     },
     {
       title: 'Community',
@@ -167,12 +142,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
       title: 'Calendar',
       icon: Calendar,
       path: '/calendar',
-      badge: null
-    },
-    {
-      title: 'Reports',
-      icon: FileText,
-      path: '/reports',
       badge: null
     },
 
@@ -357,24 +326,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
             </Link>
           ))}
           
-          {/* Theme Toggle */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={toggleTheme}
-            className="group flex items-center w-full px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all duration-200"
-          >
-            {isDark ? (
-              <Sun size={20} className="flex-shrink-0 text-yellow-400" />
-            ) : (
-              <Moon size={20} className="flex-shrink-0" />
-            )}
-            {!isCollapsed && (
-              <span className="ml-3">
-                {isDark ? 'Light Mode' : 'Dark Mode'}
-              </span>
-            )}
-          </motion.button>
           
           {/* Logout */}
           <button 

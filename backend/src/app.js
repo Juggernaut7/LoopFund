@@ -89,6 +89,14 @@ app.use('/api/dashboard', require('./routes/dashboard.route'));
 // AI routes
 app.use('/api/ai', require('./routes/ai.route'));
 
+// Chat routes
+app.use('/api/chat', require('./routes/chat.route'));
+
+// Analytics routes (already registered above)
+
+// Therapy Game routes
+app.use('/api/therapy-games', require('./routes/therapyGame.route'));
+
 // Swagger docs
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

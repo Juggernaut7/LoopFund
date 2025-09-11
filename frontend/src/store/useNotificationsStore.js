@@ -23,7 +23,7 @@ const useNotificationsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch('/api/notifications', {
+          const response = await fetch('http://localhost:4000/api/notifications', {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -47,7 +47,7 @@ const useNotificationsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`/api/notifications/${notificationId}/read`, {
+          const response = await fetch(`http://localhost:4000/api/notifications/${notificationId}/read`, {
             method: 'PUT',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -82,7 +82,7 @@ const useNotificationsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch('/api/notifications/read-all', {
+          const response = await fetch('http://localhost:4000/api/notifications/read-all', {
             method: 'PUT',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -110,7 +110,7 @@ const useNotificationsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`/api/notifications/${notificationId}`, {
+          const response = await fetch(`http://localhost:4000/api/notifications/${notificationId}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -156,7 +156,7 @@ const useNotificationsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch('/api/notifications/preferences', {
+          const response = await fetch('http://localhost:4000/api/notifications/preferences', {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',

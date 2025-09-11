@@ -9,11 +9,16 @@ const ContributionSchema = new mongoose.Schema({
   goal: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Goal', 
-    required: true 
+    required: function() {
+      return this.type === 'individual';
+    }
   },
   group: { 
     type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Group' 
+    ref: 'Group',
+    required: function() {
+      return this.type === 'group';
+    }
   },
   amount: { 
     type: Number, 

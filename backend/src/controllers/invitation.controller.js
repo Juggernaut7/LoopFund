@@ -1,4 +1,5 @@
 const invitationService = require('../services/invitation.service');
+const Invitation = require('../models/Invitation');
 
 // Create invitation
 const createInvitation = async (req, res) => {
@@ -46,6 +47,59 @@ const generatePublicInviteLink = async (req, res, next) => {
   }
 };
 
+// Get group details by invite code (public route)
+const getGroupByInviteCode = async (req, res) => {
+  try {
+    const { inviteCode } = req.params;
+    
+    console.log('🔍 Fetching group details for invite code:', inviteCode);
+
+    const invitation = await Invitation.findOne({ 
+      inviteCode, 
+      status: 'active',
+      expiresAt: { $gt: new Date() }
+    }).populate('group', 'name description targetAmount currentAmount members maxMembers durationMonths createdAt');
+
+    if (!invitation) {
+      return res.status(404).json({
+        success: false,
+        error: 'Invalid or expired invite code'
+      });
+    }
+
+    const group = invitation.group;
+    
+    // Calculate group stats
+    const memberCount = group.members ? group.members.length : 0;
+    const progress = group.targetAmount > 0 ? Math.round((group.currentAmount / group.targetAmount) * 100) : 0;
+    
+    const groupData = {
+      _id: group._id,
+      name: group.name,
+      description: group.description,
+      targetAmount: group.targetAmount,
+      currentAmount: group.currentAmount || 0,
+      memberCount,
+      maxMembers: group.maxMembers,
+      durationMonths: group.durationMonths,
+      progress,
+      createdAt: group.createdAt,
+      inviteCode: inviteCode
+    };
+
+    res.json({
+      success: true,
+      data: groupData
+    });
+  } catch (error) {
+    console.error('❌ Error fetching group by invite code:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch group details'
+    });
+  }
+};
+
 // Join group with invite code
 const joinGroupWithCode = async (req, res) => {
   try {
@@ -60,6 +114,7 @@ const joinGroupWithCode = async (req, res) => {
       message: 'Successfully joined the group!'
     });
   } catch (error) {
+    console.error('❌ joinGroupWithCode controller error:', error);
     res.status(400).json({
       success: false,
       error: error.message
@@ -148,6 +203,7 @@ const getGroupInvitations = async (req, res) => {
 module.exports = {
   createInvitation,
   generatePublicInviteLink,
+  getGroupByInviteCode,
   joinGroupWithCode,
   acceptInvitation,
   declineInvitation,

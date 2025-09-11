@@ -26,7 +26,9 @@ const env = {
     user: process.env.EMAIL_USER,
     password: process.env.EMAIL_PASSWORD,
     from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@loopfund.com'
-  }
+  },
+  // HuggingFace AI Configuration
+  huggingFaceApiKey: process.env.HUGGINGFACE_API_KEY
 };
 
 module.exports = { env }; 

@@ -62,7 +62,7 @@ const AIFinancialAdvisor = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/ai/chat', {
+      const response = await fetch('http://localhost:4000/api/ai/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -126,7 +126,7 @@ const AIFinancialAdvisor = () => {
   const getSavingsPlan = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/ai/savings-plan', {
+      const response = await fetch('http://localhost:4000/api/ai/savings-plan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -159,7 +159,7 @@ const AIFinancialAdvisor = () => {
   const getBudgetAnalysis = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/ai/budget-analysis', {
+      const response = await fetch('http://localhost:4000/api/ai/budget-analysis', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -21,8 +21,9 @@ async function signupController(req, res, next) {
     res.status(201).json({
       success: true,
       data: {
-        token: result.token,
-        user: result.user
+        token: result.data.token,
+        user: result.data.user,
+        requiresVerification: result.data.requiresVerification
       }
     });
   } catch (error) {

@@ -1,15 +1,22 @@
 const aiService = require('../services/ai.service');
+const huggingFaceAI = require('../services/huggingFaceAI.service');
 
 // Get AI financial advice
 const getFinancialAdvice = async (req, res, next) => {
   try {
-    const { query, userProfile } = req.body;
+    const { query, userProfile, context } = req.body;
     const userId = req.user.userId;
 
-    const result = await aiService.getFinancialAdvice(query, userProfile);
+    console.log('🤖 AI Financial Advice Request:', { query, userId, context });
+
+    // Use HuggingFace AI service for financial advice
+    const result = await huggingFaceAI.getFinancialAdvice(query, userProfile);
+    
+    console.log('✅ AI Response generated:', result.success ? 'Success' : 'Failed');
     
     res.json(result);
   } catch (error) {
+    console.error('❌ AI Controller Error:', error);
     next(error);
   }
 };

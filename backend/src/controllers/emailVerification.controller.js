@@ -77,8 +77,10 @@ async function sendVerificationEmail(req, res) {
 async function verifyEmail(req, res) {
   try {
     const { email, code } = req.body;
+    console.log('🔍 Email verification request:', { email, code });
 
     if (!email || !code) {
+      console.log('❌ Missing email or code');
       return res.status(400).json({
         success: false,
         error: 'Email and verification code are required'
@@ -87,6 +89,7 @@ async function verifyEmail(req, res) {
 
     // Find user by email
     const user = await User.findOne({ email });
+    console.log('🔍 User found:', user ? { id: user._id, email: user.email, isVerified: user.isVerified } : 'No user found');
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -135,6 +138,15 @@ async function verifyEmail(req, res) {
     // Send welcome email
     await emailService.sendWelcomeEmail(user.email, user.firstName);
 
+    // Generate new JWT token for verified user
+    const jwt = require('jsonwebtoken');
+    const { env } = require('../config/env');
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      env.jwtSecret,
+      { expiresIn: '7d' }
+    );
+
     res.json({
       success: true,
       message: 'Email verified successfully',
@@ -143,9 +155,16 @@ async function verifyEmail(req, res) {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
+        phone: user.phone,
         isVerified: user.isVerified,
-        emailVerifiedAt: user.emailVerifiedAt
-      }
+        isActive: user.isActive,
+        profilePicture: user.profilePicture,
+        notificationPreferences: user.notificationPreferences,
+        preferences: user.preferences,
+        emailVerifiedAt: user.emailVerifiedAt,
+        createdAt: user.createdAt
+      },
+      token
     });
   } catch (error) {
     console.error('Verify email error:', error);

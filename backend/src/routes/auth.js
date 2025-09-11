@@ -256,4 +256,52 @@ router.get('/profile', async (req, res) => {
   }
 });
 
+// Forgot Password
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Don't reveal if user exists or not for security
+      return res.json({ 
+        success: true, 
+        message: 'If an account with that email exists, a password reset link has been sent.' 
+      });
+    }
+
+    // Generate reset token
+    const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    // Save reset token to user
+    user.passwordResetToken = resetToken;
+    user.passwordResetExpires = resetTokenExpires;
+    await user.save();
+
+    // Send reset email
+    try {
+      await emailService.sendPasswordResetEmail(email, resetToken, user.firstName);
+      console.log(`✅ Password reset email sent to ${email}`);
+    } catch (emailError) {
+      console.error('❌ Failed to send password reset email:', emailError);
+      // Don't fail the request if email fails
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'If an account with that email exists, a password reset link has been sent.' 
+    });
+
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router; 

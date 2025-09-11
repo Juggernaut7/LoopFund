@@ -27,6 +27,7 @@ const Navigation = () => {
     { name: 'Home', path: '/' },
     { name: 'Features', path: '/#features' },
     { name: 'About', path: '/#about' },
+    { name: 'Join Group', path: '/join-group' },
     { name: 'Contact', path: '/#contact' }
   ];
 

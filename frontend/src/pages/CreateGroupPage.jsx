@@ -16,7 +16,16 @@ const CreateGroupPage = () => {
     description: '',
     maxMembers: 10,
     durationType: 'weekly',
-    durationValue: 1
+    durationValue: 1,
+    accountInfo: {
+      bankName: '',
+      accountName: '',
+      accountNumber: '',
+      routingNumber: '',
+      swiftCode: '',
+      paymentMethod: 'bank_transfer',
+      additionalInfo: ''
+    }
   });
   const [feeData, setFeeData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -79,6 +88,10 @@ const CreateGroupPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    if (isLoading) {
+      return; // Prevent double submission
+    }
+    
     if (!formData.name || !formData.targetAmount) {
       setError('Please fill in all required fields');
       return;
@@ -90,6 +103,7 @@ const CreateGroupPage = () => {
     }
 
     setError('');
+    setIsLoading(true);
     setShowPaymentModal(true);
   };
 
@@ -106,7 +120,23 @@ const CreateGroupPage = () => {
       setSuccess('Payment successful! Your group is being created...');
       
       // Clear form data
-      setFormData({ name: '', targetAmount: '', description: '', maxMembers: 10, durationType: 'weekly', durationValue: 1 });
+      setFormData({ 
+        name: '', 
+        targetAmount: '', 
+        description: '', 
+        maxMembers: 10, 
+        durationType: 'weekly', 
+        durationValue: 1,
+        accountInfo: {
+          bankName: '',
+          accountName: '',
+          accountNumber: '',
+          routingNumber: '',
+          swiftCode: '',
+          paymentMethod: 'bank_transfer',
+          additionalInfo: ''
+        }
+      });
       setFeeData(null);
       
       // Redirect to groups page after a delay
@@ -124,11 +154,12 @@ const CreateGroupPage = () => {
 
   const handleClosePaymentModal = () => {
     setShowPaymentModal(false);
+    setIsLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-white dark:from-dark-bg dark:to-dark-surface">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -158,7 +189,7 @@ const CreateGroupPage = () => {
           </div>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-1 gap-8">
           {/* Form Section */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -321,6 +352,142 @@ const CreateGroupPage = () => {
                   </select>
                 </div>
 
+                {/* Account Information */}
+                <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center space-x-3 mb-6">
+                    <div className="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center">
+                      <CreditCard className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                      Payment Account Information
+                    </h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Bank Name */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Bank Name
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.accountInfo.bankName}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          accountInfo: { ...prev.accountInfo, bankName: e.target.value }
+                        }))}
+                        placeholder="e.g., First Bank, GTBank"
+                        className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
+                      />
+                    </div>
+
+                    {/* Account Name */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Account Name
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.accountInfo.accountName}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          accountInfo: { ...prev.accountInfo, accountName: e.target.value }
+                        }))}
+                        placeholder="Account holder name"
+                        className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
+                      />
+                    </div>
+
+                    {/* Account Number */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Account Number
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.accountInfo.accountNumber}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          accountInfo: { ...prev.accountInfo, accountNumber: e.target.value }
+                        }))}
+                        placeholder="10-digit account number"
+                        className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
+                      />
+                    </div>
+
+                    {/* Routing Number */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Routing Number (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.accountInfo.routingNumber}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          accountInfo: { ...prev.accountInfo, routingNumber: e.target.value }
+                        }))}
+                        placeholder="Bank routing number"
+                        className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
+                      />
+                    </div>
+
+                    {/* Payment Method */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Preferred Payment Method
+                      </label>
+                      <select
+                        value={formData.accountInfo.paymentMethod}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          accountInfo: { ...prev.accountInfo, paymentMethod: e.target.value }
+                        }))}
+                        className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
+                      >
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="mobile_money">Mobile Money</option>
+                        <option value="crypto">Cryptocurrency</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    {/* Additional Info */}
+                    <div className="md:col-span-2 lg:col-span-4">
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Additional Payment Information (Optional)
+                      </label>
+                      <textarea
+                        value={formData.accountInfo.additionalInfo}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          accountInfo: { ...prev.accountInfo, additionalInfo: e.target.value }
+                        }))}
+                        placeholder="Any additional payment instructions or information..."
+                        rows={3}
+                        className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors resize-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-white text-xs font-bold">i</span>
+                      </div>
+                      <div>
+                        <p className="text-blue-800 dark:text-blue-200 text-sm font-medium mb-1">
+                          Payment Information
+                        </p>
+                        <p className="text-blue-700 dark:text-blue-300 text-sm">
+                          This information will be shared with group members so they know where to send their contributions. 
+                          Make sure the details are accurate and up-to-date.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Error Display */}
                 {error && (
                   <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
@@ -347,11 +514,12 @@ const CreateGroupPage = () => {
                 )}
                 
                 {/* Submit Button */}
-                <button 
-                  type="submit"
-                  disabled={isLoading || !feeData}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-2 py-4 text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
-                >
+                <div className="flex justify-center">
+                  <button 
+                    type="submit"
+                    disabled={isLoading || !feeData}
+                    className="w-full max-w-md bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-2 py-4 text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+                  >
                   {isLoading ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -368,7 +536,8 @@ const CreateGroupPage = () => {
                       </span>
                     </>
                   )}
-                </button>
+                  </button>
+                </div>
               </form>
             </div>
           </motion.div>

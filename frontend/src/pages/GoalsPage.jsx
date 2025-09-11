@@ -558,9 +558,9 @@ const GoalsPage = () => {
               className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300"
             >
               <div className="flex items-center justify-between">
-                <div>
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Saved</p>
-                  <p className="text-3xl font-bold text-orange-600">${getGoalStats().totalValue.toLocaleString()}</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-orange-600 break-words">${getGoalStats().totalValue.toLocaleString()}</p>
                 </div>
                 <div className="w-14 h-14 bg-orange-100 dark:bg-orange-900/20 rounded-2xl flex items-center justify-center">
                   <DollarSign className="w-7 h-7 text-orange-600" />
@@ -879,19 +879,19 @@ const GoalsPage = () => {
               <div className="space-y-2 mb-4">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-500 dark:text-slate-400">Current:</span>
-                  <span className="font-medium text-slate-900 dark:text-white">
+                  <span className="font-medium text-slate-900 dark:text-white break-words">
                     ${(goal.currentAmount || 0).toLocaleString()}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-500 dark:text-slate-400">Target:</span>
-                  <span className="font-medium text-slate-900 dark:text-white">
+                  <span className="font-medium text-slate-900 dark:text-white break-words">
                     ${goal.targetAmount.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-500 dark:text-slate-400">Remaining:</span>
-                  <span className="font-medium text-slate-900 dark:text-white">
+                  <span className="font-medium text-slate-900 dark:text-white break-words">
                     ${(goal.targetAmount - (goal.currentAmount || 0)).toLocaleString()}
                   </span>
                 </div>
@@ -996,19 +996,19 @@ const GoalsPage = () => {
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-slate-500 dark:text-slate-400">Current:</span>
-                      <span className="font-medium text-slate-900 dark:text-white">
+                      <span className="font-medium text-slate-900 dark:text-white break-words">
                         ${(goal.currentAmount || 0).toLocaleString()}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-500 dark:text-slate-400">Target:</span>
-                      <span className="font-medium text-slate-900 dark:text-white">
-                        ${goal.targetAmount.toLocaleString()}
-                      </span>
-                    </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-500 dark:text-slate-400">Target:</span>
+                  <span className="font-medium text-slate-900 dark:text-white break-words">
+                    ${goal.targetAmount.toLocaleString()}
+                  </span>
+                </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-slate-500 dark:text-slate-400">Remaining:</span>
-                      <span className="font-medium text-orange-600">
+                      <span className="font-medium text-orange-600 break-words">
                         ${(goal.targetAmount - (goal.currentAmount || 0)).toLocaleString()}
                       </span>
                     </div>
@@ -1084,10 +1084,10 @@ const GoalsPage = () => {
                   <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-6">
                     <div className="text-sm text-slate-600 dark:text-slate-400 mb-2">Goal Details:</div>
                     <div className="font-semibold text-slate-900 dark:text-white">{formData.name}</div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                    <div className="text-sm text-slate-600 dark:text-slate-400 break-words">
                       Target: ₦{parseFloat(formData.targetAmount || 0).toLocaleString()}
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                    <div className="text-sm text-slate-600 dark:text-slate-400 break-words">
                       Fee: ₦{calculateGoalFee(parseFloat(formData.targetAmount || 0)).toLocaleString()}
                     </div>
                   </div>
@@ -1101,9 +1101,11 @@ const GoalsPage = () => {
                     </button>
                     <button
                       onClick={handlePaymentSuccess}
-                      className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                      className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm sm:text-base"
                     >
-                      Pay ₦{calculateGoalFee(parseFloat(formData.targetAmount || 0)).toLocaleString()} & Create Goal
+                      <span className="break-words">
+                        Pay ₦{calculateGoalFee(parseFloat(formData.targetAmount || 0)).toLocaleString()} & Create Goal
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -1179,7 +1181,7 @@ const GoalsPage = () => {
                           <h3 className="font-semibold text-slate-900 dark:text-white">
                             {selectedGoal.name}
                           </h3>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                          <p className="text-sm text-slate-600 dark:text-slate-400 break-words">
                             Target: ${selectedGoal.targetAmount.toLocaleString()}
                           </p>
                         </div>

@@ -23,7 +23,7 @@ const useGroupsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch('/api/groups', {
+          const response = await fetch('http://localhost:4000/api/groups', {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -46,7 +46,7 @@ const useGroupsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch('/api/groups', {
+          const response = await fetch('http://localhost:4000/api/groups', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ const useGroupsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`/api/groups/${groupId}`, {
+          const response = await fetch(`http://localhost:4000/api/groups/${groupId}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ const useGroupsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`/api/groups/${groupId}`, {
+          const response = await fetch(`http://localhost:4000/api/groups/${groupId}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -143,7 +143,7 @@ const useGroupsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch('/api/groups/join', {
+          const response = await fetch('http://localhost:4000/api/groups/join', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -175,7 +175,7 @@ const useGroupsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`/api/groups/${groupId}/leave`, {
+          const response = await fetch(`http://localhost:4000/api/groups/${groupId}/leave`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -205,7 +205,7 @@ const useGroupsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`/api/groups/${groupId}/contributions`, {
+          const response = await fetch(`http://localhost:4000/api/groups/${groupId}/contributions`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -240,7 +240,7 @@ const useGroupsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`/api/groups/${groupId}/invite`, {
+          const response = await fetch(`http://localhost:4000/api/groups/${groupId}/invite`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

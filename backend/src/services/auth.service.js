@@ -2,12 +2,13 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { env } = require('../config/env');
+const emailService = require('./emailService');
 
 // Add debug logging
 console.log('🔍 Auth service loading...');
 
-async function signup({ firstName, lastName, email, password, isAdmin = false }) {
-  console.log('🎯 Signup function called with:', { firstName, lastName, email, isAdmin });
+async function signup({ firstName, lastName, email, password, phone, isAdmin = false }) {
+  console.log('🎯 Signup function called with:', { firstName, lastName, email, phone, isAdmin });
   
   try {
     // Check if user already exists
@@ -20,16 +21,66 @@ async function signup({ firstName, lastName, email, password, isAdmin = false })
       };
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
-    const user = await User.create({ firstName, lastName, email, passwordHash, isAdmin });
-    const token = jwt.sign({ userId: user._id, isAdmin: user.isAdmin }, env.jwtSecret, { expiresIn: '7d' });
+    // Hash password
+    const saltRounds = 12;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    // Generate verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Create new user
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      phone,
+      passwordHash,
+      isVerified: false,
+      emailVerificationCode: verificationCode,
+      emailVerificationExpires: expiresAt
+    });
+
+    await user.save();
+
+    // Send verification email
+    try {
+      await emailService.sendVerificationCode(email, verificationCode, firstName);
+      console.log(`✅ Verification email sent to ${email}`);
+    } catch (emailError) {
+      console.error('❌ Failed to send verification email:', emailError);
+      // Don't fail the signup if email fails, just log it
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      env.jwtSecret,
+      { expiresIn: '7d' }
+    );
+
+    // Return user data (without password) and token
+    const userResponse = {
+      _id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phone: user.phone,
+      isVerified: user.isVerified,
+      isActive: user.isActive,
+      profilePicture: user.profilePicture,
+      notificationPreferences: user.notificationPreferences,
+      preferences: user.preferences,
+      createdAt: user.createdAt
+    };
     
-    // Fix: Return the format frontend expects
+    // Return the format frontend expects with requiresVerification flag
     return { 
       success: true,
       data: {
         token, 
-        user: { id: user._id, firstName, lastName, email, isAdmin } 
+        user: userResponse,
+        requiresVerification: true
       }
     };
   } catch (error) {

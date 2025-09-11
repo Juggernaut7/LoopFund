@@ -80,12 +80,11 @@ const SignUpPage = () => {
         })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Signup failed: ${response.status}`);
-      }
-
       const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || `Signup failed: ${response.status}`);
+      }
 
       if (data.success && data.data) {
         localStorage.setItem('token', data.data.token);
@@ -93,14 +92,48 @@ const SignUpPage = () => {
         
         login(data.data.user, data.data.token);
         
+        // Check if there's a pending invite code
+        const pendingInviteCode = localStorage.getItem('pendingInviteCode');
+        
         // Check if email verification is required
-        if (data.requiresVerification) {
+        if (data.data.requiresVerification && !data.data.user.isVerified) {
           setUserEmail(formData.email);
           setShowEmailVerification(true);
           toast.success('Account created! Please verify your email to continue.');
         } else {
-          toast.success('Account created successfully! Welcome to LoopFund!');
-          navigate('/dashboard');
+          if (pendingInviteCode) {
+            // Auto-join the group after successful signup
+            try {
+              const joinResponse = await fetch('http://localhost:4000/api/invitations/join', {
+                method: 'POST',
+                headers: { 
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${data.data.token}`
+                },
+                body: JSON.stringify({ inviteCode: pendingInviteCode })
+              });
+
+              const joinData = await joinResponse.json();
+
+              if (joinResponse.ok && joinData.success) {
+                localStorage.removeItem('pendingInviteCode');
+                toast.success('Account created and group joined successfully!');
+                navigate('/groups');
+              } else {
+                toast.error(joinData.error || 'Failed to join group automatically');
+                toast.success('Account created successfully! Welcome to LoopFund!');
+                navigate('/dashboard');
+              }
+            } catch (joinError) {
+              console.error('❌ Auto-join error:', joinError);
+              toast.error('Failed to join group automatically');
+              toast.success('Account created successfully! Welcome to LoopFund!');
+              navigate('/dashboard');
+            }
+          } else {
+            toast.success('Account created successfully! Welcome to LoopFund!');
+            navigate('/dashboard');
+          }
         }
       } else {
         throw new Error(data.error || 'Signup failed - invalid response format');
@@ -119,9 +152,9 @@ const SignUpPage = () => {
     }
   };
 
-  const handleEmailVerified = (verifiedUser) => {
+  const handleEmailVerified = (verifiedUser, token) => {
     // Update the user in the store with verified status
-    login(verifiedUser, localStorage.getItem('token'));
+    login(verifiedUser, token || localStorage.getItem('token'));
     toast.success('Email verified successfully! Welcome to LoopFund!');
     navigate('/dashboard');
   };

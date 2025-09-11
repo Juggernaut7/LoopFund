@@ -26,7 +26,12 @@ import {
   X, 
   Copy, 
   Link as LinkIcon,
-  RefreshCw
+  RefreshCw,
+  MessageCircle,
+  Loader2,
+  Banknote,
+  CreditCard,
+  Wallet
 } from 'lucide-react';
 import Layout from '../components/layout/Layout';
 import { useToast } from '../context/ToastContext';
@@ -41,6 +46,13 @@ const GroupsPage = () => {
   const { toast } = useToast();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const [showContributeModal, setShowContributeModal] = useState(false);
+  const [isContributing, setIsContributing] = useState(false);
+  const [contributionData, setContributionData] = useState({
+    amount: '',
+    method: 'bank_transfer',
+    description: ''
+  });
   const navigate = useNavigate();
 
   // Fetch groups from backend
@@ -132,6 +144,72 @@ const GroupsPage = () => {
   const handleInviteClick = (group) => {
     setSelectedGroup(group);
     setIsInviteModalOpen(true);
+  };
+
+  const handleContributeClick = (group) => {
+    setSelectedGroup(group);
+    setShowContributeModal(true);
+  };
+
+  const handleMessageClick = (group) => {
+    navigate(`/groups/${group._id}`);
+  };
+
+  const handleContribute = async (e) => {
+    e.preventDefault();
+    
+    if (!contributionData.amount || parseFloat(contributionData.amount) <= 0) {
+      toast.error('Please enter a valid amount');
+      return;
+    }
+
+    setIsContributing(true);
+    try {
+      const response = await fetch(`http://localhost:4000/api/groups/${selectedGroup._id}/contributions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(contributionData)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success('Contribution added successfully!');
+        setShowContributeModal(false);
+        setContributionData({ amount: '', method: 'bank_transfer', description: '' });
+        
+        // Refresh groups list
+        await fetchGroups();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add contribution');
+      }
+    } catch (error) {
+      console.error('Error adding contribution:', error);
+      toast.error(error.message || 'Failed to add contribution');
+    } finally {
+      setIsContributing(false);
+    }
+  };
+
+  const getPaymentMethodIcon = (method) => {
+    switch (method) {
+      case 'bank_transfer': return <Banknote className="w-4 h-4" />;
+      case 'card_payment': return <CreditCard className="w-4 h-4" />;
+      case 'cash': return <Wallet className="w-4 h-4" />;
+      default: return <DollarSign className="w-4 h-4" />;
+    }
+  };
+
+  const getPaymentMethodLabel = (method) => {
+    switch (method) {
+      case 'bank_transfer': return 'Bank Transfer';
+      case 'card_payment': return 'Card Payment';
+      case 'cash': return 'Cash';
+      default: return 'Other';
+    }
   };
 
   const handleInviteSent = () => {
@@ -269,38 +347,51 @@ const GroupsPage = () => {
               <div className="mb-4">
                 <div className="flex items-center justify-between text-sm mb-2">
                   <span className="text-slate-600 dark:text-slate-400">Progress</span>
-                  <span className="font-medium text-slate-900 dark:text-white">
-                    {getProgressPercentage(group).toFixed(1)}%
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {getProgressPercentage(group).toFixed(1)}% Complete
                   </span>
                 </div>
-                <div className="w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-full">
+                <div className="w-full h-3 bg-slate-200 dark:bg-slate-600 rounded-full overflow-hidden">
                   <div
-                    className="h-2 rounded-full bg-blue-600"
+                    className="h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
                     style={{ width: `${getProgressPercentage(group)}%` }}
                   />
                 </div>
+                {getProgressPercentage(group) >= 100 && (
+                  <div className="mt-2 text-center">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Goal Achieved!
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Group Details */}
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-500 dark:text-slate-400">Current:</span>
-                  <span className="font-medium text-slate-900 dark:text-white">
-                    ${(group.currentAmount || 0).toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-500 dark:text-slate-400">Target:</span>
-                  <span className="font-medium text-slate-900 dark:text-white">
-                    ${(group.targetAmount || 0).toLocaleString()}
-                  </span>
+              <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-4 mb-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center min-w-0">
+                    <div className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white break-words">
+                      ${(group.currentAmount || 0).toLocaleString()}
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">Current Balance</div>
+                  </div>
+                  <div className="text-center min-w-0">
+                    <div className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white break-words">
+                      ${(group.targetAmount || 0).toLocaleString()}
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">Target Goal</div>
+                  </div>
                 </div>
                 {group.deadline && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-500 dark:text-slate-400">Deadline:</span>
-                    <span className="font-medium text-slate-900 dark:text-white">
-                      {new Date(group.deadline).toLocaleDateString()}
-                    </span>
+                  <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600 text-center">
+                    <div className="flex items-center justify-center space-x-2 text-sm">
+                      <Calendar className="w-4 h-4 text-slate-500" />
+                      <span className="text-slate-500 dark:text-slate-400">Deadline:</span>
+                      <span className="font-medium text-slate-900 dark:text-white">
+                        {new Date(group.deadline).toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -308,27 +399,45 @@ const GroupsPage = () => {
               {/* Group Members */}
               {group.members && group.members.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    Members
-                  </h4>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Members ({group.members.length})
+                    </h4>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      Max {group.settings?.maxMembers || 50}
+                    </span>
+                  </div>
                   <div className="flex -space-x-2">
-                    {group.members.slice(0, 4).map((member) => (
+                    {group.members.slice(0, 5).map((member, index) => (
                       <div
-                        key={member._id}
-                        className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center text-white text-xs font-medium border-2 border-white dark:border-slate-800"
-                        title={member.name}
+                        key={member._id || index}
+                        className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center text-white text-xs font-medium border-2 border-white dark:border-slate-800 shadow-sm"
+                        title={member.user?.firstName ? `${member.user.firstName} ${member.user.lastName}` : 'Member'}
                       >
-                        {member.name ? member.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U'}
+                        {member.user?.firstName ? member.user.firstName.charAt(0).toUpperCase() : 'U'}
                       </div>
                     ))}
-                    {group.members.length > 4 && (
-                      <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-slate-600 dark:text-slate-400 text-xs font-medium border-2 border-white dark:border-slate-800">
-                        +{group.members.length - 4}
+                    {group.members.length > 5 && (
+                      <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-slate-600 dark:text-slate-400 text-xs font-medium border-2 border-white dark:border-slate-800 shadow-sm">
+                        +{group.members.length - 5}
                       </div>
                     )}
                   </div>
                 </div>
               )}
+
+              {/* Main Action Button */}
+              <div className="mb-4">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleContributeClick(group)}
+                  className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 px-4 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>Contribute Now</span>
+                </motion.button>
+              </div>
 
               {/* Group Actions */}
               <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700">
@@ -336,10 +445,25 @@ const GroupsPage = () => {
                   {group.status || 'active'}
                 </div>
                 <div className="flex items-center space-x-2">
-                  <button className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors">
+                  <button 
+                    onClick={() => navigate(`/groups/${group._id}`)}
+                    className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
+                    title="View Group Details"
+                  >
                     <Eye className="w-4 h-4" />
                   </button>
-                  <button className="p-2 text-slate-500 hover:text-green-600 dark:text-slate-400 dark:hover:text-green-400 transition-colors">
+                  <button 
+                    onClick={() => handleMessageClick(group)}
+                    className="p-2 text-slate-500 hover:text-green-600 dark:text-slate-400 dark:hover:text-green-400 transition-colors"
+                    title="Message Group"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleInviteClick(group)}
+                    className="p-2 text-slate-500 hover:text-purple-600 dark:text-slate-400 dark:hover:text-purple-400 transition-colors"
+                    title="Invite Members"
+                  >
                     <UserPlus className="w-4 h-4" />
                   </button>
                 </div>
@@ -386,6 +510,111 @@ const GroupsPage = () => {
           group={selectedGroup}
           onInviteSent={handleInviteSent}
         />
+
+        {/* Contribution Modal */}
+        <AnimatePresence>
+          {showContributeModal && selectedGroup && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-md"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+                    Contribute to {selectedGroup.name}
+                  </h3>
+                  <button
+                    onClick={() => setShowContributeModal(false)}
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleContribute} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Amount
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      value={contributionData.amount}
+                      onChange={(e) => setContributionData({ ...contributionData, amount: e.target.value })}
+                      placeholder="0.00"
+                      className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Payment Method
+                    </label>
+                    <select
+                      value={contributionData.method}
+                      onChange={(e) => setContributionData({ ...contributionData, method: e.target.value })}
+                      className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="bank_transfer">Bank Transfer</option>
+                      <option value="card_payment">Card Payment</option>
+                      <option value="cash">Cash</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Description (Optional)
+                    </label>
+                    <textarea
+                      value={contributionData.description}
+                      onChange={(e) => setContributionData({ ...contributionData, description: e.target.value })}
+                      placeholder="Add a note about this contribution..."
+                      rows={3}
+                      className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    />
+                  </div>
+
+                  <div className="flex space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowContributeModal(false)}
+                      className="flex-1 px-4 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isContributing}
+                      className="flex-1 px-4 py-3 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-400 text-white rounded-lg font-medium transition-colors disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                    >
+                      {isContributing ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Adding...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Contribute</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </Layout>
   );
