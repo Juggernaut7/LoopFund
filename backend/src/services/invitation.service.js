@@ -426,12 +426,9 @@ class InvitationService {
     }
   }
 
-  // Create email invitation (for non-registered users)
+  // Create email invitation (for ANY user - registered or not)
   async createEmailInvitation(inviterId, inviteeEmail, groupId, message = '') {
     try {
-      // Check if invitee already exists
-      const existingUser = await User.findOne({ email: inviteeEmail });
-      
       // Check if already invited via email (allow multiple invitations for reminders)
       const existingInvitation = await Invitation.findOne({
         inviter: inviterId,
