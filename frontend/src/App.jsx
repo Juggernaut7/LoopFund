@@ -25,7 +25,6 @@ import HelpPage from './pages/HelpPage'; // Help page
 import CalendarPage from './pages/CalendarPage'; // Calendar page
 import AIAdvisorPage from './pages/AIAdvisorPage'; // AI Financial Advisor page
 import CommunityPage from './pages/CommunityPage'; // Financial Wellness Community page
-import MicroInterventionsPage from './pages/MicroInterventionsPage'; // Behavioral Interventions page
 import PredictiveHealthPage from './pages/PredictiveHealthPage'; // Predictive Financial Health page
 import FinancialTherapyGamesPage from './pages/FinancialTherapyGamesPage'; // Financial Therapy Games page
 import RevenueDashboard from './pages/RevenueDashboard'; // Revenue Dashboard page
@@ -190,14 +189,6 @@ function App() {
                 </PrivateRoute>
               } />
 
-              {/* Behavioral Micro-Interventions route */}
-              <Route path="/micro-interventions" element={
-                <PrivateRoute>
-                  <PageTransition>
-                    <MicroInterventionsPage />
-                  </PageTransition>
-                </PrivateRoute>
-              } />
 
               {/* Predictive Financial Health route */}
               <Route path="/predictive-health" element={

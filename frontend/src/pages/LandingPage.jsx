@@ -186,12 +186,6 @@ const LandingPage = () => {
       color: "text-blue-600"
     },
     {
-      icon: Shield,
-      title: "Behavioral Micro-Interventions",
-      description: "Real-time spending pause and emotional state detection to prevent impulse buying",
-      color: "text-green-600"
-    },
-    {
       icon: TrendingUp,
       title: "Predictive Financial Health",
       description: "6-month forecasts and crisis prevention alerts to secure your financial future",

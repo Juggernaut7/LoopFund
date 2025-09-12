@@ -36,15 +36,6 @@ const RevolutionaryFeaturesSection = () => {
       borderColor: "border-blue-200"
     },
     {
-      icon: Shield,
-      title: "Behavioral Micro-Interventions",
-      description: "Real-time spending pause and emotional state detection to prevent impulse buying",
-      benefits: ["5-second spending pause", "Emotional state detection", "Habit stacking"],
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-      borderColor: "border-green-200"
-    },
-    {
       icon: TrendingUp,
       title: "Predictive Financial Health",
       description: "6-month forecasts and crisis prevention alerts to secure your financial future",
