@@ -147,45 +147,6 @@ class AIService {
     }
   }
 
-  // Micro-Interventions
-  async detectSpendingTriggers(userBehavior, context) {
-    try {
-      const response = await api.post('/ai/interventions/trigger', {
-        userBehavior,
-        context
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error detecting spending triggers:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async startSpendingPause(triggerType, duration = 5) {
-    try {
-      const response = await api.post('/ai/interventions/pause', {
-        triggerType,
-        duration
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error starting spending pause:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async suggestHabitStacking(existingHabits, financialGoals) {
-    try {
-      const response = await api.post('/ai/interventions/habit-stacking', {
-        existingHabits,
-        financialGoals
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error suggesting habit stacking:', error);
-      return { success: false, error: error.message };
-    }
-  }
 
   // Therapy Games
   async startAnxietyReductionGame(gameType, userProfile) {

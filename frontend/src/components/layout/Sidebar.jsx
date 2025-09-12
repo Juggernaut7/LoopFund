@@ -105,13 +105,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar, unreadCount = 0 }) => {
       highlight: true
     },
     {
-      title: 'Micro-Interventions',
-      icon: Shield,
-      path: '/micro-interventions',
-      badge: 'AI',
-      highlight: true
-    },
-    {
       title: 'Predictive Health',
       icon: TrendingUp,
       path: '/predictive-health',

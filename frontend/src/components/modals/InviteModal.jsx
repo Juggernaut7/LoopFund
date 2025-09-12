@@ -80,17 +80,60 @@ const InviteModal = ({ isOpen, onClose, groupId, groupName, currentMembers = [] 
     setIsLoading(true);
     const validEmails = emailInvites.filter(email => email.trim() !== '');
     
+    if (validEmails.length === 0) {
+      setIsLoading(false);
+      return;
+    }
+    
     try {
-      // TODO: Implement backend API call
-      console.log('Sending invites to:', validEmails);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Reset form
-      setEmailInvites(['']);
-      setInviteMethod('link');
+      // Send email invitations to each email address
+      const results = [];
+      for (const email of validEmails) {
+        try {
+          const response = await fetch('http://localhost:4000/api/invitations/email', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify({
+              inviteeEmail: email.trim(),
+              groupId: groupId,
+              message: `You've been invited to join "${groupName}" on LoopFund!`
+            })
+          });
+
+          const data = await response.json();
+          
+          if (response.ok && data.success) {
+            results.push({ email, success: true, message: data.message });
+          } else {
+            results.push({ email, success: false, error: data.error || 'Failed to send invitation' });
+          }
+        } catch (error) {
+          results.push({ email, success: false, error: error.message });
+        }
+      }
+
+      const successful = results.filter(r => r.success);
+      const failed = results.filter(r => !r.success);
+
+      if (successful.length > 0) {
+        // Reset form
+        setEmailInvites(['']);
+        setInviteMethod('link');
+        
+        if (failed.length === 0) {
+          alert(`Successfully sent ${successful.length} email invitation(s)!`);
+        } else {
+          alert(`Sent ${successful.length} invitation(s) successfully. ${failed.length} failed: ${failed.map(f => f.email).join(', ')}`);
+        }
+      } else {
+        throw new Error(`All invitations failed: ${failed.map(f => `${f.email}: ${f.error}`).join(', ')}`);
+      }
     } catch (error) {
       console.error('Failed to send invites:', error);
+      alert('Failed to send email invitations. Please try again.');
     } finally {
       setIsLoading(false);
     }

@@ -33,10 +33,6 @@ router.post('/community/analyze-post', requireAuth, aiController.analyzeCommunit
 router.post('/community/recommendations', requireAuth, aiController.getCommunityRecommendations);
 router.post('/community/success-stories', requireAuth, aiController.analyzeSuccessStories);
 
-// NEW: Micro-Interventions
-router.post('/interventions/trigger', requireAuth, aiController.detectSpendingTriggers);
-router.post('/interventions/pause', requireAuth, aiController.startSpendingPause);
-router.post('/interventions/habit-stacking', requireAuth, aiController.suggestHabitStacking);
 
 // NEW: Therapy Games
 router.post('/games/anxiety-reduction', requireAuth, aiController.startAnxietyReductionGame);

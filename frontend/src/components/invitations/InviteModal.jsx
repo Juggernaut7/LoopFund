@@ -39,7 +39,7 @@ const InviteModal = ({ isOpen, onClose, group, onInviteSent }) => {
         return;
       }
 
-      const response = await fetch('http://localhost:4000/api/invitations', {
+      const response = await fetch('http://localhost:4000/api/invitations/email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ const InviteModal = ({ isOpen, onClose, group, onInviteSent }) => {
       const data = await response.json();
 
       if (data.success) {
-        toast.success('Invitation sent successfully!');
+        toast.success('Email invitation sent successfully! They will receive an email to join your group.');
         setInviteeEmail('');
         setMessage('');
         onInviteSent && onInviteSent();
@@ -210,10 +210,13 @@ const InviteModal = ({ isOpen, onClose, group, onInviteSent }) => {
                       type="email"
                       value={inviteeEmail}
                       onChange={(e) => setInviteeEmail(e.target.value)}
-                      placeholder="Enter email address"
+                      placeholder="Enter any email address (registered or not)"
                       className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                       required
                     />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      💡 Works for anyone - they'll get an email to join LoopFund and your group
+                    </p>
                   </div>
 
                   <div>

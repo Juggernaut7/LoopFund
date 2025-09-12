@@ -311,6 +311,109 @@ class EmailService {
       </html>
     `;
   }
+
+  // Send group invitation email
+  async sendGroupInvitationEmail(email, inviterName, groupName, invitationToken) {
+    const invitationUrl = `${env.frontendUrl}/join-group?token=${invitationToken}`;
+    
+    const mailOptions = {
+      from: env.email?.from || env.email?.user || 'noreply@loopfund.com',
+      to: email,
+      subject: `🎯 You're invited to join "${groupName}" on LoopFund!`,
+      html: this.getGroupInvitationEmailTemplate(inviterName, groupName, invitationUrl)
+    };
+
+    if (!this.transporter) {
+      console.log('📧 Email service not available - would send:', mailOptions);
+      return { success: true, message: 'Email service not configured' };
+    }
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Group invitation email sent to: ${email}`);
+      return { success: true, message: 'Group invitation email sent successfully' };
+    } catch (error) {
+      console.error('❌ Failed to send group invitation email:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  getGroupInvitationEmailTemplate(inviterName, groupName, invitationUrl) {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Group Invitation - LoopFund</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
+          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+          .header { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: white; padding: 30px; text-align: center; }
+          .header h1 { margin: 0; font-size: 28px; font-weight: bold; }
+          .header p { margin: 10px 0 0 0; font-size: 16px; opacity: 0.9; }
+          .content { padding: 30px; }
+          .content h2 { color: #1e293b; margin-bottom: 20px; font-size: 24px; }
+          .content p { color: #475569; line-height: 1.6; margin-bottom: 20px; }
+          .invitation-box { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 2px solid #0ea5e9; border-radius: 12px; padding: 25px; margin: 25px 0; text-align: center; }
+          .invitation-box h3 { color: #0369a1; margin: 0 0 15px 0; font-size: 20px; }
+          .invitation-box p { color: #0c4a6e; margin: 0 0 20px 0; font-size: 16px; }
+          .cta-button { display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin: 10px 0; }
+          .cta-button:hover { background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); }
+          .benefits { background: #f8fafc; border-radius: 8px; padding: 20px; margin: 20px 0; }
+          .benefits h4 { color: #1e293b; margin: 0 0 15px 0; font-size: 18px; }
+          .benefits ul { color: #475569; margin: 0; padding-left: 20px; }
+          .benefits li { margin-bottom: 8px; }
+          .footer { background: #f1f5f9; padding: 20px; text-align: center; color: #64748b; font-size: 14px; }
+          .footer p { margin: 5px 0; }
+          .highlight { background: #fef3c7; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 20px 0; }
+          .highlight p { margin: 0; color: #92400e; font-weight: 500; }
+        </style>
+      </head>
+      <body>
+        <div class='container'>
+          <div class='header'>
+            <h1>🎯 LoopFund</h1>
+            <p>You're Invited to Join a Savings Group!</p>
+          </div>
+          <div class='content'>
+            <h2>Hello there!</h2>
+            <p><strong>${inviterName}</strong> has invited you to join the <strong>"${groupName}"</strong> savings group on LoopFund!</p>
+            
+            <div class='invitation-box'>
+              <h3>🎉 You're Invited!</h3>
+              <p><strong>${inviterName}</strong> wants you to be part of their savings journey</p>
+              <a href="${invitationUrl}" class='cta-button'>Join Group Now</a>
+            </div>
+
+            <div class='benefits'>
+              <h4>🚀 What you'll get:</h4>
+              <ul>
+                <li><strong>Shared Goals:</strong> Work together towards common financial objectives</li>
+                <li><strong>Group Support:</strong> Get motivation and accountability from your peers</li>
+                <li><strong>Smart Analytics:</strong> Track your progress with AI-powered insights</li>
+                <li><strong>Flexible Contributions:</strong> Contribute at your own pace and comfort level</li>
+                <li><strong>Community Chat:</strong> Connect and share tips with group members</li>
+              </ul>
+            </div>
+
+            <div class='highlight'>
+              <p>💡 <strong>New to LoopFund?</strong> No worries! Click the button above to create your account and automatically join the group.</p>
+            </div>
+
+            <p>Join thousands of people who are already achieving their financial goals together on LoopFund!</p>
+            
+            <p>If you have any questions, feel free to reach out to <strong>${inviterName}</strong> or contact our support team.</p>
+          </div>
+          <div class='footer'>
+            <p>© 2024 LoopFund. All rights reserved.</p>
+            <p>This invitation was sent by ${inviterName}. If you didn't expect this invitation, you can safely ignore this email.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
 }
 
 module.exports = new EmailService();

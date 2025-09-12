@@ -370,8 +370,8 @@ class AIService {
           relevance: 0.8
         },
         {
-          title: 'Try Micro-Interventions',
-          description: 'Use 5-second pause technique',
+          title: 'Set Daily Budget',
+          description: 'Track your daily spending limit',
           type: 'feature',
           effectiveness: 0.85,
           relevance: 0.9
@@ -397,7 +397,7 @@ class AIService {
       const analysis = {
         averageSavings: 8500,
         averageTimeToGoal: 8,
-        successFactors: ['AI therapy', 'Community support', 'Micro-interventions'],
+        successFactors: ['AI therapy', 'Community support', 'Goal tracking'],
         commonPatterns: ['Regular check-ins', 'Goal setting', 'Emotional awareness'],
         recommendations: ['Start with small goals', 'Use AI therapist regularly', 'Join community groups']
       };
@@ -412,97 +412,6 @@ class AIService {
         success: false,
         error: error.message,
         type: 'success_stories_analysis'
-      };
-    }
-  }
-
-  // Micro-Interventions Methods
-  async detectSpendingTriggers(userBehavior, context, userId) {
-    try {
-      const detectedTriggers = [];
-      if (userBehavior.location === 'shopping_mall') detectedTriggers.push('location');
-      if (userBehavior.mood === 'stressed') detectedTriggers.push('stress');
-      if (userBehavior.time === 'evening') detectedTriggers.push('time_of_day');
-
-      return {
-        success: true,
-        data: {
-          detectedTriggers,
-          confidence: 0.78,
-          recommendations: ['Enable spending pause', 'Review emotional state']
-        },
-        type: 'spending_triggers'
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        type: 'spending_triggers'
-      };
-    }
-  }
-
-  async startSpendingPause(triggerType, duration, userId) {
-    try {
-      const pauseData = {
-        pauseId: `pause_${userId}_${Date.now()}`,
-        triggerType,
-        duration,
-        message: 'Take 5 deep breaths before making any purchase',
-        startTime: new Date().toISOString(),
-        status: 'active'
-      };
-
-      return {
-        success: true,
-        data: pauseData,
-        type: 'spending_pause'
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        type: 'spending_pause'
-      };
-    }
-  }
-
-  async suggestHabitStacking(existingHabits, financialGoals, userId) {
-    try {
-      const suggestions = [
-        {
-          existingHabit: 'morning_coffee',
-          newHabit: 'check_savings',
-          time: '7:00 AM',
-          status: 'active',
-          effectiveness: 0.85
-        },
-        {
-          existingHabit: 'lunch_break',
-          newHabit: 'review_spending',
-          time: '12:00 PM',
-          status: 'active',
-          effectiveness: 0.75
-        },
-        {
-          existingHabit: 'evening_routine',
-          newHabit: 'transfer_spare_change',
-          time: '8:00 PM',
-          status: 'pending',
-          effectiveness: 0.9
-        }
-      ];
-
-      return {
-        success: true,
-        data: { suggestions },
-        type: 'habit_stacking'
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        type: 'habit_stacking'
       };
     }
   }
