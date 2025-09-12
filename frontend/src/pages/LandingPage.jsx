@@ -23,7 +23,12 @@ import {
   Sparkles,
   Zap as Lightning,
   Brain,
-  Gamepad2
+  Gamepad2,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Instagram,
+  ChevronUp
 } from 'lucide-react';
 import Navigation from '../components/layout/Navigation';
 import Lottie from 'lottie-react';
@@ -699,19 +704,156 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-slate-900 text-white py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center">
-            <div className="flex items-center justify-center space-x-3 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">LF</span>
-              </div>
-              <span className="text-xl font-bold">LoopFund</span>
+      {/* Modern Gigantic Footer */}
+      <footer className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden rounded-t-3xl">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}></div>
+        </div>
+        
+        <div className="relative z-10">
+          {/* Main Footer Content */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+              
+              {/* Brand Section */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="lg:col-span-1"
+              >
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <span className="text-white font-bold text-lg">LF</span>
+                  </div>
+                  <span className="text-2xl font-bold">LoopFund</span>
+                </div>
+                <p className="text-slate-300 text-lg leading-relaxed mb-6">
+                  Transform your financial future with AI-powered guidance, savings groups, and community support.
+                </p>
+                <div className="flex space-x-4">
+                  <motion.a
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.95 }}
+                    href="#" className="w-10 h-10 bg-slate-700 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors duration-200"
+                  >
+                    <Facebook className="w-5 h-5" />
+                  </motion.a>
+                  <motion.a
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.95 }}
+                    href="#" className="w-10 h-10 bg-slate-700 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors duration-200"
+                  >
+                    <Twitter className="w-5 h-5" />
+                  </motion.a>
+                  <motion.a
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.95 }}
+                    href="#" className="w-10 h-10 bg-slate-700 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors duration-200"
+                  >
+                    <Linkedin className="w-5 h-5" />
+                  </motion.a>
+                  <motion.a
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.95 }}
+                    href="#" className="w-10 h-10 bg-slate-700 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors duration-200"
+                  >
+                    <Instagram className="w-5 h-5" />
+                  </motion.a>
+                </div>
+              </motion.div>
+
+              {/* Product Links */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="lg:col-span-1"
+              >
+                <h3 className="text-xl font-bold mb-6 text-white">Product</h3>
+                <ul className="space-y-4">
+                  <li><Link to="/signup" className="text-slate-300 hover:text-blue-400 transition-colors duration-200 text-lg">Get Started</Link></li>
+                  <li><Link to="/#features" className="text-slate-300 hover:text-blue-400 transition-colors duration-200 text-lg">Features</Link></li>
+                  <li><Link to="/join-group" className="text-slate-300 hover:text-blue-400 transition-colors duration-200 text-lg">Join Group</Link></li>
+                  <li><Link to="/signin" className="text-slate-300 hover:text-blue-400 transition-colors duration-200 text-lg">Sign In</Link></li>
+                  <li><a href="#" className="text-slate-300 hover:text-blue-400 transition-colors duration-200 text-lg">Pricing</a></li>
+                </ul>
+              </motion.div>
+
+              {/* Company Links */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="lg:col-span-1"
+              >
+                <h3 className="text-xl font-bold mb-6 text-white">Company</h3>
+                <ul className="space-y-4">
+                  <li><Link to="/#about" className="text-slate-300 hover:text-blue-400 transition-colors duration-200 text-lg">About Us</Link></li>
+                  <li><Link to="/#contact" className="text-slate-300 hover:text-blue-400 transition-colors duration-200 text-lg">Contact</Link></li>
+                  <li><a href="#" className="text-slate-300 hover:text-blue-400 transition-colors duration-200 text-lg">Blog</a></li>
+                  <li><a href="#" className="text-slate-300 hover:text-blue-400 transition-colors duration-200 text-lg">Careers</a></li>
+                  <li><a href="#" className="text-slate-300 hover:text-blue-400 transition-colors duration-200 text-lg">Help Center</a></li>
+                </ul>
+              </motion.div>
+
+              {/* Newsletter Signup */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="lg:col-span-1"
+              >
+                <h3 className="text-xl font-bold mb-6 text-white">Stay Updated</h3>
+                <p className="text-slate-300 text-lg mb-6">
+                  Get the latest financial tips and updates delivered to your inbox.
+                </p>
+                <div className="space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="email"
+                      placeholder="Enter your email"
+                      className="flex-1 px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg sm:rounded-l-lg sm:rounded-r-none text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-0"
+                    />
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg sm:rounded-l-none sm:rounded-r-lg transition-colors duration-200 whitespace-nowrap"
+                    >
+                      Subscribe
+                    </motion.button>
+                  </div>
+                  <p className="text-slate-400 text-sm">
+                    Join 10,000+ users getting financial insights weekly.
+                  </p>
+                </div>
+              </motion.div>
             </div>
-            <p className="text-slate-400">
-              © 2024 LoopFund. All rights reserved. Academic Project.
-            </p>
+          </div>
+
+          {/* Bottom Section */}
+          <div className="border-t border-slate-700">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6">
+                  <p className="text-slate-400 text-lg">
+                    © 2024 LoopFund. All rights reserved.
+                  </p>
+                  <div className="flex space-x-6">
+                    <a href="#" className="text-slate-400 hover:text-blue-400 transition-colors duration-200 text-lg">Privacy Policy</a>
+                    <a href="#" className="text-slate-400 hover:text-blue-400 transition-colors duration-200 text-lg">Terms of Service</a>
+                    <a href="#" className="text-slate-400 hover:text-blue-400 transition-colors duration-200 text-lg">Cookie Policy</a>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-slate-400 text-lg">All systems operational</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </footer>
