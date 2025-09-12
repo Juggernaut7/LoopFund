@@ -23,12 +23,7 @@ import {
   Sparkles,
   Zap as Lightning,
   Brain,
-  Gamepad2,
-  Facebook,
-  Twitter,
-  Linkedin,
-  Instagram,
-  ChevronUp
+  Gamepad2
 } from 'lucide-react';
 import Navigation from '../components/layout/Navigation';
 import Lottie from 'lottie-react';
@@ -180,20 +175,26 @@ const LandingPage = () => {
   const features = [
     {
       icon: Brain,
-      title: "AI Financial Advisor",
-      description: "Intelligent AI that provides personalized financial guidance and investment insights",
-      color: "text-blue-600"
+      title: "AI Financial Therapist",
+      description: "Revolutionary AI that understands your money psychology and provides personalized therapy",
+      color: "text-purple-600"
     },
     {
       icon: Users,
-      title: "Savings Groups & Community",
-      description: "Join groups, invite friends, and achieve financial goals together with real-time chat",
+      title: "Financial Wellness Community",
+      description: "Anonymous peer support and shared financial struggles with AI insights",
       color: "text-blue-600"
     },
     {
+      icon: Shield,
+      title: "Behavioral Micro-Interventions",
+      description: "Real-time spending pause and emotional state detection to prevent impulse buying",
+      color: "text-green-600"
+    },
+    {
       icon: TrendingUp,
-      title: "Advanced Analytics",
-      description: "Comprehensive financial insights, spending patterns, and progress tracking",
+      title: "Predictive Financial Health",
+      description: "6-month forecasts and crisis prevention alerts to secure your financial future",
       color: "text-orange-600"
     },
     {
@@ -206,7 +207,7 @@ const LandingPage = () => {
       icon: Target,
       title: "Smart Goal Setting",
       description: "Set personalized savings goals with AI-powered recommendations",
-      color: "text-blue-600"
+      color: "text-indigo-600"
     }
   ];
 
@@ -399,42 +400,42 @@ const LandingPage = () => {
       </motion.div>
       
       {/* Hero Section - Clean and Focused */}
-      <section className="relative pt-32 md:pt-40 pb-32 overflow-hidden">
+      <section className="relative pt-24 md:pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5"></div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
             <motion.div
               variants={heroVariants}
               initial="hidden"
               animate="visible"
-              className="space-y-10"
+              className="space-y-8"
             >
-              <motion.div variants={itemVariants} className="space-y-8">
+              <motion.div variants={itemVariants} className="space-y-6">
                 <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium">
                   <Brain className="w-4 h-4 mr-2" />
                   AI-Powered Financial Wellness Coach
                 </div>
-                <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-slate-900 dark:text-white leading-tight">
-                  Transform Your{' '}
+                <h1 className="text-4xl md:text-6xl font-bold text-slate-900 dark:text-white leading-tight">
+                  Your Personal{' '}
                   <span className="text-blue-600">
-                    Financial Future
+                    AI Financial Therapist
                   </span>
                 </h1>
-                <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl">
-                  Join thousands of users achieving their financial goals with AI-powered guidance, 
-                  savings groups, and community support. Start your journey to financial freedom today.
+                <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl">
+                  The only app that understands your money psychology. Get AI therapy, community support, 
+                  and behavioral interventions to transform your relationship with money.
                 </p>
               </motion.div>
 
-              <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-6">
+              <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4">
                 <Link
                   to="/signup"
-                  className="inline-flex items-center justify-center px-10 py-5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-xl transition-all duration-200 transform hover:scale-105 shadow-xl hover:shadow-2xl"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
                 >
-                  Start Your Financial Journey
+                  Start Your Financial Therapy
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
-                <button className="inline-flex items-center justify-center px-10 py-5 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-bold text-lg rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
+                <button className="inline-flex items-center justify-center px-8 py-4 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
                   <Play className="w-4 h-4 mr-2" />
                   Watch Demo
                 </button>
@@ -512,8 +513,8 @@ const LandingPage = () => {
               Revolutionary Financial Wellness Features
             </h2>
             <p className="text-lg text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
-              The ultimate platform that combines AI guidance, savings groups, advanced analytics, 
-              and community support to help you achieve your financial goals.
+              The only app that combines AI therapy, community support, and behavioral interventions 
+              to transform your relationship with money.
             </p>
           </motion.div>
 
@@ -740,28 +741,28 @@ const LandingPage = () => {
                     whileTap={{ scale: 0.95 }}
                     href="#" className="w-10 h-10 bg-slate-700 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors duration-200"
                   >
-                    <Facebook className="w-5 h-5" />
+                    <span className="text-sm font-semibold">f</span>
                   </motion.a>
                   <motion.a
                     whileHover={{ scale: 1.1, rotate: 5 }}
                     whileTap={{ scale: 0.95 }}
                     href="#" className="w-10 h-10 bg-slate-700 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors duration-200"
                   >
-                    <Twitter className="w-5 h-5" />
+                    <span className="text-sm font-semibold">t</span>
                   </motion.a>
                   <motion.a
                     whileHover={{ scale: 1.1, rotate: 5 }}
                     whileTap={{ scale: 0.95 }}
                     href="#" className="w-10 h-10 bg-slate-700 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors duration-200"
                   >
-                    <Linkedin className="w-5 h-5" />
+                    <span className="text-sm font-semibold">in</span>
                   </motion.a>
                   <motion.a
                     whileHover={{ scale: 1.1, rotate: 5 }}
                     whileTap={{ scale: 0.95 }}
                     href="#" className="w-10 h-10 bg-slate-700 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors duration-200"
                   >
-                    <Instagram className="w-5 h-5" />
+                    <span className="text-sm font-semibold">ig</span>
                   </motion.a>
                 </div>
               </motion.div>
