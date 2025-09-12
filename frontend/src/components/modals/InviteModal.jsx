@@ -80,17 +80,42 @@ const InviteModal = ({ isOpen, onClose, groupId, groupName, currentMembers = [] 
     setIsLoading(true);
     const validEmails = emailInvites.filter(email => email.trim() !== '');
     
+    if (validEmails.length === 0) {
+      setIsLoading(false);
+      return;
+    }
+    
     try {
-      // TODO: Implement backend API call
-      console.log('Sending invites to:', validEmails);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Reset form
-      setEmailInvites(['']);
-      setInviteMethod('link');
+      // Send email invitations to each email address
+      const promises = validEmails.map(email => 
+        fetch('http://localhost:4000/api/invitations/email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          },
+          body: JSON.stringify({
+            inviteeEmail: email.trim(),
+            groupId: groupId,
+            message: `You've been invited to join "${groupName}" on LoopFund!`
+          })
+        })
+      );
+
+      const results = await Promise.all(promises);
+      const allSuccessful = results.every(response => response.ok);
+
+      if (allSuccessful) {
+        // Reset form
+        setEmailInvites(['']);
+        setInviteMethod('link');
+        alert(`Successfully sent ${validEmails.length} email invitation(s)!`);
+      } else {
+        throw new Error('Some invitations failed to send');
+      }
     } catch (error) {
       console.error('Failed to send invites:', error);
+      alert('Failed to send email invitations. Please try again.');
     } finally {
       setIsLoading(false);
     }

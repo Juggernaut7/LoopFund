@@ -35,6 +35,7 @@ import PaymentVerificationPage from './pages/PaymentVerificationPage'; // Paymen
 import CreateGroupPage from './pages/CreateGroupPage'; // Create Group page
 import JoinGroupPage from './pages/JoinGroupPage'; // Join Group page
 import JoinGroupLandingPage from './pages/JoinGroupLandingPage'; // Join Group Landing page
+import EmailInvitationPage from './pages/EmailInvitationPage'; // Email Invitation page
 
 function App() {
   const { isAuthenticated, user } = useAuthStore();
@@ -109,6 +110,7 @@ function App() {
                   <JoinGroupLandingPage />
                 </PageTransition>
               } />
+              
               
               {/* Join Group route - Public route for invite links */}
               <Route path="/join-group/:inviteCode" element={

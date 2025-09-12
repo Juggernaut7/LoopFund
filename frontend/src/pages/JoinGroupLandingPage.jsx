@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Users, 
@@ -10,12 +10,23 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import EmailInvitationPage from './EmailInvitationPage';
 
 const JoinGroupLandingPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
   const [inviteCode, setInviteCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Check if this is an email invitation
+  const isEmailInvitation = !!token;
+
+  // If this is an email invitation, render the email invitation page
+  if (isEmailInvitation) {
+    return <EmailInvitationPage />;
+  }
 
   const handleJoinWithCode = () => {
     if (!inviteCode.trim()) {

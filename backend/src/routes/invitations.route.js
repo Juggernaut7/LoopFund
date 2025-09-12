@@ -7,8 +7,17 @@ const router = Router();
 // Get group details by invite code (public route - no auth required)
 router.get('/group/:inviteCode', invitationController.getGroupByInviteCode);
 
+// Get email invitation details (public route - no auth required)
+router.get('/email/:token', invitationController.getEmailInvitationDetails);
+
 // Create invitation
 router.post('/', requireAuth, invitationController.createInvitation);
+
+// Create email invitation
+router.post('/email', requireAuth, invitationController.createEmailInvitation);
+
+// Accept email invitation (public route - no auth required)
+router.post('/email/accept', invitationController.acceptEmailInvitation);
 
 // Generate public invite link
 router.post('/group/:groupId/public-link', requireAuth, invitationController.generatePublicInviteLink);

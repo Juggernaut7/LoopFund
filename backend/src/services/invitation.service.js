@@ -2,6 +2,7 @@ const Invitation = require('../models/Invitation');
 const Group = require('../models/Group');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
+const emailService = require('./emailService');
 const crypto = require('crypto');
 
 // Add this debug log to check if models are imported
@@ -420,6 +421,185 @@ class InvitationService {
       });
     } catch (error) {
       console.error('Failed to send decline notification:', error);
+    }
+  }
+
+  // Create email invitation (for non-registered users)
+  async createEmailInvitation(inviterId, inviteeEmail, groupId, message = '') {
+    try {
+      // Check if invitee already exists
+      const existingUser = await User.findOne({ email: inviteeEmail });
+      
+      // Check if already invited via email
+      const existingInvitation = await Invitation.findOne({
+        inviter: inviterId,
+        inviteeEmail: inviteeEmail,
+        group: groupId,
+        status: 'pending'
+      });
+
+      if (existingInvitation) {
+        throw new Error('User has already been invited to this group');
+      }
+
+      // Get inviter and group details
+      const inviter = await User.findById(inviterId);
+      const group = await Group.findById(groupId);
+
+      if (!inviter || !group) {
+        throw new Error('Invalid inviter or group');
+      }
+
+      // Generate invitation token
+      const invitationToken = crypto.randomBytes(32).toString('hex');
+
+      // Create invitation record
+      const invitation = new Invitation({
+        inviter: inviterId,
+        inviteeEmail: inviteeEmail,
+        group: groupId,
+        message: message,
+        invitationToken: invitationToken,
+        type: 'email',
+        status: 'pending',
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+      });
+
+      await invitation.save();
+
+      // Send email invitation
+      const inviterName = `${inviter.firstName} ${inviter.lastName}`;
+      const emailResult = await emailService.sendGroupInvitationEmail(
+        inviteeEmail,
+        inviterName,
+        group.name,
+        invitationToken
+      );
+
+      if (!emailResult.success) {
+        // If email fails, delete the invitation
+        await Invitation.findByIdAndDelete(invitation._id);
+        throw new Error(`Failed to send invitation email: ${emailResult.error}`);
+      }
+
+      // Create notification for inviter
+      await this.sendInvitationSentNotification(inviterId, groupId, inviteeEmail);
+
+      return {
+        success: true,
+        invitation: invitation,
+        message: 'Email invitation sent successfully'
+      };
+
+    } catch (error) {
+      console.error('Failed to create email invitation:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Accept email invitation (for new users)
+  async acceptEmailInvitation(invitationToken, userData) {
+    try {
+      // Find invitation by token
+      const invitation = await Invitation.findOne({
+        invitationToken: invitationToken,
+        status: 'pending',
+        type: 'email',
+        expiresAt: { $gt: new Date() }
+      }).populate('group inviter');
+
+      if (!invitation) {
+        throw new Error('Invalid or expired invitation');
+      }
+
+      // Check if user already exists with this email
+      let user = await User.findOne({ email: invitation.inviteeEmail });
+      
+      if (!user) {
+        // Create new user
+        user = new User({
+          email: invitation.inviteeEmail,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          password: userData.password,
+          isVerified: true, // Auto-verify email invitations
+          joinedViaInvitation: true
+        });
+
+        await user.save();
+      }
+
+      // Add user to group
+      const group = invitation.group;
+      if (!group.members.includes(user._id)) {
+        group.members.push(user._id);
+        await group.save();
+      }
+
+      // Update invitation status
+      invitation.status = 'accepted';
+      invitation.invitee = user._id;
+      await invitation.save();
+
+      // Send notifications
+      await this.sendInvitationAcceptedNotification(invitation.inviter._id, group._id, user._id);
+      await this.sendWelcomeToGroupNotification(user._id, group._id);
+
+      return {
+        success: true,
+        user: user,
+        group: group,
+        message: 'Successfully joined group via email invitation'
+      };
+
+    } catch (error) {
+      console.error('Failed to accept email invitation:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Send invitation sent notification
+  async sendInvitationSentNotification(inviterId, groupId, inviteeEmail) {
+    try {
+      const notification = new Notification({
+        user: inviterId,
+        type: 'invitation_sent',
+        title: 'Invitation Sent',
+        message: `Group invitation sent to ${inviteeEmail}`,
+        data: {
+          groupId: groupId,
+          inviteeEmail: inviteeEmail
+        }
+      });
+
+      await notification.save();
+    } catch (error) {
+      console.error('Failed to send invitation sent notification:', error);
+    }
+  }
+
+  // Send welcome to group notification
+  async sendWelcomeToGroupNotification(userId, groupId) {
+    try {
+      const notification = new Notification({
+        user: userId,
+        type: 'group_joined',
+        title: 'Welcome to the Group!',
+        message: 'You have successfully joined the group via email invitation',
+        data: {
+          groupId: groupId
+        }
+      });
+
+      await notification.save();
+    } catch (error) {
+      console.error('Failed to send welcome notification:', error);
     }
   }
 }
