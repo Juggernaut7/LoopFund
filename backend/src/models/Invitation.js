@@ -28,7 +28,8 @@ const invitationSchema = new mongoose.Schema({
   inviteCode: {
     type: String,
     unique: true,
-    sparse: true
+    sparse: true,
+    default: undefined
   },
   invitationToken: {
     type: String,

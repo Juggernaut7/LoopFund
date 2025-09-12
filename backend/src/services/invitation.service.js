@@ -38,13 +38,15 @@ class InvitationService {
         throw new Error('User is already a member of this group');
       }
 
-      // Create invitation
+      // Create invitation (don't set inviteCode for direct invitations)
       const invitation = new Invitation({
         inviter: inviterId,
         invitee: invitee._id,
         group: groupId,
         message,
+        type: 'direct',
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+        // inviteCode is intentionally not set for direct invitations
       });
 
       await invitation.save();
@@ -430,16 +432,40 @@ class InvitationService {
       // Check if invitee already exists
       const existingUser = await User.findOne({ email: inviteeEmail });
       
-      // Check if already invited via email
+      // Check if already invited via email (allow multiple invitations for reminders)
       const existingInvitation = await Invitation.findOne({
         inviter: inviterId,
         inviteeEmail: inviteeEmail,
         group: groupId,
-        status: 'pending'
+        status: 'pending',
+        type: 'email'
       });
 
       if (existingInvitation) {
-        throw new Error('User has already been invited to this group');
+        // Update the existing invitation instead of creating a new one
+        existingInvitation.invitationToken = crypto.randomBytes(32).toString('hex');
+        existingInvitation.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+        existingInvitation.message = message;
+        await existingInvitation.save();
+
+        // Send email invitation
+        const inviterName = `${inviter.firstName} ${inviter.lastName}`;
+        const emailResult = await emailService.sendGroupInvitationEmail(
+          inviteeEmail,
+          inviterName,
+          group.name,
+          existingInvitation.invitationToken
+        );
+
+        if (!emailResult.success) {
+          throw new Error(`Failed to send invitation email: ${emailResult.error}`);
+        }
+
+        return {
+          success: true,
+          invitation: existingInvitation,
+          message: 'Email invitation resent successfully'
+        };
       }
 
       // Get inviter and group details
@@ -453,7 +479,7 @@ class InvitationService {
       // Generate invitation token
       const invitationToken = crypto.randomBytes(32).toString('hex');
 
-      // Create invitation record
+      // Create invitation record (don't set inviteCode for email invitations)
       const invitation = new Invitation({
         inviter: inviterId,
         inviteeEmail: inviteeEmail,
@@ -463,6 +489,7 @@ class InvitationService {
         type: 'email',
         status: 'pending',
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+        // inviteCode is intentionally not set for email invitations
       });
 
       await invitation.save();
