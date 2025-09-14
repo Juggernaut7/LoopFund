@@ -9,7 +9,11 @@ const invitationSchema = new mongoose.Schema({
   invitee: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: false // Optional for public invitations
+    required: false // Optional for public invitations and email invitations
+  },
+  inviteeEmail: {
+    type: String,
+    required: false // For email invitations
   },
   group: {
     type: mongoose.Schema.Types.ObjectId,
@@ -18,13 +22,19 @@ const invitationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['direct', 'public'],
+    enum: ['direct', 'public', 'email'],
     default: 'direct'
   },
   inviteCode: {
     type: String,
     unique: true,
-    sparse: true
+    sparse: true,
+    default: undefined
+  },
+  invitationToken: {
+    type: String,
+    unique: true,
+    sparse: true // For email invitations
   },
   message: {
     type: String,
@@ -50,6 +60,7 @@ const invitationSchema = new mongoose.Schema({
 // Index for performance
 invitationSchema.index({ group: 1, status: 1 });
 invitationSchema.index({ inviteCode: 1 });
+invitationSchema.index({ invitationToken: 1 });
 invitationSchema.index({ expiresAt: 1 });
 
 // Method to check if invitation is expired

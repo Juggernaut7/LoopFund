@@ -25,7 +25,6 @@ import HelpPage from './pages/HelpPage'; // Help page
 import CalendarPage from './pages/CalendarPage'; // Calendar page
 import AIAdvisorPage from './pages/AIAdvisorPage'; // AI Financial Advisor page
 import CommunityPage from './pages/CommunityPage'; // Financial Wellness Community page
-import MicroInterventionsPage from './pages/MicroInterventionsPage'; // Behavioral Interventions page
 import PredictiveHealthPage from './pages/PredictiveHealthPage'; // Predictive Financial Health page
 import FinancialTherapyGamesPage from './pages/FinancialTherapyGamesPage'; // Financial Therapy Games page
 import RevenueDashboard from './pages/RevenueDashboard'; // Revenue Dashboard page
@@ -36,6 +35,7 @@ import PaymentVerificationPage from './pages/PaymentVerificationPage'; // Paymen
 import CreateGroupPage from './pages/CreateGroupPage'; // Create Group page
 import JoinGroupPage from './pages/JoinGroupPage'; // Join Group page
 import JoinGroupLandingPage from './pages/JoinGroupLandingPage'; // Join Group Landing page
+import EmailInvitationPage from './pages/EmailInvitationPage'; // Email Invitation page
 
 function App() {
   const { isAuthenticated, user } = useAuthStore();
@@ -110,6 +110,7 @@ function App() {
                   <JoinGroupLandingPage />
                 </PageTransition>
               } />
+              
               
               {/* Join Group route - Public route for invite links */}
               <Route path="/join-group/:inviteCode" element={
@@ -190,14 +191,6 @@ function App() {
                 </PrivateRoute>
               } />
 
-              {/* Behavioral Micro-Interventions route */}
-              <Route path="/micro-interventions" element={
-                <PrivateRoute>
-                  <PageTransition>
-                    <MicroInterventionsPage />
-                  </PageTransition>
-                </PrivateRoute>
-              } />
 
               {/* Predictive Financial Health route */}
               <Route path="/predictive-health" element={

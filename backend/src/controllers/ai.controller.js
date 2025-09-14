@@ -209,45 +209,6 @@ const analyzeSuccessStories = async (req, res, next) => {
   }
 };
 
-// NEW: Micro-Interventions
-const detectSpendingTriggers = async (req, res, next) => {
-  try {
-    const { userBehavior, context } = req.body;
-    const userId = req.user.userId;
-
-    const result = await aiService.detectSpendingTriggers(userBehavior, context, userId);
-    
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-};
-
-const startSpendingPause = async (req, res, next) => {
-  try {
-    const { triggerType, duration } = req.body;
-    const userId = req.user.userId;
-
-    const result = await aiService.startSpendingPause(triggerType, duration, userId);
-    
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-};
-
-const suggestHabitStacking = async (req, res, next) => {
-  try {
-    const { existingHabits, financialGoals } = req.body;
-    const userId = req.user.userId;
-
-    const result = await aiService.suggestHabitStacking(existingHabits, financialGoals, userId);
-    
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-};
 
 // NEW: Therapy Games
 const startAnxietyReductionGame = async (req, res, next) => {
@@ -321,10 +282,6 @@ module.exports = {
   analyzeCommunityPost,
   getCommunityRecommendations,
   analyzeSuccessStories,
-  // Micro-Interventions
-  detectSpendingTriggers,
-  startSpendingPause,
-  suggestHabitStacking,
   // Therapy Games
   startAnxietyReductionGame,
   startTriggerIdentificationGame,

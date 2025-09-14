@@ -200,6 +200,102 @@ const getGroupInvitations = async (req, res) => {
   }
 };
 
+// Create email invitation
+const createEmailInvitation = async (req, res) => {
+  try {
+    const { inviteeEmail, groupId, message } = req.body;
+    const inviterId = req.user.userId;
+
+    const result = await invitationService.createEmailInvitation(
+      inviterId,
+      inviteeEmail,
+      groupId,
+      message
+    );
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    res.json({
+      success: true,
+      data: result.invitation,
+      message: result.message
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
+// Accept email invitation (for new users)
+const acceptEmailInvitation = async (req, res) => {
+  try {
+    const { invitationToken, userData } = req.body;
+
+    const result = await invitationService.acceptEmailInvitation(
+      invitationToken,
+      userData
+    );
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    res.json({
+      success: true,
+      data: {
+        user: result.user,
+        group: result.group
+      },
+      message: result.message
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
+// Get email invitation details (for landing page)
+const getEmailInvitationDetails = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const invitation = await Invitation.findOne({
+      invitationToken: token,
+      status: 'pending',
+      type: 'email',
+      expiresAt: { $gt: new Date() }
+    }).populate('group inviter', 'name firstName lastName email');
+
+    if (!invitation) {
+      return res.status(404).json({
+        success: false,
+        error: 'Invalid or expired invitation'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        group: invitation.group,
+        inviter: invitation.inviter,
+        message: invitation.message,
+        expiresAt: invitation.expiresAt
+      }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createInvitation,
   generatePublicInviteLink,
@@ -208,5 +304,8 @@ module.exports = {
   acceptInvitation,
   declineInvitation,
   getUserInvitations,
-  getGroupInvitations
+  getGroupInvitations,
+  createEmailInvitation,
+  acceptEmailInvitation,
+  getEmailInvitationDetails
 }; 
