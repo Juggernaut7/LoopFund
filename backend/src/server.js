@@ -1,6 +1,7 @@
 const { app, server } = require('./app');
 const { connectToDatabase, checkDatabaseHealth, gracefulShutdown } = require('./config/db');
 const { env } = require('./config/env');
+const cronService = require('./services/cron.service');
 
 const PORT = env.port || 4000;
 
@@ -18,6 +19,10 @@ const startServer = async () => {
       console.log(`📍 Server running on port ${PORT}`);
       console.log(`📚 API Documentation: http://localhost:${PORT}/docs`);
       console.log(`🧪 Test Endpoint: http://localhost:${PORT}/api/test`);
+      
+      // Start cron service for notifications
+      console.log('🕐 Starting notification cron service...');
+      cronService.start();
       console.log(`💚 Health Check: http://localhost:${PORT}/api/health`);
       console.log('');
       console.log('✨ Enhanced Features Available:');
@@ -46,6 +51,10 @@ const startServer = async () => {
         console.log('✅ HTTP server closed');
       });
 
+      // Stop cron service
+      console.log('🛑 Stopping cron service...');
+      cronService.stop();
+      
       // Close database connection
       await gracefulShutdown();
       

@@ -312,6 +312,58 @@ class EmailService {
     `;
   }
 
+  // Generic email sending method for notifications
+  async sendEmail(emailData) {
+    const { to, subject, template, data } = emailData;
+    
+    let htmlContent = '';
+    let textContent = '';
+
+    // Handle different email templates
+    switch (template) {
+      case 'payment-reminder':
+        htmlContent = this.getPaymentReminderEmailTemplate(data);
+        textContent = `Hi ${data.userName}, this is a reminder that your payment of ₦${data.amount.toLocaleString()} is due for your goal "${data.goalName}".`;
+        break;
+      case 'goal-update':
+        htmlContent = this.getGoalUpdateEmailTemplate(data);
+        textContent = `Hi ${data.userName}, your goal "${data.goalName}" has been updated. Progress: ${data.progress}%`;
+        break;
+      case 'achievement':
+        htmlContent = this.getAchievementEmailTemplate(data);
+        textContent = `Congratulations ${data.userName}! You've earned the "${data.achievementName}" achievement!`;
+        break;
+      default:
+        htmlContent = emailData.html || '';
+        textContent = emailData.text || '';
+    }
+
+    const mailOptions = {
+      from: env.email?.from || env.email?.user || 'noreply@loopfund.com',
+      to,
+      subject,
+      html: htmlContent,
+      text: textContent
+    };
+
+    try {
+      if (this.transporter && env.email?.user && env.email?.password) {
+        await this.transporter.sendMail(mailOptions);
+        console.log(`✅ Email sent to ${to}: ${subject}`);
+        return { success: true, message: 'Email sent successfully' };
+      } else {
+        console.log('📧 EMAIL (Development Mode):');
+        console.log(`To: ${to}`);
+        console.log(`Subject: ${subject}`);
+        console.log(`Template: ${template}`);
+        return { success: true, message: 'Email logged to console (development mode)' };
+      }
+    } catch (error) {
+      console.error('❌ Failed to send email:', error);
+      return { success: false, message: 'Failed to send email' };
+    }
+  }
+
   // Send group invitation email
   async sendGroupInvitationEmail(email, inviterName, groupName, invitationToken) {
     const invitationUrl = `${env.frontendUrl}/join-group?token=${invitationToken}`;
@@ -408,6 +460,154 @@ class EmailService {
           <div class='footer'>
             <p>© 2024 LoopFund. All rights reserved.</p>
             <p>This invitation was sent by ${inviterName}. If you didn't expect this invitation, you can safely ignore this email.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  // Payment reminder email template
+  getPaymentReminderEmailTemplate(data) {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset='utf-8'>
+        <title>Payment Reminder - LoopFund</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+          .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+          .header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 40px 30px; text-align: center; }
+          .header h1 { margin: 0; font-size: 28px; font-weight: bold; }
+          .header p { margin: 10px 0 0 0; opacity: 0.9; }
+          .content { padding: 40px 30px; }
+          .reminder-box { background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 30px; text-align: center; margin: 30px 0; }
+          .amount { font-size: 36px; font-weight: bold; color: #d97706; margin: 10px 0; }
+          .footer { background: #f8f9fa; padding: 30px; text-align: center; color: #666; font-size: 14px; border-top: 1px solid #eee; }
+          .cta-button { display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; }
+        </style>
+      </head>
+      <body>
+        <div class='container'>
+          <div class='header'>
+            <h1>💰 Payment Reminder</h1>
+            <p>Time to contribute to your goal!</p>
+          </div>
+          <div class='content'>
+            <h2>Hello ${data.userName}!</h2>
+            <p>This is a friendly reminder that your payment is due for your goal.</p>
+            
+            <div class='reminder-box'>
+              <h3>Goal: ${data.goalName}</h3>
+              <div class='amount'>₦${data.amount.toLocaleString()}</div>
+              <p>Frequency: ${data.frequency}</p>
+            </div>
+            
+            <div style='text-align: center;'>
+              <a href='${env.frontendUrl}/goals' class='cta-button'>Make Payment Now</a>
+            </div>
+            
+            <p>Keep up the great work on your financial journey!</p>
+          </div>
+          <div class='footer'>
+            <p>© 2024 LoopFund. All rights reserved.</p>
+            <p>This is an automated reminder, please do not reply.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  // Goal update email template
+  getGoalUpdateEmailTemplate(data) {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset='utf-8'>
+        <title>Goal Update - LoopFund</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+          .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+          .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 40px 30px; text-align: center; }
+          .header h1 { margin: 0; font-size: 28px; font-weight: bold; }
+          .header p { margin: 10px 0 0 0; opacity: 0.9; }
+          .content { padding: 40px 30px; }
+          .progress-box { background: #d1fae5; border: 2px solid #10b981; border-radius: 8px; padding: 30px; text-align: center; margin: 30px 0; }
+          .progress { font-size: 36px; font-weight: bold; color: #059669; margin: 10px 0; }
+          .footer { background: #f8f9fa; padding: 30px; text-align: center; color: #666; font-size: 14px; border-top: 1px solid #eee; }
+        </style>
+      </head>
+      <body>
+        <div class='container'>
+          <div class='header'>
+            <h1>🎯 Goal Update</h1>
+            <p>Your progress is looking great!</p>
+          </div>
+          <div class='content'>
+            <h2>Hello ${data.userName}!</h2>
+            <p>Great news! Your goal has been updated with new progress.</p>
+            
+            <div class='progress-box'>
+              <h3>${data.goalName}</h3>
+              <div class='progress'>${data.progress}% Complete</div>
+              <p>Keep up the excellent work!</p>
+            </div>
+            
+            <p>You're making fantastic progress towards your financial goals!</p>
+          </div>
+          <div class='footer'>
+            <p>© 2024 LoopFund. All rights reserved.</p>
+            <p>This is an automated update, please do not reply.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  // Achievement email template
+  getAchievementEmailTemplate(data) {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset='utf-8'>
+        <title>Achievement Unlocked - LoopFund</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+          .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+          .header { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 40px 30px; text-align: center; }
+          .header h1 { margin: 0; font-size: 28px; font-weight: bold; }
+          .header p { margin: 10px 0 0 0; opacity: 0.9; }
+          .content { padding: 40px 30px; }
+          .achievement-box { background: #f3e8ff; border: 2px solid #8b5cf6; border-radius: 8px; padding: 30px; text-align: center; margin: 30px 0; }
+          .achievement-name { font-size: 24px; font-weight: bold; color: #7c3aed; margin: 10px 0; }
+          .footer { background: #f8f9fa; padding: 30px; text-align: center; color: #666; font-size: 14px; border-top: 1px solid #eee; }
+        </style>
+      </head>
+      <body>
+        <div class='container'>
+          <div class='header'>
+            <h1>🏆 Achievement Unlocked!</h1>
+            <p>Congratulations on your success!</p>
+          </div>
+          <div class='content'>
+            <h2>Hello ${data.userName}!</h2>
+            <p>Amazing news! You've just earned a new achievement.</p>
+            
+            <div class='achievement-box'>
+              <h3>🏆 ${data.achievementName}</h3>
+              <p>${data.description}</p>
+            </div>
+            
+            <p>Your dedication to your financial goals is truly inspiring!</p>
+          </div>
+          <div class='footer'>
+            <p>© 2024 LoopFund. All rights reserved.</p>
+            <p>This is an automated achievement notification, please do not reply.</p>
           </div>
         </div>
       </body>

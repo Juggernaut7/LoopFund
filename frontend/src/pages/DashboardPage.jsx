@@ -12,6 +12,7 @@ import {
   CheckCircle,
   AlertCircle,
   DollarSign,
+  Banknote,
   Percent,
   Trophy,
   Zap,
@@ -24,9 +25,19 @@ import {
   MessageCircle, 
   Lightbulb, 
   Sparkles,
+  Heart,
+  Gamepad2,
+  PiggyBank,
+  Building2,
+  CreditCard,
+  PieChart,
+  TrendingDown,
+  UserPlus,
+  Share2,
+  Gift,
+  BookOpen
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import Layout from '../components/layout/Layout';
 import StatsCard from '../components/ui/StatsCard';
 import ProgressRing from '../components/ui/ProgressRing';
 import FloatingActionButton from '../components/ui/FloatingActionButton';
@@ -36,16 +47,45 @@ import { useToast } from '../context/ToastContext';
 import QuickActions from '../components/dashboard/QuickActions';
 import FinancialAdvisor from '../components/ai/FinancialAdvisor';
 import AIFinancialAdvisor from '../components/ai/AIFinancialAdvisor';
+import { formatCurrencySimple } from '../utils/currency';
+import { useWallet } from '../hooks/useWallet';
+import WalletCard from '../components/wallet/WalletCard';
+import AddMoneyModal from '../components/wallet/AddMoneyModal';
 
 const DashboardPage = () => {
   const [selectedGoal, setSelectedGoal] = useState(null);
   const [dashboardData, setDashboardData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showAddMoneyModal, setShowAddMoneyModal] = useState(false);
   const [error, setError] = useState(null);
   const [realAchievements, setRealAchievements] = useState([]);
   const [achievementsLoading, setAchievementsLoading] = useState(true);
   const { toast } = useToast();
+  const { wallet, fetchWallet } = useWallet();
   const navigate = useNavigate();
+
+  // Wallet handlers
+  const handleAddMoney = () => {
+    setShowAddMoneyModal(true);
+  };
+
+  const handleAddMoneySuccess = async (data) => {
+    // Refresh wallet data after successful deposit
+    console.log('🔄 Refreshing wallet after successful deposit...');
+    
+    // Add a small delay to ensure backend has processed the payment
+    setTimeout(async () => {
+      await fetchWallet();
+      console.log('✅ Wallet refreshed:', wallet);
+    }, 1000);
+    
+    setShowAddMoneyModal(false);
+  };
+
+  const handleViewTransactions = () => {
+    // TODO: Implement transaction history
+    toast.info('Coming Soon', 'Transaction history will be available soon');
+  };
 
   // Fetch dashboard data on component mount
   useEffect(() => {
@@ -102,46 +142,57 @@ const DashboardPage = () => {
   // Show loading state
   if (isLoading) {
     return (
-      <Layout>
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
-          <div className="text-center">
-            <Loader className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
-            <p className="text-slate-600 dark:text-slate-400">Loading your dashboard...</p>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-100 via-loopfund-neutral-50 to-loopfund-emerald-50/30 dark:from-loopfund-midnight-900 dark:via-loopfund-midnight-800 dark:to-loopfund-midnight-900 flex items-center justify-center">
+        <div className="text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            className="w-16 h-16 bg-gradient-to-br from-loopfund-emerald-500 to-loopfund-mint-500 rounded-full flex items-center justify-center mx-auto mb-6"
+          >
+            <Sparkles className="w-8 h-8 text-white" />
+          </motion.div>
+          <p className="font-body text-body-lg text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Loading your revolutionary dashboard...</p>
         </div>
-      </Layout>
+      </div>
     );
   }
 
   // Show error state
   if (error) {
     return (
-      <Layout>
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
-          <div className="text-center">
-            <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-            <p className="text-slate-600 dark:text-slate-400 mb-4">Failed to load dashboard</p>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-            >
-              Try Again
-            </button>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-100 via-loopfund-neutral-50 to-loopfund-coral-50/30 dark:from-loopfund-midnight-900 dark:via-loopfund-midnight-800 dark:to-loopfund-midnight-900 flex items-center justify-center">
+        <div className="text-center">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="w-16 h-16 bg-gradient-to-br from-loopfund-coral-500 to-loopfund-orange-500 rounded-full flex items-center justify-center mx-auto mb-6"
+          >
+            <AlertCircle className="w-8 h-8 text-white" />
+          </motion.div>
+          <p className="font-body text-body-lg text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-6">Failed to load dashboard</p>
+          <motion.button 
+            onClick={() => window.location.reload()} 
+            className="bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 hover:from-loopfund-emerald-600 hover:to-loopfund-mint-600 text-white px-6 py-3 rounded-xl font-body text-body font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+            whileTap={{ scale: 0.95 }}
+          >
+            Try Again
+          </motion.button>
         </div>
-      </Layout>
+      </div>
     );
   }
 
-  // Update the stats array to use real data with solid blue theme
+  // Update the stats array to use LoopFund design system
   const stats = dashboardData ? [
     {
       title: 'Total Contributed',
-      value: `$${dashboardData.stats.totalContributed.toLocaleString()}`,
+      value: formatCurrencySimple(dashboardData.stats.totalContributed),
       change: `+${Math.floor(Math.random() * 20) + 5}% vs last month`,
       changeType: 'positive',
-      icon: DollarSign,
-      color: 'bg-blue-600'
+      icon: Banknote,
+      color: 'loopfund-emerald',
+      gradient: 'from-loopfund-emerald-500 to-loopfund-mint-500'
     },
     {
       title: 'Total Contributions',
@@ -149,23 +200,26 @@ const DashboardPage = () => {
       change: `+${Math.floor(Math.random() * 15) + 3}% vs last month`,
       changeType: 'positive',
       icon: Target,
-      color: 'bg-blue-600'
+      color: 'loopfund-coral',
+      gradient: 'from-loopfund-coral-500 to-loopfund-orange-500'
     },
     {
       title: 'Average Contribution',
-      value: `$${dashboardData.stats.averageContribution.toLocaleString()}`,
+      value: formatCurrencySimple(dashboardData.stats.averageContribution),
       change: `+${Math.floor(Math.random() * 10) + 2}% vs last month`,
       changeType: 'positive',
       icon: TrendingUp,
-      color: 'bg-blue-600'
+      color: 'loopfund-gold',
+      gradient: 'from-loopfund-gold-500 to-loopfund-orange-500'
     },
     {
       title: 'This Month',
-      value: `$${dashboardData.stats.thisMonth.toLocaleString()}`,
+      value: formatCurrencySimple(dashboardData.stats.thisMonth),
       change: `+${Math.floor(Math.random() * 25) + 10}% vs last month`,
       changeType: 'positive',
       icon: Calendar,
-      color: 'bg-blue-600'
+      color: 'loopfund-electric',
+      gradient: 'from-loopfund-electric-500 to-loopfund-lavender-500'
     }
   ] : [];
 
@@ -177,11 +231,11 @@ const DashboardPage = () => {
     id: contribution._id || index,
     type: 'contribution',
     title: `Contribution to ${contribution.goalName || 'Goal'}`,
-    description: `Contributed $${contribution.amount} to ${contribution.goalType || 'goal'}`,
+    description: `Contributed ${formatCurrencySimple(contribution.amount)} to ${contribution.goalType || 'goal'}`,
     amount: contribution.amount,
     date: new Date(contribution.createdAt).toLocaleDateString(),
     icon: contribution.goalType === 'group' ? Users : Target,
-    color: contribution.goalType === 'group' ? 'text-purple-500' : 'text-blue-500',
+    color: contribution.goalType === 'group' ? 'text-loopfund-coral-500' : 'text-loopfund-emerald-500',
     status: 'success' // Add status for proper icon display
   }));
 
@@ -200,7 +254,7 @@ const DashboardPage = () => {
       amount: null,
       date: new Date(goal.updatedAt || goal.createdAt).toLocaleDateString(),
       icon: Award,
-      color: 'text-yellow-500',
+      color: 'text-loopfund-gold-500',
       status: 'success'
     });
   });
@@ -213,7 +267,7 @@ const DashboardPage = () => {
   // Generate upcoming payments from goals (using real data)
   const upcomingPayments = recentGoals.slice(0, 3).map((goal, index) => {
     const remainingAmount = (goal.targetAmount || 0) - (goal.currentAmount || 0);
-    const suggestedAmount = Math.max(remainingAmount * 0.1, 10); // 10% of remaining or minimum $10
+    const suggestedAmount = Math.max(remainingAmount * 0.1, 10); // 10% of remaining or minimum ₦10
     
     return {
       id: goal._id || index,
@@ -225,14 +279,13 @@ const DashboardPage = () => {
     };
   });
 
-
   const achievements = realAchievements.length > 0 ? realAchievements : [
     {
       id: 1,
       title: 'First Goal',
       description: 'Created your first savings goal',
       icon: Target,
-      color: 'bg-blue-600',
+      color: 'bg-loopfund-emerald-500',
       type: 'individual'
     },
     {
@@ -240,7 +293,7 @@ const DashboardPage = () => {
       title: 'Consistent Saver',
       description: 'Saved for 30 consecutive days',
       icon: Calendar,
-      color: 'bg-blue-600',
+      color: 'bg-loopfund-coral-500',
       type: 'individual'
     },
     {
@@ -248,7 +301,7 @@ const DashboardPage = () => {
       title: 'Group Leader',
       description: 'Created and managed a successful group',
       icon: Users,
-      color: 'bg-blue-600',
+      color: 'bg-loopfund-gold-500',
       type: 'group'
     },
     {
@@ -256,7 +309,7 @@ const DashboardPage = () => {
       title: 'Milestone Master',
       description: 'Reached 5 goal milestones',
       icon: Award,
-      color: 'bg-blue-600',
+      color: 'bg-loopfund-electric-500',
       type: 'both'
     }
   ];
@@ -265,13 +318,13 @@ const DashboardPage = () => {
     switch (status) {
       case 'success':
       case 'completed':
-        return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20';
+        return 'text-loopfund-emerald-600 bg-loopfund-emerald-100 dark:bg-loopfund-emerald-900/20';
       case 'warning':
-        return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20';
+        return 'text-loopfund-gold-600 bg-loopfund-gold-100 dark:bg-loopfund-gold-900/20';
       case 'info':
-        return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20';
+        return 'text-loopfund-electric-600 bg-loopfund-electric-100 dark:bg-loopfund-electric-900/20';
       default:
-        return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20';
+        return 'text-loopfund-neutral-600 bg-loopfund-neutral-100 dark:bg-loopfund-neutral-900/20';
     }
   };
 
@@ -292,38 +345,49 @@ const DashboardPage = () => {
   const getCategoryColor = (category) => {
     switch (category) {
       case 'travel':
-        return 'bg-blue-500';
+        return 'bg-loopfund-emerald-500';
       case 'technology':
-        return 'bg-purple-500';
+        return 'bg-loopfund-electric-500';
       case 'emergency':
-        return 'bg-red-500';
+        return 'bg-loopfund-coral-500';
       default:
-        return 'bg-gray-500';
+        return 'bg-loopfund-neutral-500';
     }
   };
 
   return (
-    <Layout>
-      <div className="space-y-6">
+    <div className="space-y-8">
         {/* Welcome Section with Weather */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="lg:col-span-3 bg-blue-600 rounded-2xl p-6 text-white relative overflow-hidden"
+            className="lg:col-span-3 bg-gradient-to-br from-loopfund-emerald-500 via-loopfund-mint-500 to-loopfund-emerald-600 rounded-2xl p-8 text-white relative overflow-hidden"
           >
+            {/* Revolutionary Background Elements */}
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-20 translate-x-20 animate-float" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-16 -translate-x-16 animate-float-delayed" />
+            <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-white/5 rounded-full -translate-x-12 -translate-y-12 animate-float-slow" />
+            
             <div className="relative z-10">
-              <h1 className="text-2xl font-bold mb-2">
+              <motion.h1 
+                className="font-display text-display-lg mb-3"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
                 Welcome back, {dashboardData?.profile?.firstName || dashboardData?.profile?.name || 'User'}! 👋
-              </h1>
-              <p className="text-blue-100">
+              </motion.h1>
+              <motion.p 
+                className="font-body text-body-lg text-white/90"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
                 You're making great progress on your savings goals. Keep up the amazing work!
-              </p>
+              </motion.p>
             </div>
-            {/* Animated background elements */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16" />
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12" />
           </motion.div>
           
           <WeatherWidget />
@@ -340,9 +404,20 @@ const DashboardPage = () => {
               changeType={stat.changeType}
               icon={stat.icon}
               color={stat.color}
+              gradient={stat.gradient}
               delay={index * 0.1}
             />
           ))}
+        </div>
+
+        {/* Wallet Card */}
+        <div className="mb-8">
+          {console.log('📊 DashboardPage wallet state:', wallet)}
+          <WalletCard 
+            wallet={wallet}
+            onAddMoney={handleAddMoney}
+            onViewTransactions={handleViewTransactions}
+          />
         </div>
 
         {/* Quick Actions */}
@@ -352,70 +427,80 @@ const DashboardPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Recent Goals */}
           <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+            <motion.div 
+              className="bg-white dark:bg-loopfund-dark-surface rounded-2xl p-8 shadow-loopfund border border-loopfund-neutral-200/20 dark:border-loopfund-neutral-600/30"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
                   Recent Goals
                 </h3>
                 <Link
                   to="/goals"
-                  className="text-blue-600 hover:text-blue-500 text-sm font-medium"
+                  className="text-loopfund-emerald-600 dark:text-loopfund-emerald-400 font-body text-body-sm font-medium transition-colors"
                 >
                   View All
                 </Link>
               </div>
               <div className="space-y-4">
-                {recentGoals.map((goal) => (
+                {recentGoals.map((goal, index) => (
                   <motion.div
                     key={goal._id || goal.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    transition={{ delay: 0.3 + index * 0.1 }}
+                    className="flex items-center justify-between p-6 rounded-xl bg-loopfund-neutral-50 dark:bg-loopfund-midnight-800/50 transition-all duration-300 group"
                   >
                     <div className="flex items-center space-x-4">
-                      <div className={`w-10 h-10 rounded-lg ${
-                        goal.isGroupGoal ? 'bg-blue-600' : 'bg-blue-600'
-                      } flex items-center justify-center`}>
-                        <Target className="w-5 h-5 text-white" />
-                      </div>
+                      <motion.div 
+                        className={`w-12 h-12 rounded-xl ${
+                          goal.isGroupGoal ? 'bg-gradient-to-br from-loopfund-coral-500 to-loopfund-orange-500' : 'bg-gradient-to-br from-loopfund-emerald-500 to-loopfund-mint-500'
+                        } flex items-center justify-center shadow-lg`}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      >
+                        <Target className="w-6 h-6 text-white" />
+                      </motion.div>
                       <div>
-                        <h4 className="font-medium text-slate-900 dark:text-white">
+                        <h4 className="font-body text-body-lg font-medium text-loopfund-neutral-900 dark:text-loopfund-dark-text">
                           {goal.name}
                         </h4>
                         <div className="flex items-center space-x-2 mt-1">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                             goal.isGroupGoal 
-                              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' 
-                              : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                              ? 'bg-loopfund-coral-100 text-loopfund-coral-700 dark:bg-loopfund-coral-900/30 dark:text-loopfund-coral-300' 
+                              : 'bg-loopfund-emerald-100 text-loopfund-emerald-700 dark:bg-loopfund-emerald-900/30 dark:text-loopfund-emerald-300'
                           }`}>
                             {goal.isGroupGoal ? 'Group' : 'Individual'}
                           </span>
-                          <span className="text-xs text-slate-500 dark:text-slate-400">
+                          <span className="font-body text-body-xs text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
                             {goal.category || 'Personal'}
                           </span>
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-medium text-slate-900 dark:text-white">
-                        ${(goal.currentAmount || 0).toLocaleString()} / ${(goal.targetAmount || 0).toLocaleString()}
+                      <div className="font-body text-body-lg font-medium text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                        {formatCurrencySimple(goal.currentAmount || 0)} / {formatCurrencySimple(goal.targetAmount || 0)}
                       </div>
-                      <div className="w-24 h-2 bg-slate-200 dark:bg-slate-600 rounded-full mt-2">
-                        <div
-                          className={`h-2 rounded-full ${
-                            goal.isGroupGoal ? 'bg-blue-600' : 'bg-blue-600'
+                      <div className="w-32 h-3 bg-loopfund-neutral-200 dark:bg-loopfund-neutral-700 rounded-full mt-3 overflow-hidden">
+                        <motion.div
+                          className={`h-3 rounded-full ${
+                            goal.isGroupGoal ? 'bg-gradient-to-r from-loopfund-coral-500 to-loopfund-orange-500' : 'bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500'
                           }`}
-                          style={{ 
+                          initial={{ width: 0 }}
+                          animate={{ 
                             width: `${goal.targetAmount > 0 ? ((goal.currentAmount || 0) / goal.targetAmount) * 100 : 0}%` 
                           }}
+                          transition={{ delay: 0.5 + index * 0.1, duration: 1, ease: "easeOut" }}
                         />
                       </div>
                     </div>
                   </motion.div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           </div>
 
           {/* Recent Activity */}
@@ -423,36 +508,42 @@ const DashboardPage = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700"
+            className="bg-white dark:bg-loopfund-dark-surface rounded-2xl p-8 shadow-loopfund border border-loopfund-neutral-200/20 dark:border-loopfund-neutral-600/30"
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
                 Recent Activity
               </h2>
-              <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium">
+              <button className="font-body text-body-sm text-loopfund-emerald-600 dark:text-loopfund-emerald-400 font-medium transition-colors">
                 View all
               </button>
             </div>
             <div className="space-y-4">
-              {sortedRecentActivity.map((activity) => (
+              {sortedRecentActivity.map((activity, index) => (
                 <motion.div 
                   key={activity.id} 
-                  className="flex items-start space-x-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                  className="flex items-start space-x-4 p-3 rounded-xl transition-all duration-300 group"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 + index * 0.1 }}
                   whileHover={{ x: 5 }}
                 >
-                  <div className={`p-2 rounded-lg ${getStatusColor(activity.status)}`}>
+                  <motion.div 
+                    className={`p-3 rounded-xl ${getStatusColor(activity.status)}`}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  >
                     {getStatusIcon(activity.status)}
-                  </div>
+                  </motion.div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-900 dark:text-loopfund-dark-text">
                       {activity.title}
                     </p>
                     <div className="flex items-center justify-between mt-1">
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                      <p className="font-body text-body-xs text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
                         {activity.date}
                       </p>
                       {activity.amount && (
-                        <p className="text-xs font-medium text-slate-900 dark:text-white">
+                        <p className="font-body text-body-xs font-medium text-loopfund-neutral-900 dark:text-loopfund-dark-text">
                           ${activity.amount}
                         </p>
                       )}
@@ -465,42 +556,44 @@ const DashboardPage = () => {
         </div>
 
         {/* Bottom Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Upcoming Payments */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700"
+            className="bg-white dark:bg-loopfund-dark-surface rounded-2xl p-8 shadow-loopfund border border-loopfund-neutral-200/20 dark:border-loopfund-neutral-600/30"
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
                 Upcoming Payments
               </h2>
-              <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium">
+              <button className="font-body text-body-sm text-loopfund-emerald-600 dark:text-loopfund-emerald-400 font-medium transition-colors">
                 View calendar
               </button>
             </div>
             <div className="space-y-4">
-              {upcomingPayments.map((payment) => (
+              {upcomingPayments.map((payment, index) => (
                 <motion.div
                   key={payment.id}
-                  className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
-                  whileHover={{ scale: 1.02 }}
+                  className="p-6 border border-loopfund-neutral-200 dark:border-loopfund-neutral-600/30 rounded-xl transition-all duration-300 group"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 + index * 0.1 }}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-medium text-slate-900 dark:text-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-body text-body-lg font-medium text-loopfund-neutral-900 dark:text-loopfund-dark-text">
                       {payment.title}
                     </h3>
-                    <span className="text-sm text-slate-500 dark:text-slate-400">
+                    <span className="font-body text-body-sm text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
                       {new Date(payment.date).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-slate-900 dark:text-white">
-                      ${payment.amount}
+                    <span className="font-display text-h5 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                      {formatCurrencySimple(payment.amount)}
                     </span>
-                    <span className="px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 dark:bg-blue-900/20 rounded-full">
+                    <span className="px-3 py-1 text-xs font-medium text-loopfund-coral-700 bg-loopfund-coral-100 dark:bg-loopfund-coral-900/20 dark:text-loopfund-coral-300 rounded-full">
                       Due Soon
                     </span>
                   </div>
@@ -514,15 +607,15 @@ const DashboardPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700"
+            className="bg-white dark:bg-loopfund-dark-surface rounded-2xl p-8 shadow-loopfund border border-loopfund-neutral-200/20 dark:border-loopfund-neutral-600/30"
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
                 Achievements
               </h2>
               <Link
                 to="/achievements"
-                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium"
+                className="font-body text-body-sm text-loopfund-emerald-600 dark:text-loopfund-emerald-400 hover:text-loopfund-emerald-700 dark:hover:text-loopfund-emerald-300 font-medium transition-colors"
               >
                 View all
               </Link>
@@ -530,8 +623,14 @@ const DashboardPage = () => {
             <div className="grid grid-cols-2 gap-4">
               {achievementsLoading ? (
                 <div className="col-span-2 flex items-center justify-center py-8">
-                  <Loader className="w-6 h-6 text-blue-600 animate-spin" />
-                  <span className="ml-2 text-slate-600 dark:text-slate-400">Loading achievements...</span>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    className="w-8 h-8 bg-gradient-to-br from-loopfund-emerald-500 to-loopfund-mint-500 rounded-full flex items-center justify-center mr-3"
+                  >
+                    <Sparkles className="w-4 h-4 text-white" />
+                  </motion.div>
+                  <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Loading achievements...</span>
                 </div>
               ) : realAchievements.length > 0 ? (
                 realAchievements.map((achievementData, index) => {
@@ -541,34 +640,39 @@ const DashboardPage = () => {
                   return (
                     <motion.div
                       key={achievement._id || `achievement-${index}`}
-                      className={`p-4 rounded-lg border-2 transition-all duration-200 ${
+                      className={`p-4 rounded-xl border-2 transition-all duration-300 ${
                         unlocked 
-                          ? 'border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800' 
-                          : 'border-slate-200 bg-slate-50 dark:bg-slate-900/20 dark:border-slate-800'
+                          ? 'border-loopfund-emerald-200 bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/20 dark:border-loopfund-emerald-800' 
+                          : 'border-loopfund-neutral-200 bg-loopfund-neutral-50 dark:bg-loopfund-midnight-800/50 dark:border-loopfund-neutral-600/30'
                       }`}
-                      whileHover={{ scale: 1.05 }}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.6 + index * 0.1 }}
                     >
                       <div className="flex items-center space-x-3">
-                        <div className={`p-2 rounded-lg ${
-                          unlocked 
-                            ? 'bg-blue-100 dark:bg-blue-900/40' 
-                            : 'bg-slate-100 dark:bg-slate-900/40'
-                        }`}>
+                        <motion.div 
+                          className={`p-2 rounded-lg ${
+                            unlocked 
+                              ? 'bg-loopfund-emerald-100 dark:bg-loopfund-emerald-900/40' 
+                              : 'bg-loopfund-neutral-100 dark:bg-loopfund-midnight-900/40'
+                          }`}
+                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        >
                           <span className="text-lg">{achievement.icon}</span>
-                        </div>
+                        </motion.div>
                         <div>
-                          <p className={`text-sm font-medium ${
-                            unlocked ? 'text-blue-800 dark:text-blue-200' : 'text-slate-500 dark:text-slate-400'
+                          <p className={`font-body text-body-sm font-medium ${
+                            unlocked ? 'text-loopfund-emerald-800 dark:text-loopfund-emerald-200' : 'text-loopfund-neutral-500 dark:text-loopfund-neutral-400'
                           }`}>
                             {achievement.name}
                           </p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                          <p className="font-body text-body-xs text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
                             {achievement.description}
                           </p>
                           {unlocked && (
                             <div className="flex items-center mt-1">
-                              <CheckCircle className="w-3 h-3 text-green-500 mr-1" />
-                              <span className="text-xs text-green-600 dark:text-green-400">Unlocked</span>
+                              <CheckCircle className="w-3 h-3 text-loopfund-emerald-500 mr-1" />
+                              <span className="font-body text-body-xs text-loopfund-emerald-600 dark:text-loopfund-emerald-400">Unlocked</span>
                             </div>
                           )}
                         </div>
@@ -577,24 +681,29 @@ const DashboardPage = () => {
                   );
                 })
               ) : (
-                achievements.map((achievement) => (
+                achievements.map((achievement, index) => (
                   <motion.div
                     key={achievement.id}
-                    className="p-4 rounded-lg border-2 border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800 transition-all duration-200"
-                    whileHover={{ scale: 1.05 }}
+                    className="p-4 rounded-xl border-2 border-loopfund-emerald-200 bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/20 dark:border-loopfund-emerald-800 transition-all duration-300"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.6 + index * 0.1 }}
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/40">
+                      <motion.div 
+                        className="p-2 rounded-lg bg-loopfund-emerald-100 dark:bg-loopfund-emerald-900/40"
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      >
                         <achievement.icon 
                           size={20} 
-                          className="text-blue-600 dark:text-blue-400" 
+                          className="text-loopfund-emerald-600 dark:text-loopfund-emerald-400" 
                         />
-                      </div>
+                      </motion.div>
                       <div>
-                        <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                        <p className="font-body text-body-sm font-medium text-loopfund-emerald-800 dark:text-loopfund-emerald-200">
                           {achievement.title}
                         </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                        <p className="font-body text-body-xs text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
                           {achievement.description}
                         </p>
                       </div>
@@ -611,9 +720,9 @@ const DashboardPage = () => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 text-center"
+          className="bg-white dark:bg-loopfund-dark-surface rounded-2xl p-8 shadow-loopfund border border-loopfund-neutral-200/20 dark:border-loopfund-neutral-600/30 text-center"
         >
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+          <h2 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-6">
             Overall Progress
           </h2>
           <div className="flex justify-center">
@@ -621,10 +730,10 @@ const DashboardPage = () => {
               progress={dashboardData?.stats?.completionRate ? Math.round(dashboardData.stats.completionRate) : 0} 
               size={150} 
               strokeWidth={12} 
-              color="#3B82F6" 
+              color="#10B981" 
             />
           </div>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-4">
+          <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mt-6">
             You're {dashboardData?.stats?.completionRate ? Math.round(dashboardData.stats.completionRate) : 0}% of the way to your total savings goal!
           </p>
         </motion.div>
@@ -636,35 +745,44 @@ const DashboardPage = () => {
           transition={{ duration: 0.5, delay: 0.7 }}
           className="mb-8"
         >
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-600 rounded-lg">
-                  <Brain className="w-5 h-5 text-white" />
-                </div>
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+          <div className="bg-white dark:bg-loopfund-dark-surface rounded-2xl p-8 shadow-loopfund border border-loopfund-neutral-200/20 dark:border-loopfund-neutral-600/30">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center space-x-4">
+                <motion.div 
+                  className="p-3 bg-gradient-to-br from-loopfund-electric-500 to-loopfund-lavender-500 rounded-xl shadow-lg"
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
+                  <Brain className="w-6 h-6 text-white" />
+                </motion.div>
+                <h2 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
                   AI Financial Advisor
                 </h2>
               </div>
               <Link 
                 to="/ai-advisor" 
-                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium"
+                className="font-body text-body-sm text-loopfund-emerald-600 dark:text-loopfund-emerald-400 hover:text-loopfund-emerald-700 dark:hover:text-loopfund-emerald-300 font-medium transition-colors"
               >
                 View Full Page →
               </Link>
             </div>
-            <p className="text-slate-600 dark:text-slate-400 mb-4">
+            <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-6">
               Get personalized financial advice and savings plans from our AI advisor.
             </p>
             <AIFinancialAdvisor />
           </div>
         </motion.div>
-      </div>
 
       {/* Floating Action Button */}
       <FloatingActionButton />
-    </Layout>
+
+      {/* Add Money Modal */}
+      <AddMoneyModal
+        isOpen={showAddMoneyModal}
+        onClose={() => setShowAddMoneyModal(false)}
+        onSuccess={handleAddMoneySuccess}
+      />
+    </div>
   );
 };
 
-export default DashboardPage; 
+export default DashboardPage;

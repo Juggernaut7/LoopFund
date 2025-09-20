@@ -11,7 +11,6 @@ import {
   Loader,
   AlertCircle
 } from 'lucide-react';
-import Layout from '../components/layout/Layout';
 import { useToast } from '../context/ToastContext';
 import dashboardService from '../services/dashboardService';
 
@@ -115,21 +114,18 @@ const ProfilePage = () => {
   // Show loading state
   if (isLoading) {
     return (
-      <Layout>
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
           <div className="text-center">
             <Loader className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
             <p className="text-slate-600 dark:text-slate-400">Loading your profile...</p>
           </div>
         </div>
-      </Layout>
     );
   }
 
   // Show error state
   if (error) {
     return (
-      <Layout>
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
           <div className="text-center">
             <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
@@ -142,12 +138,10 @@ const ProfilePage = () => {
             </button>
           </div>
         </div>
-      </Layout>
     );
   }
 
   return (
-    <Layout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -300,7 +294,6 @@ const ProfilePage = () => {
           </form>
         </div>
       </div>
-    </Layout>
   );
 };
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calculator, TrendingUp, Clock, DollarSign, Percent } from 'lucide-react';
+import { Calculator, TrendingUp, Clock, DollarSign, Percent, Sparkles, Crown, Zap, Loader2 } from 'lucide-react';
+import { LoopFundButton, LoopFundCard } from '../ui';
 import api from '../../services/api';
 
 const FeeCalculator = ({ targetAmount, durationMonths, onFeeCalculated }) => {
@@ -41,32 +42,52 @@ const FeeCalculator = ({ targetAmount, durationMonths, onFeeCalculated }) => {
   };
 
   const getDurationColor = (months) => {
-    if (months <= 3) return 'text-green-600 dark:text-green-400';
-    if (months <= 6) return 'text-blue-600 dark:text-blue-400';
-    if (months <= 12) return 'text-orange-600 dark:text-orange-400';
-    return 'text-red-600 dark:text-red-400';
+    if (months <= 3) return 'text-loopfund-emerald-600 dark:text-loopfund-emerald-400';
+    if (months <= 6) return 'text-loopfund-electric-600 dark:text-loopfund-electric-400';
+    if (months <= 12) return 'text-loopfund-coral-600 dark:text-loopfund-coral-400';
+    return 'text-loopfund-gold-600 dark:text-loopfund-gold-400';
+  };
+
+  const getDurationGradient = (months) => {
+    if (months <= 3) return 'bg-gradient-emerald';
+    if (months <= 6) return 'bg-gradient-electric';
+    if (months <= 12) return 'bg-gradient-coral';
+    return 'bg-gradient-gold';
   };
 
   const getDurationIcon = (months) => {
-    if (months <= 3) return '⚡';
-    if (months <= 6) return '📅';
-    if (months <= 12) return '📊';
-    return '🎯';
+    if (months <= 3) return Zap;
+    if (months <= 6) return Clock;
+    if (months <= 12) return TrendingUp;
+    return Crown;
   };
 
   if (!targetAmount || targetAmount < 1000) {
     return (
-      <div className="glass-card p-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">
-        <div className="flex items-center space-x-3 mb-4">
-          <Calculator className="text-gray-400" size={20} />
-          <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300">
-            Fee Calculator
-          </h3>
+      <LoopFundCard variant="elevated" className="relative">
+        {/* Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-5 -right-5 w-10 h-10 bg-gradient-loopfund opacity-5 rounded-full blur-xl animate-float" />
         </div>
-        <p className="text-gray-500 dark:text-gray-400 text-sm">
-          Enter a target amount (minimum ₦1,000) to see the creation fee
-        </p>
-      </div>
+
+        <div className="relative p-6">
+          <div className="flex items-center space-x-4 mb-4">
+            <motion.div 
+              className="w-10 h-10 bg-gradient-loopfund rounded-2xl flex items-center justify-center shadow-loopfund"
+              whileHover={{ rotate: 15, scale: 1.1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
+              <Calculator className="w-5 h-5 text-white" />
+            </motion.div>
+            <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+              Fee Calculator
+            </h3>
+          </div>
+          <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+            Enter a target amount (minimum ₦1,000) to see the creation fee
+          </p>
+        </div>
+      </LoopFundCard>
     );
   }
 
@@ -74,97 +95,142 @@ const FeeCalculator = ({ targetAmount, durationMonths, onFeeCalculated }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-card p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20"
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <Calculator className="text-blue-600 dark:text-blue-400" size={20} />
-          <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">
-            Dynamic Fee Calculator
-          </h3>
+      <LoopFundCard variant="gradient" className="relative">
+        {/* Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-5 -right-5 w-10 h-10 bg-gradient-gold opacity-5 rounded-full blur-xl animate-float" />
+          <div className="absolute -bottom-5 -left-5 w-8 h-8 bg-gradient-electric opacity-5 rounded-full blur-lg animate-float-delayed" />
         </div>
-        {isLoading && (
-          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-        )}
-      </div>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+        <div className="relative p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <motion.div 
+                className="w-12 h-12 bg-gradient-to-r from-loopfund-gold-500 to-loopfund-orange-500 rounded-2xl flex items-center justify-center shadow-loopfund"
+                whileHover={{ rotate: 15, scale: 1.1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              >
+                <Calculator className="w-6 h-6 text-white" />
+              </motion.div>
+              <h3 className="font-display text-h3 text-white">
+                Dynamic Fee Calculator
+              </h3>
+            </div>
+            {isLoading && (
+              <motion.div
+                className="w-8 h-8 bg-white/20 rounded-2xl flex items-center justify-center"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              >
+                <Loader2 className="w-5 h-5 text-white" />
+              </motion.div>
+            )}
+          </div>
+
+          {error && (
+            <motion.div 
+              className="mb-6 p-4 bg-loopfund-coral-500/20 border border-loopfund-coral-500/30 rounded-2xl"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              <p className="font-body text-body text-loopfund-coral-200">{error}</p>
+            </motion.div>
+          )}
+
+          {feeData && (
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="space-y-6"
+              >
+                {/* Main Fee Display */}
+                <div className="text-center p-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+                  <div className="text-4xl font-display text-white mb-2">
+                    ₦{feeData.totalFee.toLocaleString()}
+                  </div>
+                  <div className="font-body text-body text-white/90">
+                    {feeData.percentage}% of target amount
+                  </div>
+                </div>
+
+                {/* Fee Breakdown */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-gradient-emerald rounded-xl flex items-center justify-center shadow-loopfund">
+                        <Percent className="w-4 h-4 text-white" />
+                      </div>
+                      <span className="font-body text-body text-white/90">Base Fee (2%)</span>
+                    </div>
+                    <span className="font-display text-h4 text-white">
+                      ₦{feeData.baseFee.toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-gradient-coral rounded-xl flex items-center justify-center shadow-loopfund">
+                        <Clock className="w-4 h-4 text-white" />
+                      </div>
+                      <span className="font-body text-body text-white/90">
+                        Duration Fee ({durationMonths} months)
+                      </span>
+                    </div>
+                    <span className="font-display text-h4 text-white">
+                      ₦{feeData.durationFee.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Duration Indicator */}
+                <div className={`flex items-center justify-between p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 ${getDurationColor(durationMonths)}`}>
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-8 h-8 ${getDurationGradient(durationMonths)} rounded-xl flex items-center justify-center shadow-loopfund`}>
+                      {React.createElement(getDurationIcon(durationMonths), { className: "w-4 h-4 text-white" })}
+                    </div>
+                    <span className="font-body text-body font-medium">Duration</span>
+                  </div>
+                  <span className="font-display text-h4">{durationMonths} months</span>
+                </div>
+
+                {/* Savings Info */}
+                <div className="p-6 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="w-8 h-8 bg-gradient-emerald rounded-xl flex items-center justify-center shadow-loopfund">
+                      <TrendingUp className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="font-display text-h4 text-white">
+                      What you get
+                    </span>
+                  </div>
+                  <ul className="font-body text-body text-white/90 space-y-2">
+                    <li className="flex items-center space-x-2">
+                      <Sparkles className="w-4 h-4 text-loopfund-gold-400" />
+                      <span>Full group management & analytics</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <Crown className="w-4 h-4 text-loopfund-gold-400" />
+                      <span>AI-powered insights & recommendations</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <Zap className="w-4 h-4 text-loopfund-gold-400" />
+                      <span>24/7 support & priority assistance</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <Calculator className="w-4 h-4 text-loopfund-gold-400" />
+                      <span>Advanced security & data protection</span>
+                    </li>
+                  </ul>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          )}
         </div>
-      )}
-
-      {feeData && (
-        <AnimatePresence>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="space-y-4"
-          >
-            {/* Main Fee Display */}
-            <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">
-                ₦{feeData.totalFee.toLocaleString()}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                {feeData.percentage}% of target amount
-              </div>
-            </div>
-
-            {/* Fee Breakdown */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <Percent className="text-green-600 dark:text-green-400" size={16} />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Base Fee (2%)</span>
-                </div>
-                <span className="font-medium text-gray-900 dark:text-white">
-                  ₦{feeData.baseFee.toLocaleString()}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <Clock className="text-orange-600 dark:text-orange-400" size={16} />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    Duration Fee ({durationMonths} months)
-                  </span>
-                </div>
-                <span className="font-medium text-gray-900 dark:text-white">
-                  ₦{feeData.durationFee.toLocaleString()}
-                </span>
-              </div>
-            </div>
-
-            {/* Duration Indicator */}
-            <div className={`flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg ${getDurationColor(durationMonths)}`}>
-              <div className="flex items-center space-x-2">
-                <span className="text-lg">{getDurationIcon(durationMonths)}</span>
-                <span className="text-sm font-medium">Duration</span>
-              </div>
-              <span className="font-semibold">{durationMonths} months</span>
-            </div>
-
-            {/* Savings Info */}
-            <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-              <div className="flex items-center space-x-2 mb-2">
-                <TrendingUp className="text-green-600 dark:text-green-400" size={16} />
-                <span className="text-sm font-medium text-green-800 dark:text-green-200">
-                  What you get
-                </span>
-              </div>
-              <ul className="text-xs text-green-700 dark:text-green-300 space-y-1">
-                <li>• Full group management & analytics</li>
-                <li>• AI-powered insights & recommendations</li>
-                <li>• 24/7 support & priority assistance</li>
-                <li>• Advanced security & data protection</li>
-              </ul>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      )}
+      </LoopFundCard>
     </motion.div>
   );
 };
 
-export default FeeCalculator; 
+export default FeeCalculator;

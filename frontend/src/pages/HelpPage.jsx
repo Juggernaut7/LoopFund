@@ -29,15 +29,27 @@ import {
   Info,
   Lightbulb,
   Star,
-  Heart
+  Heart,
+  Sparkles,
+  Crown,
+  Zap,
+  Trophy,
+  Send,
+  Copy,
+  User,
+  Clock,
+  Smartphone
 } from 'lucide-react';
-import Layout from '../components/layout/Layout';
 import { useToast } from '../context/ToastContext';
+import { LoopFundButton, LoopFundCard, LoopFundInput } from '../components/ui';
 
 const HelpPage = () => {
   const [activeCategory, setActiveCategory] = useState('getting-started');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedItems, setExpandedItems] = useState({});
+  const [activeTab, setActiveTab] = useState('help');
+  const [userMessage, setUserMessage] = useState('');
+  const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
   const categories = [
@@ -45,8 +57,9 @@ const HelpPage = () => {
       id: 'getting-started',
       title: 'Getting Started',
       icon: BookOpen,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+      color: 'emerald',
+      gradient: 'from-loopfund-emerald-500 to-loopfund-mint-500',
+      bgColor: 'bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/20',
       items: [
         {
           id: 'welcome',
@@ -99,8 +112,9 @@ const HelpPage = () => {
       id: 'reports-analytics',
       title: 'Reports & Analytics',
       icon: BarChart3,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50 dark:bg-green-900/20',
+      color: 'coral',
+      gradient: 'from-loopfund-coral-500 to-loopfund-orange-500',
+      bgColor: 'bg-loopfund-coral-50 dark:bg-loopfund-coral-900/20',
       items: [
         {
           id: 'analytics-overview',
@@ -151,12 +165,94 @@ const HelpPage = () => {
     }
   ];
 
+  // Support contact details
+  const supportConfig = {
+    whatsapp: {
+      number: '07041946945',
+      name: 'WhatsApp Support',
+      icon: MessageCircle,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+      borderColor: 'border-green-200'
+    },
+    telegram: {
+      number: '07041946945',
+      name: 'Telegram Support',
+      icon: Send,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+      borderColor: 'border-blue-200'
+    },
+    email: {
+      address: 'abdulkabir0600@gmail.com',
+      name: 'Email Support',
+      icon: Mail,
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
+      borderColor: 'border-red-200'
+    }
+  };
+
+  const handleSupportClick = (method) => {
+    const config = supportConfig[method];
+    let url = '';
+    let message = '';
+
+    if (userMessage.trim()) {
+      message = `Hi! I need help with LoopFund. My issue is: ${userMessage.trim()}`;
+    } else {
+      message = 'Hi! I need help with LoopFund. My issue is: [Please describe your issue]';
+    }
+
+    switch (method) {
+      case 'whatsapp':
+        url = `https://wa.me/2347041946945?text=${encodeURIComponent(message)}`;
+        break;
+      case 'telegram':
+        url = `https://t.me/+2347041946945?text=${encodeURIComponent(message)}`;
+        break;
+      case 'email':
+        url = `mailto:${config.address}?subject=LoopFund Support Request&body=${encodeURIComponent(message)}`;
+        break;
+      default:
+        return;
+    }
+
+    window.open(url, '_blank');
+    
+    // Track support request
+    console.log('Support request initiated:', { method, message });
+    
+    toast.success('Support Request', `Opening ${config.name}...`);
+  };
+
+  const copyContactInfo = (method) => {
+    const config = supportConfig[method];
+    let textToCopy = '';
+    
+    switch (method) {
+      case 'whatsapp':
+      case 'telegram':
+        textToCopy = config.number;
+        break;
+      case 'email':
+        textToCopy = config.address;
+        break;
+    }
+    
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      setCopied(true);
+      toast.success('Copied!', `${config.name} contact copied to clipboard`);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   const quickActions = [
     {
       title: 'Contact Support',
       icon: MessageCircle,
       description: 'Get help from our support team',
-      action: () => toast('Support contact feature coming soon!', 'info')
+      action: () => setActiveTab('support')
     },
     {
       title: 'Video Tutorials',
@@ -178,6 +274,151 @@ const HelpPage = () => {
     }
   ];
 
+  // FAQ Data
+  const faqData = [
+    {
+      category: 'Getting Started',
+      icon: HelpCircle,
+      color: 'text-loopfund-emerald-500',
+      questions: [
+        {
+          question: "How do I create my first savings goal?",
+          answer: "Click the 'Create Goal' button on the dashboard, enter your goal details (name, target amount, deadline), and start contributing. You can also join existing group goals."
+        },
+        {
+          question: "How do I join a group?",
+          answer: "You can join a group by using an invite code shared by the group creator, or by clicking on a public group link. Enter the invite code when prompted."
+        },
+        {
+          question: "Is LoopFund free to use?",
+          answer: "Yes! LoopFund is free to use. We only charge small processing fees for payments (handled by Paystack) and optional premium features."
+        }
+      ]
+    },
+    {
+      category: 'Payments & Billing',
+      icon: CreditCard,
+      color: 'text-loopfund-coral-500',
+      questions: [
+        {
+          question: "How do I make a payment?",
+          answer: "Click the 'Contribute' button on any group or goal, enter your amount, and you'll be redirected to Paystack for secure payment processing. We support all major Nigerian banks and payment methods."
+        },
+        {
+          question: "Why is my payment not reflecting?",
+          answer: "Payments may take 1-2 minutes to reflect. If it's been longer, please check your bank statement and contact support with your transaction reference number."
+        },
+        {
+          question: "What payment methods do you accept?",
+          answer: "We accept all major Nigerian payment methods through Paystack: bank transfers, debit cards, USSD, and mobile money. All payments are secure and encrypted."
+        },
+        {
+          question: "Are there any fees?",
+          answer: "We charge a small processing fee (1-2%) for contributions, which goes to Paystack for payment processing. Group creation has a small fee based on the group size and duration."
+        }
+      ]
+    },
+    {
+      category: 'Groups & Goals',
+      icon: Users,
+      color: 'text-loopfund-gold-500',
+      questions: [
+        {
+          question: "How do I create a group?",
+          answer: "Go to the Groups page, click 'Create Group', fill in the details (name, description, target amount, duration), and invite members using the generated invite code or link."
+        },
+        {
+          question: "Can I leave a group?",
+          answer: "Yes, you can leave a group at any time. However, you won't be able to withdraw contributions made while you were a member unless the group is dissolved."
+        },
+        {
+          question: "What happens when a group reaches its target?",
+          answer: "When a group reaches its target amount, all members are notified and the group is marked as completed. The group creator can then distribute the funds to members."
+        },
+        {
+          question: "How many people can join a group?",
+          answer: "Groups can have up to 50 members by default, but this can be customized when creating the group. Larger groups may have slightly higher creation fees."
+        }
+      ]
+    },
+    {
+      category: 'Account & Security',
+      icon: Shield,
+      color: 'text-loopfund-electric-500',
+      questions: [
+        {
+          question: "How do I reset my password?",
+          answer: "Go to Settings > Security, enter your current password and new password. If you've forgotten your password, use the 'Forgot Password' link on the login page."
+        },
+        {
+          question: "Is my data secure?",
+          answer: "Yes! We use bank-level encryption and security measures. All payments are processed through Paystack, which is PCI DSS compliant. We never store your payment details."
+        },
+        {
+          question: "Can I change my email address?",
+          answer: "Yes, you can update your email address in Settings > Profile. You'll need to verify the new email address before it becomes active."
+        },
+        {
+          question: "How do I delete my account?",
+          answer: "Go to Settings > Data & Privacy and click 'Delete Account'. Note: This action is irreversible and you'll lose all your data and contributions."
+        }
+      ]
+    },
+    {
+      category: 'Technical Issues',
+      icon: Smartphone,
+      color: 'text-loopfund-lavender-500',
+      questions: [
+        {
+          question: "The app is not loading properly",
+          answer: "Try refreshing the page, clearing your browser cache, or using a different browser. If the issue persists, contact our support team."
+        },
+        {
+          question: "I can't receive notifications",
+          answer: "Check your browser notification settings and ensure LoopFund is allowed to send notifications. Also check your email spam folder for email notifications."
+        },
+        {
+          question: "The app is slow or lagging",
+          answer: "This might be due to a slow internet connection or browser issues. Try refreshing the page or using a different browser. Clear your browser cache if needed."
+        },
+        {
+          question: "I'm having trouble on mobile",
+          answer: "LoopFund works best on modern browsers. Try using Chrome, Safari, or Firefox. Make sure you have a stable internet connection and the latest browser version."
+        }
+      ]
+    }
+  ];
+
+  const supportMethods = [
+    {
+      id: 'whatsapp',
+      title: 'WhatsApp Support',
+      description: 'Get instant help via WhatsApp',
+      responseTime: 'Usually within minutes',
+      icon: MessageCircle,
+      color: 'from-green-500 to-green-600',
+      hoverColor: 'from-green-600 to-green-700'
+    },
+    {
+      id: 'telegram',
+      title: 'Telegram Support',
+      description: 'Quick support via Telegram',
+      responseTime: 'Usually within minutes',
+      icon: Send,
+      color: 'from-blue-500 to-blue-600',
+      hoverColor: 'from-blue-600 to-blue-700'
+    },
+    {
+      id: 'email',
+      title: 'Email Support',
+      description: 'Detailed support via email',
+      responseTime: 'Within 24 hours',
+      icon: Mail,
+      color: 'from-red-500 to-red-600',
+      hoverColor: 'from-red-600 to-red-700'
+    }
+  ];
+
   const toggleExpanded = (itemId) => {
     setExpandedItems(prev => ({
       ...prev,
@@ -194,8 +435,7 @@ const HelpPage = () => {
   })).filter(category => category.items.length > 0);
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <motion.div
@@ -203,17 +443,27 @@ const HelpPage = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-8"
           >
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
-                <HelpCircle className="w-8 h-8 text-white" />
+            <div className="relative">
+              {/* Floating background elements */}
+              <div className="absolute -top-4 -left-4 w-8 h-8 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-full opacity-20 animate-float" />
+              <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-gradient-to-r from-loopfund-coral-500 to-loopfund-orange-500 rounded-full opacity-20 animate-float-delayed" />
+              
+              <div className="flex items-center justify-center mb-6 relative z-10">
+                <motion.div 
+                  className="w-20 h-20 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-2xl flex items-center justify-center shadow-loopfund"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <HelpCircle className="w-10 h-10 text-white" />
+                </motion.div>
               </div>
+              <h1 className="font-display text-display-lg text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-4 relative z-10">
+                Help & Support
+              </h1>
+              <p className="font-body text-body-lg text-loopfund-neutral-600 dark:text-loopfund-neutral-400 max-w-3xl mx-auto relative z-10">
+                Everything you need to know about LoopFund. Find answers, learn features, and get help from our support team.
+              </p>
             </div>
-            <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">
-              Help Center
-            </h1>
-            <p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto">
-              Everything you need to know about LoopFund. Find answers, learn features, and get the most out of your financial wellness journey.
-            </p>
           </motion.div>
 
           {/* Search Bar */}
@@ -223,71 +473,112 @@ const HelpPage = () => {
             transition={{ delay: 0.1 }}
             className="max-w-2xl mx-auto mb-8"
           >
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search help articles..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            <LoopFundInput
+              type="text"
+              placeholder="Search help articles..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              icon={<Search className="w-5 h-5" />}
+              className="w-full"
+            />
           </motion.div>
 
-          {/* Quick Actions */}
+          {/* Tab Navigation */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="flex space-x-1 bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated rounded-xl p-1 max-w-md mx-auto mb-8"
+          >
+            <button
+              onClick={() => setActiveTab('help')}
+              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-body text-body-sm font-medium transition-all duration-200 ${
+                activeTab === 'help'
+                  ? 'bg-white dark:bg-loopfund-dark-surface text-loopfund-emerald-600 dark:text-loopfund-emerald-400 shadow-sm'
+                  : 'text-loopfund-neutral-600 dark:text-loopfund-neutral-400 hover:text-loopfund-neutral-900 dark:hover:text-loopfund-neutral-200'
+              }`}
+            >
+              <HelpCircle className="w-4 h-4" />
+              <span>Help Center</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('support')}
+              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-body text-body-sm font-medium transition-all duration-200 ${
+                activeTab === 'support'
+                  ? 'bg-white dark:bg-loopfund-dark-surface text-loopfund-emerald-600 dark:text-loopfund-emerald-400 shadow-sm'
+                  : 'text-loopfund-neutral-600 dark:text-loopfund-neutral-400 hover:text-loopfund-neutral-900 dark:hover:text-loopfund-neutral-200'
+              }`}
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>Get Support</span>
+            </button>
+          </motion.div>
+
+          {/* Tab Content */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
           >
+            {activeTab === 'help' && (
+              <>
+                {/* Quick Actions */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {quickActions.map((action, index) => (
-              <motion.button
+              <motion.div
                 key={action.title}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + index * 0.1 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={action.action}
-                className="p-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 text-left group"
+                whileHover={{ scale: 1.02, y: -5 }}
               >
-                <div className="flex items-center mb-3">
-                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
-                    <action.icon className="w-5 h-5 text-blue-600" />
+                <LoopFundCard 
+                  variant="elevated" 
+                  className="p-6 hover:shadow-loopfund-lg transition-all duration-300 cursor-pointer group"
+                  onClick={action.action}
+                >
+                  <div className="flex items-center mb-4">
+                    <motion.div 
+                      className="w-12 h-12 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-xl flex items-center justify-center shadow-loopfund group-hover:scale-110 transition-transform"
+                      whileHover={{ rotate: 5 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <action.icon className="w-6 h-6 text-white" />
+                    </motion.div>
                   </div>
-                </div>
-                <h3 className="font-semibold text-slate-900 dark:text-white mb-2">
-                  {action.title}
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  {action.description}
-                </p>
-              </motion.button>
+                  <h3 className="font-display font-semibold text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
+                    {action.title}
+                  </h3>
+                  <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                    {action.description}
+                  </p>
+                </LoopFundCard>
+              </motion.div>
             ))}
-          </motion.div>
+                </div>
 
           {/* Category Tabs */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="flex flex-wrap justify-center gap-2 mb-8"
+            className="flex flex-wrap justify-center gap-3 mb-8"
           >
             {categories.map((category) => (
-              <button
+              <motion.button
                 key={category.id}
                 onClick={() => setActiveCategory(category.id)}
-                className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 ${
+                className={`px-6 py-3 rounded-xl font-body text-body-sm font-medium transition-all duration-300 flex items-center space-x-2 ${
                   activeCategory === category.id
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
+                    ? `bg-loopfund-${category.color}-100 dark:bg-loopfund-${category.color}-900/20 text-loopfund-${category.color}-700 dark:text-loopfund-${category.color}-300 shadow-loopfund border-2 border-loopfund-${category.color}-200 dark:border-loopfund-${category.color}-800`
+                    : 'bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated text-loopfund-neutral-700 dark:text-loopfund-neutral-300 hover:bg-loopfund-neutral-200 dark:hover:bg-loopfund-dark-surface border-2 border-transparent'
                 }`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 <category.icon className="w-5 h-5" />
                 <span>{category.title}</span>
-              </button>
+              </motion.button>
             ))}
           </motion.div>
 
@@ -309,45 +600,57 @@ const HelpPage = () => {
                     className="space-y-6"
                   >
                     {/* Category Header */}
-                    <div className={`p-6 rounded-xl ${category.bgColor} border border-slate-200 dark:border-slate-700`}>
-                      <div className="flex items-center space-x-3 mb-2">
-                        <category.icon className={`w-6 h-6 ${category.color}`} />
-                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                    <LoopFundCard variant="gradient" className={`p-8 ${category.bgColor} border border-loopfund-neutral-200 dark:border-loopfund-neutral-700`}>
+                      <div className="flex items-center space-x-4 mb-4">
+                        <motion.div 
+                          className={`w-12 h-12 bg-gradient-to-r ${category.gradient} rounded-xl flex items-center justify-center shadow-loopfund`}
+                          whileHover={{ rotate: 5, scale: 1.1 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                        >
+                          <category.icon className="w-6 h-6 text-white" />
+                        </motion.div>
+                        <h2 className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
                           {category.title}
                         </h2>
                       </div>
-                      <p className="text-slate-600 dark:text-slate-400">
+                      <p className="font-body text-body-lg text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
                         {category.id === 'getting-started' 
                           ? 'Learn the basics and get started with LoopFund'
                           : 'Deep dive into analytics and reporting features'
                         }
                       </p>
-                    </div>
+                    </LoopFundCard>
 
                     {/* Category Items */}
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       {category.items.map((item) => (
                         <motion.div
                           key={item.id}
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden"
+                          whileHover={{ scale: 1.01, y: -2 }}
                         >
-                          <button
-                            onClick={() => toggleExpanded(item.id)}
-                            className="w-full p-6 text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
-                          >
-                            <div className="flex items-center justify-between">
-                              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                                {item.title}
-                              </h3>
-                              {expandedItems[item.id] ? (
-                                <ChevronDown className="w-5 h-5 text-slate-400" />
-                              ) : (
-                                <ChevronRight className="w-5 h-5 text-slate-400" />
-                              )}
-                            </div>
-                          </button>
+                          <LoopFundCard variant="elevated" className="overflow-hidden hover:shadow-loopfund-lg transition-all duration-300">
+                            <button
+                              onClick={() => toggleExpanded(item.id)}
+                              className="w-full p-6 text-left hover:bg-loopfund-neutral-50 dark:hover:bg-loopfund-dark-elevated transition-colors"
+                            >
+                              <div className="flex items-center justify-between">
+                                <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                                  {item.title}
+                                </h3>
+                                <motion.div
+                                  animate={{ rotate: expandedItems[item.id] ? 90 : 0 }}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  {expandedItems[item.id] ? (
+                                    <ChevronDown className="w-5 h-5 text-loopfund-neutral-400" />
+                                  ) : (
+                                    <ChevronRight className="w-5 h-5 text-loopfund-neutral-400" />
+                                  )}
+                                </motion.div>
+                              </div>
+                            </button>
                           
                           <AnimatePresence>
                             {expandedItems[item.id] && (
@@ -358,27 +661,33 @@ const HelpPage = () => {
                                 transition={{ duration: 0.3 }}
                                 className="overflow-hidden"
                               >
-                                <div className="px-6 pb-6 border-t border-slate-200 dark:border-slate-700">
-                                  <p className="text-slate-600 dark:text-slate-400 mb-4">
+                                <div className="px-6 pb-6 border-t border-loopfund-neutral-200 dark:border-loopfund-neutral-700">
+                                  <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-6">
                                     {item.content}
                                   </p>
                                   
                                   {/* Steps or Features */}
                                   {(item.steps || item.features || item.formats || item.insights || item.metrics) && (
-                                    <div className="space-y-3">
-                                      <h4 className="font-medium text-slate-900 dark:text-white">
+                                    <div className="space-y-4">
+                                      <h4 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
                                         {item.steps ? 'Steps:' : 
                                          item.features ? 'Features:' :
                                          item.formats ? 'Available Formats:' :
                                          item.insights ? 'AI Insights:' :
                                          'Key Metrics:'}
                                       </h4>
-                                      <ul className="space-y-2">
+                                      <ul className="space-y-3">
                                         {(item.steps || item.features || item.formats || item.insights || item.metrics).map((step, index) => (
-                                          <li key={index} className="flex items-start space-x-3">
-                                            <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                                            <span className="text-slate-600 dark:text-slate-400">{step}</span>
-                                          </li>
+                                          <motion.li 
+                                            key={index} 
+                                            className="flex items-start space-x-3"
+                                            initial={{ opacity: 0, x: -10 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: index * 0.1 }}
+                                          >
+                                            <CheckCircle className="w-5 h-5 text-loopfund-emerald-500 mt-0.5 flex-shrink-0" />
+                                            <span className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">{step}</span>
+                                          </motion.li>
                                         ))}
                                       </ul>
                                     </div>
@@ -387,6 +696,7 @@ const HelpPage = () => {
                               </motion.div>
                             )}
                           </AnimatePresence>
+                          </LoopFundCard>
                         </motion.div>
                       ))}
                     </div>
@@ -396,39 +706,276 @@ const HelpPage = () => {
             </AnimatePresence>
           </motion.div>
 
-          {/* Contact Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="max-w-4xl mx-auto mt-12 p-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl text-white"
-          >
-            <div className="text-center">
-              <h3 className="text-2xl font-bold mb-4">Still Need Help?</h3>
-              <p className="text-blue-100 mb-6">
-                Can't find what you're looking for? Our support team is here to help you succeed.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button
-                  onClick={() => toast('Email support coming soon!', 'info')}
-                  className="px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
+                {/* Contact Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="max-w-4xl mx-auto mt-12"
                 >
-                  <Mail className="w-5 h-5" />
-                  <span>Email Support</span>
-                </button>
-                <button
-                  onClick={() => toast('Live chat coming soon!', 'info')}
-                  className="px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
+                  <LoopFundCard variant="gradient" className="p-8 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 text-white">
+                    <div className="text-center">
+                      <motion.div
+                        className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center shadow-loopfund mx-auto mb-6"
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        <MessageCircle className="w-8 h-8 text-white" />
+                      </motion.div>
+                      <h3 className="font-display text-h2 mb-4">Still Need Help?</h3>
+                      <p className="font-body text-body-lg text-loopfund-neutral-100 mb-8">
+                        Can't find what you're looking for? Our support team is here to help you succeed.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <LoopFundButton
+                          onClick={() => setActiveTab('support')}
+                          variant="secondary"
+                          size="lg"
+                          icon={<Mail className="w-5 h-5" />}
+                          className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                        >
+                          Contact Support
+                        </LoopFundButton>
+                        <LoopFundButton
+                          onClick={() => setActiveTab('support')}
+                          variant="secondary"
+                          size="lg"
+                          icon={<MessageCircle className="w-5 h-5" />}
+                          className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                        >
+                          Get Help Now
+                        </LoopFundButton>
+                      </div>
+                    </div>
+                  </LoopFundCard>
+                </motion.div>
+              </>
+            )}
+
+            {activeTab === 'support' && (
+              <div className="space-y-6">
+                {/* Contact Info Banner */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-2xl p-6 text-white shadow-loopfund"
                 >
-                  <MessageCircle className="w-5 h-5" />
-                  <span>Live Chat</span>
-                </button>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-display text-h4 mb-2">Need Immediate Help?</h3>
+                      <p className="font-body text-body opacity-90">
+                        Contact us directly for urgent issues
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-6">
+                      <a
+                        href="https://wa.me/2347041946945"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-2 bg-white/20 hover:bg-white/30 rounded-xl px-4 py-2 transition-colors"
+                      >
+                        <MessageCircle className="w-5 h-5" />
+                        <span className="font-body text-body-sm font-medium">WhatsApp</span>
+                      </a>
+                      <a
+                        href="mailto:abdulkabir0600@gmail.com"
+                        className="flex items-center space-x-2 bg-white/20 hover:bg-white/30 rounded-xl px-4 py-2 transition-colors"
+                      >
+                        <Mail className="w-5 h-5" />
+                        <span className="font-body text-body-sm font-medium">Email</span>
+                      </a>
+                      <a
+                        href="tel:+2347041946945"
+                        className="flex items-center space-x-2 bg-white/20 hover:bg-white/30 rounded-xl px-4 py-2 transition-colors"
+                      >
+                        <Phone className="w-5 h-5" />
+                        <span className="font-body text-body-sm font-medium">Call</span>
+                      </a>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Message Input */}
+                <LoopFundCard variant="elevated" className="p-6">
+                  <div className="space-y-4">
+                    <h3 className="font-display text-h5 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                      Describe Your Issue
+                    </h3>
+                    <LoopFundInput
+                      type="textarea"
+                      value={userMessage}
+                      onChange={(e) => setUserMessage(e.target.value)}
+                      placeholder="Tell us what you need help with... (Optional - you can also describe your issue directly in the chat)"
+                      className="min-h-[100px] resize-none"
+                      icon={<User className="w-4 h-4" />}
+                    />
+                    <p className="font-body text-body-xs text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
+                      💡 Tip: The more details you provide, the faster we can help you!
+                    </p>
+                  </div>
+                </LoopFundCard>
+
+                {/* Support Methods */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {supportMethods.map((method, index) => {
+                    const Icon = method.icon;
+                    const config = supportConfig[method.id];
+                    
+                    return (
+                      <motion.div
+                        key={method.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <LoopFundCard 
+                          variant="elevated" 
+                          className="p-6 cursor-pointer transition-all duration-300 hover:scale-105"
+                        >
+                          <div className="text-center space-y-4">
+                            {/* Icon */}
+                            <motion.div
+                              className={`inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r ${method.color} rounded-xl shadow-lg`}
+                              whileHover={{ scale: 1.1, rotate: 5 }}
+                              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                            >
+                              <Icon className="w-6 h-6 text-white" />
+                            </motion.div>
+
+                            {/* Title & Description */}
+                            <div>
+                              <h3 className="font-display text-h6 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-1">
+                                {method.title}
+                              </h3>
+                              <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-2">
+                                {method.description}
+                              </p>
+                              <div className="flex items-center justify-center space-x-1 text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
+                                <Clock className="w-3 h-3" />
+                                <span className="font-body text-body-xs">{method.responseTime}</span>
+                              </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="space-y-2">
+                              <LoopFundButton
+                                onClick={() => handleSupportClick(method.id)}
+                                variant="primary"
+                                size="sm"
+                                className="w-full"
+                                icon={<ExternalLink className="w-4 h-4" />}
+                              >
+                                Contact Support
+                              </LoopFundButton>
+                              
+                              <LoopFundButton
+                                onClick={() => copyContactInfo(method.id)}
+                                variant="outline"
+                                size="sm"
+                                className="w-full"
+                                icon={copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                              >
+                                {copied ? 'Copied!' : 'Copy Contact'}
+                              </LoopFundButton>
+                            </div>
+                          </div>
+                        </LoopFundCard>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {/* Quick Help Tips */}
+                <LoopFundCard variant="elevated" className="p-6">
+                  <div className="space-y-4">
+                    <h3 className="font-display text-h5 text-loopfund-neutral-900 dark:text-loopfund-dark-text flex items-center space-x-2">
+                      <AlertCircle className="w-5 h-5 text-loopfund-coral-500" />
+                      <span>Quick Help Tips</span>
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <h4 className="font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300">
+                          💳 Payment Issues
+                        </h4>
+                        <ul className="font-body text-body-xs text-loopfund-neutral-600 dark:text-loopfund-neutral-400 space-y-1">
+                          <li>• Check your internet connection</li>
+                          <li>• Ensure sufficient account balance</li>
+                          <li>• Try a different payment method</li>
+                          <li>• Contact your bank if issue persists</li>
+                        </ul>
+                      </div>
+                      <div className="space-y-2">
+                        <h4 className="font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300">
+                          🔐 Account Issues
+                        </h4>
+                        <ul className="font-body text-body-xs text-loopfund-neutral-600 dark:text-loopfund-neutral-400 space-y-1">
+                          <li>• Try resetting your password</li>
+                          <li>• Check your email for verification</li>
+                          <li>• Clear browser cache and cookies</li>
+                          <li>• Try using a different browser</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </LoopFundCard>
+
+                {/* FAQ Section */}
+                <LoopFundCard variant="elevated" className="p-6">
+                  <div className="space-y-4">
+                    <h3 className="font-display text-h5 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                      Frequently Asked Questions
+                    </h3>
+                    <div className="space-y-4">
+                      {faqData.slice(0, 3).map((category, categoryIndex) => (
+                        <div key={categoryIndex} className="space-y-2">
+                          <h4 className="font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 flex items-center space-x-2">
+                            <category.icon className={`w-4 h-4 ${category.color}`} />
+                            <span>{category.category}</span>
+                          </h4>
+                          <div className="space-y-2">
+                            {category.questions.slice(0, 2).map((faq, faqIndex) => (
+                              <div key={faqIndex} className="pl-6">
+                                <p className="font-body text-body-xs font-medium text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-1">
+                                  Q: {faq.question}
+                                </p>
+                                <p className="font-body text-body-xs text-loopfund-neutral-500 dark:text-loopfund-neutral-500">
+                                  A: {faq.answer}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="text-center pt-4">
+                      <LoopFundButton
+                        onClick={() => setActiveTab('help')}
+                        variant="outline"
+                        size="sm"
+                        icon={<HelpCircle className="w-4 h-4" />}
+                      >
+                        View All FAQs
+                      </LoopFundButton>
+                    </div>
+                  </div>
+                </LoopFundCard>
+
+                {/* Contact Information */}
+                <div className="text-center">
+                  <p className="font-body text-body-sm text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
+                    📞 Phone: <span className="font-medium">07041946945</span> | 
+                    📧 Email: <span className="font-medium">abdulkabir0600@gmail.com</span>
+                  </p>
+                  <p className="font-body text-body-xs text-loopfund-neutral-400 dark:text-loopfund-neutral-500 mt-1">
+                    Available 24/7 for urgent issues
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
           </motion.div>
         </div>
       </div>
-    </Layout>
   );
 };
 

@@ -10,11 +10,11 @@ html {
 
 /* Custom selection color */
 ::selection {
-  background-color: rgba(59, 130, 246, 0.2);
+  background-color: rgba(0, 212, 170, 0.2);
   color: inherit;
 }
 
 ::-moz-selection {
-  background-color: rgba(59, 130, 246, 0.2);
+  background-color: rgba(0, 212, 170, 0.2);
   color: inherit;
 }

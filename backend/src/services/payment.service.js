@@ -4,6 +4,8 @@ const Payment = require('../models/Payment');
 const Group = require('../models/Group');
 const User = require('../models/User');
 const paystackConfig = require('../config/paystack');
+const notificationService = require('./notification.service');
+const transactionService = require('./transaction.service');
 
 class PaymentService {
   constructor() {
@@ -39,6 +41,14 @@ class PaymentService {
     const baseFee = targetAmount * 0.025; // 2.5% fee
     const minFee = 500; // Minimum ₦500
     const maxFee = 10000; // Maximum ₦10,000
+    return Math.max(minFee, Math.min(maxFee, baseFee));
+  }
+
+  // Calculate contribution processing fee (1% with min/max limits)
+  calculateContributionFee(contributionAmount) {
+    const baseFee = contributionAmount * 0.01; // 1% fee for contributions
+    const minFee = 50; // Minimum ₦50
+    const maxFee = 500; // Maximum ₦500
     return Math.max(minFee, Math.min(maxFee, baseFee));
   }
 
@@ -712,6 +722,330 @@ class PaymentService {
     return this.publicKey;
   }
 
+  // Initialize payment for group contribution
+  async initializeContributionPayment(userId, groupId, contributionData) {
+    try {
+      const { amount, description = '' } = contributionData;
+      const contributionAmount = parseFloat(amount);
+      
+      // Validate minimum amount
+      if (contributionAmount < 100) {
+        return {
+          success: false,
+          error: 'Minimum contribution amount is ₦100'
+        };
+      }
+
+      // Get group details
+      const group = await Group.findById(groupId);
+      if (!group) {
+        return {
+          success: false,
+          error: 'Group not found'
+        };
+      }
+
+      // Check if user is a member of the group
+      const isMember = group.members.some(member => 
+        member.user.toString() === userId.toString()
+      );
+      
+      if (!isMember) {
+        return {
+          success: false,
+          error: 'You must be a member of this group to contribute'
+        };
+      }
+
+      // Get user details
+      const user = await User.findById(userId);
+      if (!user) {
+        return {
+          success: false,
+          error: 'User not found'
+        };
+      }
+
+      // Calculate processing fee
+      const processingFee = this.calculateContributionFee(contributionAmount);
+      const totalAmount = contributionAmount + processingFee;
+
+      // Generate unique reference
+      const reference = `CONTRIB_${Date.now()}_${userId}_${groupId}`;
+
+      // Create payment record
+      const payment = new Payment({
+        userId,
+        reference,
+        amount: totalAmount * 100, // Convert to kobo
+        currency: this.currency,
+        status: 'pending',
+        type: 'group_contribution',
+        metadata: {
+          groupId,
+          groupName: group.name,
+          contributionAmount,
+          processingFee,
+          description,
+          customerEmail: user.email,
+          customerName: user.name || user.email
+        }
+      });
+
+      console.log('🔍 Payment initialization debug:', {
+        reference: payment.reference,
+        contributionAmount: contributionAmount,
+        totalAmount: totalAmount,
+        metadata: payment.metadata
+      });
+
+      await payment.save();
+
+      // Initialize Paystack payment
+      const paystackData = {
+        email: user.email,
+        amount: totalAmount * 100, // Convert to kobo
+        reference,
+        currency: this.currency,
+        channels: paystackConfig.channels,
+        metadata: {
+          custom_fields: [
+            {
+              display_name: 'Group Name',
+              variable_name: 'group_name',
+              value: group.name
+            },
+            {
+              display_name: 'Contribution Amount',
+              variable_name: 'contribution_amount',
+              value: contributionAmount
+            }
+          ]
+        },
+        callback_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/groups/${groupId}?payment=success`,
+        redirect_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/groups/${groupId}?payment=success`
+      };
+
+      const response = await axios.post(
+        `${this.baseURL}/transaction/initialize`,
+        paystackData,
+        {
+          headers: {
+            Authorization: `Bearer ${this.secretKey}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.data.status) {
+        // Update payment with Paystack data
+        payment.paystackData = {
+          accessCode: response.data.data.access_code,
+          authorizationUrl: response.data.data.authorization_url
+        };
+        await payment.save();
+
+        return {
+          success: true,
+          data: {
+            authorizationUrl: response.data.data.authorization_url,
+            reference,
+            accessCode: response.data.data.access_code,
+            amount: totalAmount,
+            contributionAmount,
+            processingFee,
+            currency: this.currency,
+            paymentId: payment._id
+          }
+        };
+      } else {
+        throw new Error(response.data.message || 'Failed to initialize payment');
+      }
+    } catch (error) {
+      console.error('Failed to initialize contribution payment:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to initialize payment'
+      };
+    }
+  }
+
+  // Verify contribution payment and update group
+  async verifyContributionPayment(reference) {
+    try {
+      // Get payment from database
+      const payment = await Payment.findOne({ reference });
+      if (!payment) {
+        return {
+          success: false,
+          error: 'Payment not found'
+        };
+      }
+
+      if (payment.status === 'successful') {
+        return {
+          success: true,
+          data: {
+            status: 'success',
+            amount: payment.amount / 100,
+            reference: payment.reference,
+            groupId: payment.metadata.groupId,
+            contributionAmount: payment.metadata.contributionAmount
+          }
+        };
+      }
+
+      // Verify with Paystack
+      const response = await axios.get(
+        `${this.baseURL}/transaction/verify/${reference}`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.secretKey}`
+          }
+        }
+      );
+
+      if (response.data.status && response.data.data.status === 'success') {
+        // Update payment status
+        payment.status = 'successful';
+        payment.paystackData.paidAt = new Date(response.data.data.paid_at);
+        payment.paystackData.channel = response.data.data.channel;
+        payment.paystackData.ipAddress = response.data.data.ip_address;
+        payment.paystackData.fees = response.data.data.fees;
+        await payment.save();
+
+        // Get contribution amount from metadata or calculate from payment amount
+        let contributionAmount = payment.metadata.contributionAmount;
+        
+        // If contributionAmount is not available in metadata, calculate it
+        if (!contributionAmount || isNaN(contributionAmount)) {
+          // For group contributions, the payment amount includes processing fee
+          // We need to subtract the processing fee to get the actual contribution amount
+          const processingFee = payment.metadata.processingFee || 0;
+          contributionAmount = (payment.amount / 100) - processingFee;
+        }
+        
+        // Ensure contributionAmount is a valid number
+        contributionAmount = parseFloat(contributionAmount) || 0;
+        
+        console.log('🔍 Contribution amount calculation:', {
+          metadataContributionAmount: payment.metadata.contributionAmount,
+          processingFee: payment.metadata.processingFee,
+          paymentAmount: payment.amount,
+          finalContributionAmount: contributionAmount
+        });
+
+        // Update group with contribution
+        const group = await Group.findById(payment.metadata.groupId);
+        if (group) {
+          
+          console.log('🔍 Payment verification debug:', {
+            paymentId: payment._id,
+            metadata: payment.metadata,
+            contributionAmount: contributionAmount,
+            paymentAmount: payment.amount,
+            groupId: payment.metadata.groupId
+          });
+          
+          // Add contribution to group
+          const contribution = {
+            userId: payment.userId,
+            amount: parseFloat(contributionAmount) || 0,
+            description: payment.metadata.description || 'Group contribution',
+            paymentId: payment._id,
+            paidAt: new Date(),
+            status: 'completed'
+          };
+          
+          console.log('🔍 Contribution object:', contribution);
+
+          if (!group.contributions) {
+            group.contributions = [];
+          }
+          group.contributions.push(contribution);
+
+          // Update current amount - ensure it's a valid number
+          const currentAmount = parseFloat(group.currentAmount) || 0;
+          const newAmount = parseFloat(contributionAmount) || 0;
+          const updatedAmount = currentAmount + newAmount;
+          
+          // Ensure the result is a valid number
+          group.currentAmount = isNaN(updatedAmount) ? currentAmount : updatedAmount;
+          
+          console.log('🔍 Amount calculation:', {
+            currentAmount: currentAmount,
+            newAmount: newAmount,
+            updatedAmount: updatedAmount,
+            finalAmount: group.currentAmount
+          });
+          
+          await group.save();
+
+          // Send notifications
+          try {
+            // Notify the contributor about successful payment
+            await notificationService.notifyPaymentSuccess(
+              payment.userId,
+              contributionAmount,
+              'group contribution',
+              group.name
+            );
+
+            // Notify all group members about the new contribution
+            await notificationService.notifyGroupContribution(
+              groupId,
+              payment.userId,
+              contributionAmount,
+              payment.metadata.description || ''
+            );
+
+            // Check if group target is reached
+            if (group.currentAmount >= group.targetAmount) {
+              await notificationService.notifyGroupTargetReached(groupId);
+            }
+          } catch (notificationError) {
+            console.error('Error sending notifications:', notificationError);
+            // Don't fail the payment if notifications fail
+          }
+
+          // Create transaction log
+          try {
+            await transactionService.createTransactionFromPayment(payment);
+          } catch (transactionError) {
+            console.error('Error creating transaction log:', transactionError);
+            // Don't fail the payment if transaction logging fails
+          }
+        }
+
+        return {
+          success: true,
+          data: {
+            status: 'success',
+            amount: payment.amount / 100,
+            reference: payment.reference,
+            groupId: payment.metadata.groupId,
+            contributionAmount: contributionAmount
+          }
+        };
+      } else {
+        // Payment failed
+        payment.status = 'failed';
+        await payment.save();
+
+        return {
+          success: false,
+          error: 'Payment verification failed'
+        };
+      }
+    } catch (error) {
+      console.error('Failed to verify contribution payment:', error);
+      return {
+        success: false,
+        error: 'Failed to verify payment'
+      };
+    }
+  }
+
   // Calculate fees (Paystack charges 1.5% + ₦100)
   calculateFees(amount) {
     const percentage = 0.015; // 1.5%
@@ -804,6 +1138,539 @@ class PaymentService {
       };
     }
   }
+
+  // Initialize payment for goal contribution
+  async initializeGoalContributionPayment(userId, goalId, contributionData) {
+    try {
+      const { amount: contributionAmount, description } = contributionData;
+
+      // Validate input
+      if (!goalId || !contributionAmount || contributionAmount <= 0) {
+        return {
+          success: false,
+          error: 'Invalid contribution data'
+        };
+      }
+
+      // Get goal details
+      const Goal = require('../models/Goal');
+      const goal = await Goal.findById(goalId);
+      if (!goal) {
+        return {
+          success: false,
+          error: 'Goal not found'
+        };
+      }
+
+      // Check if user owns the goal
+      if (goal.user.toString() !== userId.toString()) {
+        return {
+          success: false,
+          error: 'You can only contribute to your own goals'
+        };
+      }
+
+      // Get user details
+      const User = require('../models/User');
+      const user = await User.findById(userId);
+      if (!user) {
+        return {
+          success: false,
+          error: 'User not found'
+        };
+      }
+
+      // Calculate processing fee (same as group contributions)
+      const processingFee = this.calculateContributionFee(contributionAmount);
+      const totalAmount = contributionAmount + processingFee;
+
+      // Generate unique reference
+      const reference = `GOAL_CONTRIB_${Date.now()}_${userId}_${goalId}`;
+
+      // Create payment record
+      const payment = new Payment({
+        userId,
+        reference,
+        amount: totalAmount * 100, // Convert to kobo
+        currency: this.currency,
+        status: 'pending',
+        type: 'goal_contribution',
+        metadata: {
+          goalId,
+          goalName: goal.name,
+          contributionAmount,
+          processingFee,
+          description,
+          customerEmail: user.email,
+          customerName: user.name || user.email
+        }
+      });
+
+      console.log('🔍 Goal contribution payment initialization debug:', {
+        reference: payment.reference,
+        contributionAmount: contributionAmount,
+        processingFee: processingFee,
+        totalAmount: totalAmount,
+        metadata: payment.metadata
+      });
+
+      await payment.save();
+
+      // Initialize Paystack payment
+      const paystackData = {
+        email: user.email,
+        amount: totalAmount * 100, // Convert to kobo
+        reference: payment.reference,
+        callback_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/goals?payment=success&reference=${payment.reference}`,
+        redirect_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/goals?payment=success&reference=${payment.reference}`,
+        metadata: {
+          custom_fields: [
+            {
+              display_name: "Goal Name",
+              variable_name: "goal_name",
+              value: goal.name
+            },
+            {
+              display_name: "Contribution Amount",
+              variable_name: "contribution_amount",
+              value: contributionAmount
+            }
+          ]
+        }
+      };
+
+      const response = await axios.post(`${this.baseURL}/transaction/initialize`, paystackData, {
+        headers: {
+          Authorization: `Bearer ${this.secretKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.data.status) {
+        // Store Paystack data
+        payment.paystackData = {
+          authorizationUrl: response.data.data.authorization_url,
+          accessCode: response.data.data.access_code,
+          reference: response.data.data.reference
+        };
+        await payment.save();
+
+        return {
+          success: true,
+          data: {
+            authorizationUrl: response.data.data.authorization_url,
+            accessCode: response.data.data.access_code,
+            reference: payment.reference,
+            amount: totalAmount,
+            contributionAmount,
+            processingFee
+          }
+        };
+      } else {
+        throw new Error(response.data.message || 'Failed to initialize payment');
+      }
+    } catch (error) {
+      console.error('Failed to initialize goal contribution payment:', error);
+      return {
+        success: false,
+        error: 'Payment initialization failed. Please try again.'
+      };
+    }
+  }
+
+  // Verify goal contribution payment
+  async verifyGoalContributionPayment(reference) {
+    try {
+      const payment = await Payment.findOne({ reference });
+      if (!payment) {
+        return {
+          success: false,
+          error: 'Payment not found'
+        };
+      }
+
+      if (payment.status === 'successful') {
+        // Payment already verified, but ensure goal is updated
+        console.log('🔍 Payment already successful, checking goal update...');
+        
+        // Get contribution amount from metadata
+        let contributionAmount = payment.metadata.contributionAmount;
+        if (!contributionAmount || isNaN(contributionAmount)) {
+          const processingFee = payment.metadata.processingFee || 0;
+          contributionAmount = (payment.amount / 100) - processingFee;
+        }
+        contributionAmount = parseFloat(contributionAmount) || 0;
+        
+        // Check if goal needs updating
+        const Goal = require('../models/Goal');
+        const goal = await Goal.findById(payment.metadata.goalId);
+        if (goal) {
+          // Check if this contribution is already logged
+          const existingContribution = goal.contributions.find(contrib => 
+            contrib.paymentId && contrib.paymentId.toString() === payment._id.toString()
+          );
+          
+          if (!existingContribution) {
+            console.log('🔍 Adding missing contribution to goal...');
+            // Add contribution to the contributions array
+            goal.contributions.push({
+              userId: payment.userId,
+              amount: contributionAmount,
+              description: payment.metadata.description || '',
+              paymentId: payment._id,
+              paidAt: new Date(),
+              status: 'completed'
+            });
+            
+            // Update last contribution date
+            goal.lastContributionDate = new Date();
+            
+            await goal.save();
+            console.log('✅ Goal updated with missing contribution');
+          }
+        }
+        
+        return {
+          success: true,
+          data: {
+            status: 'success',
+            amount: payment.amount / 100,
+            reference: payment.reference,
+            goalId: payment.metadata.goalId,
+            contributionAmount: contributionAmount
+          }
+        };
+      }
+
+      // Verify with Paystack
+      const response = await axios.get(
+        `${this.baseURL}/transaction/verify/${reference}`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.secretKey}`
+          }
+        }
+      );
+
+      if (response.data.status && response.data.data.status === 'success') {
+        // Update payment status
+        payment.status = 'successful';
+        payment.paystackData.paidAt = new Date(response.data.data.paid_at);
+        payment.paystackData.channel = response.data.data.channel;
+        payment.paystackData.ipAddress = response.data.data.ip_address;
+        payment.paystackData.fees = response.data.data.fees;
+        await payment.save();
+
+        // Get contribution amount from metadata or calculate from payment amount
+        let contributionAmount = payment.metadata.contributionAmount;
+        
+        // If contributionAmount is not available in metadata, calculate it
+        if (!contributionAmount || isNaN(contributionAmount)) {
+          // For goal contributions, the payment amount includes processing fee
+          // We need to subtract the processing fee to get the actual contribution amount
+          const processingFee = payment.metadata.processingFee || 0;
+          contributionAmount = (payment.amount / 100) - processingFee;
+        }
+        
+        // Ensure contributionAmount is a valid number
+        contributionAmount = parseFloat(contributionAmount) || 0;
+        
+        console.log('🔍 Goal contribution amount calculation:', {
+          metadataContributionAmount: payment.metadata.contributionAmount,
+          processingFee: payment.metadata.processingFee,
+          paymentAmount: payment.amount,
+          finalContributionAmount: contributionAmount
+        });
+
+        // Update goal with contribution
+        const Goal = require('../models/Goal');
+        const goal = await Goal.findById(payment.metadata.goalId);
+        if (goal) {
+          // Update goal's current amount
+          const currentAmount = parseFloat(goal.currentAmount) || 0;
+          const newAmount = parseFloat(contributionAmount) || 0;
+          const updatedAmount = currentAmount + newAmount;
+          
+          // Ensure the result is a valid number
+          goal.currentAmount = isNaN(updatedAmount) ? currentAmount : updatedAmount;
+          
+          // Add contribution to the contributions array
+          goal.contributions.push({
+            userId: payment.userId,
+            amount: contributionAmount,
+            description: payment.metadata.description || '',
+            paymentId: payment._id,
+            paidAt: new Date(),
+            status: 'completed'
+          });
+          
+          // Update last contribution date
+          goal.lastContributionDate = new Date();
+          
+          console.log('🔍 Goal amount calculation:', {
+            currentAmount: currentAmount,
+            newAmount: newAmount,
+            updatedAmount: updatedAmount,
+            finalAmount: goal.currentAmount,
+            contributionAdded: {
+              userId: payment.userId,
+              amount: contributionAmount,
+              paymentId: payment._id
+            }
+          });
+          
+          await goal.save();
+
+          // Send notifications
+          try {
+            // Notify the contributor about successful payment
+            await notificationService.notifyPaymentSuccess(
+              payment.userId,
+              contributionAmount,
+              'goal contribution',
+              goal.name
+            );
+
+            // Notify about goal contribution
+            await notificationService.notifyGoalContribution(
+              goalId,
+              payment.userId,
+              contributionAmount,
+              payment.metadata.description || ''
+            );
+
+            // Check for milestone achievements
+            const progress = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount * 100) : 0;
+            const milestones = [25, 50, 75, 90, 100];
+            const reachedMilestone = milestones.find(milestone => 
+              progress >= milestone && progress < milestone + 1
+            );
+            
+            if (reachedMilestone) {
+              await notificationService.notifyGoalMilestone(
+                goalId,
+                reachedMilestone,
+                payment.userId
+              );
+            }
+          } catch (notificationError) {
+            console.error('Error sending goal notifications:', notificationError);
+            // Don't fail the payment if notifications fail
+          }
+
+          // Create transaction log
+          try {
+            await transactionService.createTransactionFromPayment(payment);
+          } catch (transactionError) {
+            console.error('Error creating transaction log:', transactionError);
+            // Don't fail the payment if transaction logging fails
+          }
+        }
+
+        return {
+          success: true,
+          data: {
+            status: 'success',
+            amount: payment.amount / 100,
+            reference: payment.reference,
+            goalId: payment.metadata.goalId,
+            contributionAmount: contributionAmount
+          }
+        };
+      } else {
+        // Payment failed
+        payment.status = 'failed';
+        await payment.save();
+
+        return {
+          success: false,
+          error: 'Payment verification failed'
+        };
+      }
+    } catch (error) {
+      console.error('Failed to verify goal contribution payment:', error);
+      return {
+        success: false,
+        error: 'Failed to verify payment'
+      };
+    }
+  }
+
+  // Initialize wallet deposit payment
+  async initializeWalletDeposit(userId, depositData) {
+    try {
+      const { amount, description, reference, userEmail, userName } = depositData;
+      
+      // Generate unique reference if not provided
+      const paymentReference = reference || `WALLET_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Create payment record
+      const payment = new Payment({
+        userId,
+        reference: paymentReference,
+        amount,
+        currency: 'NGN',
+        status: 'pending',
+        type: 'wallet_deposit',
+        metadata: {
+          description: description || 'Wallet deposit',
+          customerEmail: userEmail,
+          customerName: userName,
+          amount,
+          fee: 0 // No fee for wallet deposits
+        }
+      });
+
+      await payment.save();
+
+      // Initialize Paystack payment
+      const paystackData = {
+        email: userEmail,
+        amount: amount * 100, // Convert to kobo
+        reference: paymentReference,
+        currency: 'NGN',
+        metadata: {
+          paymentId: payment._id,
+          type: 'wallet_deposit',
+          userId: userId.toString()
+        }
+      };
+
+      const response = await axios.post(`${this.baseURL}/transaction/initialize`, paystackData, {
+        headers: {
+          Authorization: `Bearer ${this.secretKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const paystackResponse = response.data;
+
+      if (paystackResponse.status) {
+        // Update payment with Paystack data
+        payment.paystackData = {
+          accessCode: paystackResponse.data.access_code,
+          authorizationUrl: paystackResponse.data.authorization_url
+        };
+        await payment.save();
+
+        return {
+          success: true,
+          data: {
+            reference: paymentReference,
+            authorizationUrl: paystackResponse.data.authorization_url,
+            accessCode: paystackResponse.data.access_code,
+            amount,
+            currency: 'NGN'
+          }
+        };
+      } else {
+        throw new Error(paystackResponse.message || 'Failed to initialize payment');
+      }
+    } catch (error) {
+      console.error('Initialize wallet deposit error:', error);
+      throw error;
+    }
+  }
+
+  // Verify wallet deposit payment
+  async verifyWalletDeposit(reference) {
+    try {
+      // Find payment record
+      const payment = await Payment.findOne({ reference });
+      if (!payment) {
+        throw new Error('Payment not found');
+      }
+
+      if (payment.status === 'successful') {
+        return {
+          success: true,
+          data: {
+            payment,
+            message: 'Payment already verified'
+          }
+        };
+      }
+
+      // Verify with Paystack
+      const verificationResponse = await axios.get(`${this.baseURL}/transaction/verify/${reference}`, {
+        headers: {
+          Authorization: `Bearer ${this.secretKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const verificationResult = verificationResponse.data;
+      
+      if (verificationResult.status && verificationResult.data.status === 'success') {
+        // Update payment status
+        payment.status = 'successful';
+        payment.paystackData.paidAt = new Date(verificationResult.data.paid_at);
+        payment.paystackData.channel = verificationResult.data.channel;
+        payment.paystackData.ipAddress = verificationResult.data.ip_address;
+        payment.paystackData.fees = verificationResult.data.fees;
+        await payment.save();
+
+        // Add money to user's wallet
+        const Wallet = require('../models/Wallet');
+        let wallet = await Wallet.findOne({ user: payment.userId });
+        
+        console.log('🔍 Current wallet before update:', wallet);
+        
+        if (!wallet) {
+          wallet = new Wallet({ user: payment.userId, balance: 0 });
+          console.log('🆕 Created new wallet for user:', payment.userId);
+        }
+
+        // Add to wallet balance
+        const oldBalance = wallet.balance;
+        wallet.balance += payment.amount;
+        console.log(`💰 Wallet balance: ${oldBalance} + ${payment.amount} = ${wallet.balance}`);
+        
+        // Add transaction record
+        wallet.transactions.push({
+          type: 'deposit',
+          amount: payment.amount,
+          description: payment.metadata.description || 'Wallet deposit',
+          reference: payment.reference,
+          status: 'completed'
+        });
+
+        await wallet.save();
+        console.log('✅ Wallet saved successfully:', wallet);
+
+        // Send success notification
+        try {
+          await notificationService.notifyPaymentSuccess(
+            payment.userId,
+            payment.amount,
+            'wallet deposit',
+            'Wallet'
+          );
+        } catch (notificationError) {
+          console.error('Notification error:', notificationError);
+        }
+
+        return {
+          success: true,
+          data: {
+            payment,
+            wallet,
+            message: 'Wallet deposit successful'
+          }
+        };
+      } else {
+        // Payment failed
+        payment.status = 'failed';
+        await payment.save();
+        
+        throw new Error(verificationResult.message || 'Payment verification failed');
+      }
+    } catch (error) {
+      console.error('Verify wallet deposit error:', error);
+      throw error;
+    }
+  }
+
 }
 
 module.exports = new PaymentService(); 

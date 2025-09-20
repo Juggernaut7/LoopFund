@@ -18,9 +18,11 @@ import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import PageTransition from './components/layout/PageTransition';
 import PrivateRoute from './components/auth/PrivateRoute';
+import ProtectedLayout from './components/layout/ProtectedLayout';
 import './App.css';
 import AchievementsPage from './pages/AchievementsPage'; // Added missing import
 import AnalyticsPage from './pages/AnalyticsPage'; // Analytics page
+import TransactionsPage from './pages/TransactionsPage'; // Transactions page
 import HelpPage from './pages/HelpPage'; // Help page
 import CalendarPage from './pages/CalendarPage'; // Calendar page
 import AIAdvisorPage from './pages/AIAdvisorPage'; // AI Financial Advisor page
@@ -36,6 +38,7 @@ import CreateGroupPage from './pages/CreateGroupPage'; // Create Group page
 import JoinGroupPage from './pages/JoinGroupPage'; // Join Group page
 import JoinGroupLandingPage from './pages/JoinGroupLandingPage'; // Join Group Landing page
 import EmailInvitationPage from './pages/EmailInvitationPage'; // Email Invitation page
+import DesignSystemDemo from './pages/DesignSystemDemo'; // Design System Demo page
 
 function App() {
   const { isAuthenticated, user } = useAuthStore();
@@ -53,55 +56,63 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
               
-              {/* Protected routes */}
+              {/* Protected routes with persistent layout */}
               <Route path="/dashboard" element={
-                <PrivateRoute>
+                <ProtectedLayout>
                   <PageTransition>
                     <DashboardPage />
                   </PageTransition>
-                </PrivateRoute>
+                </ProtectedLayout>
               } />
               
               <Route path="/analytics" element={
-                <PrivateRoute>
+                <ProtectedLayout>
                   <PageTransition>
                     <AnalyticsPage />
                   </PageTransition>
-                </PrivateRoute>
+                </ProtectedLayout>
+              } />
+              
+              <Route path="/transactions" element={
+                <ProtectedLayout>
+                  <PageTransition>
+                    <TransactionsPage />
+                  </PageTransition>
+                </ProtectedLayout>
               } />
               
               <Route path="/goals" element={
-                <PrivateRoute>
+                <ProtectedLayout>
                   <PageTransition>
                     <GoalsPage />
                   </PageTransition>
-                </PrivateRoute>
+                </ProtectedLayout>
               } />
               
               {/* Make sure this Groups route exists and is correct */}
               <Route path="/groups" element={
-                <PrivateRoute>
+                <ProtectedLayout>
                   <PageTransition>
                     <GroupsPage />
                   </PageTransition>
-                </PrivateRoute>
+                </ProtectedLayout>
               } />
               
               <Route path="/groups/:groupId" element={
-                <PrivateRoute>
+                <ProtectedLayout>
                   <PageTransition>
                     <GroupDetailsPage />
                   </PageTransition>
-                </PrivateRoute>
+                </ProtectedLayout>
               } />
               
               {/* Create Group route */}
               <Route path="/create-group" element={
-                <PrivateRoute>
+                <ProtectedLayout>
                   <PageTransition>
                     <CreateGroupPage />
                   </PageTransition>
-                </PrivateRoute>
+                </ProtectedLayout>
               } />
               
               {/* Join Group Landing page - Public route */}
@@ -122,101 +133,102 @@ function App() {
               
               
               <Route path="/notifications" element={
-                <PrivateRoute>
+                <ProtectedLayout>
                   <PageTransition>
                     <NotificationsPage />
                   </PageTransition>
-                </PrivateRoute>
+                </ProtectedLayout>
               } />
               
               <Route path="/profile" element={
-                <PrivateRoute>
+                <ProtectedLayout>
                   <PageTransition>
                     <ProfilePage />
                   </PageTransition>
-                </PrivateRoute>
+                </ProtectedLayout>
               } />
               
               <Route path="/settings" element={
-                <PrivateRoute>
+                <ProtectedLayout>
                   <PageTransition>
                     <SettingsPage />
                   </PageTransition>
-                </PrivateRoute>
+                </ProtectedLayout>
               } />
 
               {/* Help page route */}
               <Route path="/help" element={
-                <PrivateRoute>
+                <ProtectedLayout>
                   <PageTransition>
                     <HelpPage />
                   </PageTransition>
-                </PrivateRoute>
+                </ProtectedLayout>
               } />
+
 
               {/* Calendar page route */}
               <Route path="/calendar" element={
-                <PrivateRoute>
+                <ProtectedLayout>
                   <PageTransition>
                     <CalendarPage />
                   </PageTransition>
-                </PrivateRoute>
+                </ProtectedLayout>
               } />
 
               {/* Add the missing achievements route */}
               <Route path="/achievements" element={
-                <PrivateRoute>
+                <ProtectedLayout>
                   <PageTransition>
                     <AchievementsPage />
                   </PageTransition>
-                </PrivateRoute>
+                </ProtectedLayout>
               } />
 
               {/* AI Financial Advisor route */}
               <Route path="/ai-advisor" element={
-                <PrivateRoute>
+                <ProtectedLayout>
                   <PageTransition>
                     <AIAdvisorPage />
                   </PageTransition>
-                </PrivateRoute>
+                </ProtectedLayout>
               } />
 
 
               {/* Financial Wellness Community route */}
               <Route path="/community" element={
-                <PrivateRoute>
+                <ProtectedLayout>
                   <PageTransition>
                     <CommunityPage />
                   </PageTransition>
-                </PrivateRoute>
+                </ProtectedLayout>
               } />
 
 
               {/* Predictive Financial Health route */}
               <Route path="/predictive-health" element={
-                <PrivateRoute>
+                <ProtectedLayout>
                   <PageTransition>
                     <PredictiveHealthPage />
                   </PageTransition>
-                </PrivateRoute>
+                </ProtectedLayout>
               } />
 
               {/* Financial Therapy Games route */}
               <Route path="/therapy-games" element={
-                <PrivateRoute>
+                <ProtectedLayout>
                   <PageTransition>
                     <FinancialTherapyGamesPage />
                   </PageTransition>
-                </PrivateRoute>
+                </ProtectedLayout>
               } />
 
               {/* Revenue Dashboard route */}
               <Route path="/revenue" element={
-                <PrivateRoute>
+                <ProtectedLayout>
                   <PageTransition>
                     <RevenueDashboard />
                   </PageTransition>
-                </PrivateRoute>
+                </ProtectedLayout>
               } />
 
               {/* Payment Verification route */}
@@ -244,6 +256,13 @@ function App() {
               <Route path="/admin/revenue" element={
                 <PageTransition>
                   <AdminRevenuePage />
+                </PageTransition>
+              } />
+
+              {/* Design System Demo route - Public for showcasing */}
+              <Route path="/design-system" element={
+                <PageTransition>
+                  <DesignSystemDemo />
                 </PageTransition>
               } />
               

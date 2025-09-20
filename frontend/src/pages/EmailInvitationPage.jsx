@@ -14,6 +14,9 @@ import {
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useAuthStore } from '../store/useAuthStore';
+import LoopFundCard from '../components/ui/LoopFundCard';
+import LoopFundButton from '../components/ui/LoopFundButton';
+import LoopFundInput from '../components/ui/LoopFundInput';
 
 const EmailInvitationPage = () => {
   const [searchParams] = useSearchParams();
@@ -147,22 +150,45 @@ const EmailInvitationPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-slate-600">Loading invitation details...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center">
+        <motion.div
+          className="text-center"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.div
+            className="w-16 h-16 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-2xl flex items-center justify-center shadow-loopfund mx-auto mb-6"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          >
+            <Mail className="w-8 h-8 text-white" />
+          </motion.div>
+          <h2 className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
+            Loading Invitation
+          </h2>
+          <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+            Fetching your invitation details...
+          </p>
+        </motion.div>
       </div>
     );
   }
 
   if (!invitation) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center">
         <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Invalid Invitation</h1>
-          <p className="text-slate-600">This invitation is invalid or has expired.</p>
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring" }}
+            className="w-20 h-20 bg-gradient-to-r from-loopfund-coral-500 to-loopfund-gold-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-loopfund"
+          >
+            <AlertCircle className="w-10 h-10 text-white" />
+          </motion.div>
+          <h1 className="font-display text-h1 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">Invalid Invitation</h1>
+          <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">This invitation is invalid or has expired.</p>
         </div>
       </div>
     );
@@ -171,7 +197,7 @@ const EmailInvitationPage = () => {
   const isExpired = new Date(invitation.expiresAt) < new Date();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated">
       <div className="container mx-auto px-4 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -180,13 +206,17 @@ const EmailInvitationPage = () => {
         >
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <motion.div 
+              className="w-20 h-20 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-loopfund-lg"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
               <Mail className="w-10 h-10 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">
+            </motion.div>
+            <h1 className="font-display text-h1 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
               You're Invited!
             </h1>
-            <p className="text-slate-600">
+            <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
               Join <strong>{invitation.group.name}</strong> on LoopFund
             </p>
           </div>
@@ -195,184 +225,183 @@ const EmailInvitationPage = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden"
           >
-            {/* Invitation Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-white/20 rounded-xl">
-                  <Users className="w-6 h-6" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">{invitation.group.name}</h2>
-                  <p className="text-blue-100">
-                    Invited by {invitation.inviter.firstName} {invitation.inviter.lastName}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Invitation Content */}
-            <div className="p-6">
-              {invitation.message && (
-                <div className="bg-slate-50 rounded-lg p-4 mb-6">
-                  <p className="text-slate-700 italic">"{invitation.message}"</p>
-                </div>
-              )}
-
-              {/* Expiration Warning */}
-              {isExpired ? (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                  <div className="flex items-center space-x-2">
-                    <AlertCircle className="w-5 h-5 text-red-500" />
-                    <p className="text-red-700 font-medium">This invitation has expired</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                  <div className="flex items-center space-x-2">
-                    <Clock className="w-5 h-5 text-green-500" />
-                    <p className="text-green-700">
-                      Expires on {new Date(invitation.expiresAt).toLocaleDateString()}
+            <LoopFundCard variant="elevated" className="overflow-hidden">
+              {/* Invitation Header */}
+              <div className="bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 p-6 text-white">
+                <div className="flex items-center space-x-4">
+                  <motion.div 
+                    className="p-3 bg-white/20 rounded-xl"
+                    whileHover={{ rotate: 15 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <Users className="w-6 h-6" />
+                  </motion.div>
+                  <div>
+                    <h2 className="font-display text-h3">{invitation.group.name}</h2>
+                    <p className="font-body text-body text-white/90">
+                      Invited by {invitation.inviter.firstName} {invitation.inviter.lastName}
                     </p>
                   </div>
                 </div>
-              )}
-
-              {/* Group Benefits */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-3">
-                  What you'll get:
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span className="text-slate-600">Shared savings goals</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span className="text-slate-600">Group support & motivation</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span className="text-slate-600">Progress tracking</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span className="text-slate-600">Community chat</span>
-                  </div>
-                </div>
               </div>
 
-              {/* Sign Up Form */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-slate-900 mb-3">
-                  Create your account to join
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Invitation Content */}
+              <div className="p-6">
+                {invitation.message && (
+                  <div className="bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-lg p-4 mb-6">
+                    <p className="font-body text-body text-loopfund-neutral-700 dark:text-loopfund-neutral-300 italic">"{invitation.message}"</p>
+                  </div>
+                )}
+
+                {/* Expiration Warning */}
+                {isExpired ? (
+                  <div className="bg-loopfund-coral-50 dark:bg-loopfund-coral-900/20 border border-loopfund-coral-200 dark:border-loopfund-coral-700 rounded-lg p-4 mb-6">
+                    <div className="flex items-center space-x-2">
+                      <AlertCircle className="w-5 h-5 text-loopfund-coral-500" />
+                      <p className="font-body text-body font-medium text-loopfund-coral-700 dark:text-loopfund-coral-300">This invitation has expired</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/20 border border-loopfund-emerald-200 dark:border-loopfund-emerald-700 rounded-lg p-4 mb-6">
+                    <div className="flex items-center space-x-2">
+                      <Clock className="w-5 h-5 text-loopfund-emerald-500" />
+                      <p className="font-body text-body text-loopfund-emerald-700 dark:text-loopfund-emerald-300">
+                        Expires on {new Date(invitation.expiresAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Group Benefits */}
+                <div className="mb-6">
+                  <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-3">
+                    What you'll get:
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="w-5 h-5 text-loopfund-emerald-500" />
+                      <span className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Shared savings goals</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="w-5 h-5 text-loopfund-emerald-500" />
+                      <span className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Group support & motivation</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="w-5 h-5 text-loopfund-emerald-500" />
+                      <span className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Progress tracking</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="w-5 h-5 text-loopfund-emerald-500" />
+                      <span className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Community chat</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sign Up Form */}
+                <div className="space-y-6">
+                  <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-3">
+                    Create your account to join
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
+                        First Name
+                      </label>
+                      <LoopFundInput
+                        type="text"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleInputChange}
+                        placeholder="Enter your first name"
+                        disabled={isExpired || accepting}
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
+                        Last Name
+                      </label>
+                      <LoopFundInput
+                        type="text"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleInputChange}
+                        placeholder="Enter your last name"
+                        disabled={isExpired || accepting}
+                      />
+                    </div>
+                  </div>
+
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                      First Name
+                    <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
+                      Password
                     </label>
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={formData.firstName}
+                    <LoopFundInput
+                      type="password"
+                      name="password"
+                      value={formData.password}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter your first name"
+                      placeholder="Create a password (min. 6 characters)"
                       disabled={isExpired || accepting}
                     />
                   </div>
+
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                      Last Name
+                    <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
+                      Confirm Password
                     </label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
+                    <LoopFundInput
+                      type="password"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter your last name"
+                      placeholder="Confirm your password"
                       disabled={isExpired || accepting}
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Create a password (min. 6 characters)"
+                {/* Action Button */}
+                <div className="mt-8">
+                  <LoopFundButton
+                    onClick={handleAcceptInvitation}
                     disabled={isExpired || accepting}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Confirm Password
-                  </label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Confirm your password"
-                    disabled={isExpired || accepting}
-                  />
-                </div>
-              </div>
-
-              {/* Action Button */}
-              <div className="mt-8">
-                <button
-                  onClick={handleAcceptInvitation}
-                  disabled={isExpired || accepting}
-                  className={`w-full py-3 px-6 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
-                    isExpired
-                      ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 hover:shadow-lg'
-                  }`}
-                >
-                  {accepting ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>Creating Account...</span>
-                    </>
-                  ) : isExpired ? (
-                    <span>Invitation Expired</span>
-                  ) : (
-                    <>
-                      <UserPlus className="w-5 h-5" />
-                      <span>Join Group Now</span>
-                      <ArrowRight className="w-5 h-5" />
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {/* Already have account */}
-              <div className="mt-6 text-center">
-                <p className="text-slate-600">
-                  Already have an account?{' '}
-                  <button
-                    onClick={() => navigate('/signin')}
-                    className="text-blue-600 hover:text-blue-700 font-medium"
+                    variant={isExpired ? "secondary" : "primary"}
+                    size="lg"
+                    className="w-full"
+                    icon={accepting ? null : isExpired ? null : <UserPlus className="w-5 h-5" />}
                   >
-                    Sign in here
-                  </button>
-                </p>
+                    {accepting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                        Creating Account...
+                      </>
+                    ) : isExpired ? (
+                      'Invitation Expired'
+                    ) : (
+                      <>
+                        Join Group Now
+                        <ArrowRight className="w-5 h-5 ml-2" />
+                      </>
+                    )}
+                  </LoopFundButton>
+                </div>
+
+                {/* Already have account */}
+                <div className="mt-6 text-center">
+                  <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                    Already have an account?{' '}
+                    <button
+                      onClick={() => navigate('/signin')}
+                      className="text-loopfund-emerald-600 hover:text-loopfund-emerald-700 font-body text-body font-medium"
+                    >
+                      Sign in here
+                    </button>
+                  </p>
+                </div>
               </div>
-            </div>
+            </LoopFundCard>
           </motion.div>
         </motion.div>
       </div>

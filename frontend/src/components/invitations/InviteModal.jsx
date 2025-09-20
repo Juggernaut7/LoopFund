@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
@@ -7,18 +7,25 @@ import {
   Copy, 
   CheckCircle, 
   Link as LinkIcon,
-  RefreshCw
+  RefreshCw,
+  QrCode,
+  Download
 } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { useAuthStore } from '../../store/useAuthStore';
+import LoopFundCard from '../ui/LoopFundCard';
+import LoopFundButton from '../ui/LoopFundButton';
+import LoopFundInput from '../ui/LoopFundInput';
+import QRCode from 'qrcode';
 
 const InviteModal = ({ isOpen, onClose, group, onInviteSent }) => {
-  const [inviteType, setInviteType] = useState('direct'); // 'direct' or 'public'
+  const [inviteType, setInviteType] = useState('direct'); // 'direct', 'public', or 'qr'
   const [inviteeEmail, setInviteeEmail] = useState('');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [publicInviteLink, setPublicInviteLink] = useState('');
   const [copied, setCopied] = useState(false);
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
   const { toast } = useToast();
   const { getToken } = useAuthStore();
 
@@ -141,6 +148,67 @@ const InviteModal = ({ isOpen, onClose, group, onInviteSent }) => {
     generatePublicLink();
   };
 
+  const generateQRCode = async () => {
+    try {
+      if (!publicInviteLink) {
+        console.warn('No public invite link available for QR code generation');
+        toast.error('Please generate a public invite link first');
+        return;
+      }
+      
+      console.log('Generating QR code for link:', publicInviteLink);
+      
+      const dataUrl = await QRCode.toDataURL(publicInviteLink, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        },
+        errorCorrectionLevel: 'M'
+      });
+      
+      setQrCodeDataUrl(dataUrl);
+      console.log('QR code generated successfully:', dataUrl.substring(0, 50) + '...');
+      toast.success('QR code generated successfully!');
+    } catch (err) {
+      console.error('Failed to generate QR code:', err);
+      setQrCodeDataUrl('');
+      toast.error('Failed to generate QR code. Please try again.');
+    }
+  };
+
+  const downloadQR = () => {
+    if (!qrCodeDataUrl) {
+      console.error('No QR code available for download');
+      return;
+    }
+    
+    try {
+      const link = document.createElement('a');
+      link.download = `loopfund-invite-${group.name.replace(/[^a-zA-Z0-9]/g, '-')}.png`;
+      link.href = qrCodeDataUrl;
+      link.target = '_blank';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log('QR code download initiated');
+    } catch (error) {
+      console.error('Failed to download QR code:', error);
+    }
+  };
+
+  // Generate QR code when public link is available and QR tab is selected
+  useEffect(() => {
+    console.log('QR Code useEffect triggered:', { inviteType, publicInviteLink: !!publicInviteLink, qrCodeDataUrl: !!qrCodeDataUrl });
+    if (inviteType === 'qr' && publicInviteLink && !qrCodeDataUrl) {
+      console.log('Auto-generating QR code...');
+      generateQRCode();
+    }
+  }, [inviteType, publicInviteLink, qrCodeDataUrl]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -155,159 +223,286 @@ const InviteModal = ({ isOpen, onClose, group, onInviteSent }) => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+            className="max-w-md w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                Invite to {group.name}
-              </h2>
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5 text-slate-500" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-6">
-              {/* Invite Type Tabs */}
-              <div className="flex space-x-1 mb-6 bg-slate-100 dark:bg-slate-700 p-1 rounded-lg">
+            <LoopFundCard variant="elevated" className="overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-loopfund-neutral-200 dark:border-loopfund-neutral-700">
+                <h2 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                  Invite to {group.name}
+                </h2>
                 <button
-                  onClick={() => setInviteType('direct')}
-                  className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
-                    inviteType === 'direct'
-                      ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
+                  onClick={onClose}
+                  className="p-2 rounded-lg transition-colors"
                 >
-                  <Mail className="w-4 h-4 inline mr-2" />
-                  Direct Invite
-                </button>
-                <button
-                  onClick={() => setInviteType('public')}
-                  className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
-                    inviteType === 'public'
-                      ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  <LinkIcon className="w-4 h-4 inline mr-2" />
-                  Public Link
+                  <X className="w-5 h-5 text-loopfund-neutral-500" />
                 </button>
               </div>
 
-              {inviteType === 'direct' ? (
-                /* Direct Invite Form */
-                <form onSubmit={handleDirectInvite} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      value={inviteeEmail}
-                      onChange={(e) => setInviteeEmail(e.target.value)}
-                      placeholder="Enter any email address (registered or not)"
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
-                      required
-                    />
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      💡 Works for anyone - they'll get an email to join LoopFund and your group
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      Personal Message (Optional)
-                    </label>
-                    <textarea
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Add a personal message to your invitation..."
-                      rows={3}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white resize-none"
-                      maxLength={500}
-                    />
-                    <p className="text-xs text-slate-500 mt-1">
-                      {message.length}/500 characters
-                    </p>
-                  </div>
-
+              {/* Content */}
+              <div className="p-6">
+                {/* Invite Type Tabs */}
+                <div className="flex space-x-1 mb-6 bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated p-1 rounded-lg">
                   <button
-                    type="submit"
-                    disabled={isLoading || !inviteeEmail.trim()}
-                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+                    onClick={() => setInviteType('direct')}
+                    className={`flex-1 py-2 px-3 rounded-md font-body text-body-sm font-medium transition-all ${
+                      inviteType === 'direct'
+                        ? 'bg-loopfund-neutral-50 dark:bg-loopfund-dark-surface text-loopfund-neutral-900 dark:text-loopfund-dark-text shadow-sm'
+                        : 'text-loopfund-neutral-600 dark:text-loopfund-neutral-400'
+                    }`}
                   >
-                    {isLoading ? (
-                      <RefreshCw className="w-4 h-4 animate-spin mr-2" />
-                    ) : (
-                      <Mail className="w-4 h-4 mr-2" />
-                    )}
-                    {isLoading ? 'Sending...' : 'Send Invitation'}
+                    <Mail className="w-4 h-4 inline mr-2" />
+                    Direct Invite
                   </button>
-                </form>
-              ) : (
-                /* Public Invite Link */
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <Users className="w-12 h-12 text-blue-500 mx-auto mb-3" />
-                    <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
-                      Public Invite Link
-                    </h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                      Anyone with this link can join your group
-                    </p>
-                  </div>
-
-                  {!publicInviteLink ? (
-                    <button
-                      onClick={generatePublicLink}
-                      disabled={isLoading}
-                      className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
-                    >
-                      {isLoading ? (
-                        <RefreshCw className="w-4 h-4 animate-spin mr-2" />
-                      ) : (
-                        <LinkIcon className="w-4 h-4 mr-2" />
-                      )}
-                      {isLoading ? 'Generating...' : 'Generate Invite Link'}
-                    </button>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-2 p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                        <input
-                          type="text"
-                          value={publicInviteLink}
-                          readOnly
-                          className="flex-1 bg-transparent text-sm text-slate-600 dark:text-slate-300 border-none outline-none"
-                        />
-                        <button
-                          onClick={() => copyToClipboard(publicInviteLink)}
-                          className="p-2 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors"
-                        >
-                          {copied ? (
-                            <CheckCircle className="w-4 h-4 text-green-500" />
-                          ) : (
-                            <Copy className="w-4 h-4 text-slate-500" />
-                          )}
-                        </button>
-                      </div>
-                      
-                      <button
-                        onClick={refreshPublicLink}
-                        className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
-                      >
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        Generate New Link
-                      </button>
-                    </div>
-                  )}
+                  <button
+                    onClick={() => setInviteType('public')}
+                    className={`flex-1 py-2 px-3 rounded-md font-body text-body-sm font-medium transition-all ${
+                      inviteType === 'public'
+                        ? 'bg-loopfund-neutral-50 dark:bg-loopfund-dark-surface text-loopfund-neutral-900 dark:text-loopfund-dark-text shadow-sm'
+                        : 'text-loopfund-neutral-600 dark:text-loopfund-neutral-400'
+                    }`}
+                  >
+                    <LinkIcon className="w-4 h-4 inline mr-2" />
+                    Public Link
+                  </button>
+                  <button
+                    onClick={() => setInviteType('qr')}
+                    className={`flex-1 py-2 px-3 rounded-md font-body text-body-sm font-medium transition-all ${
+                      inviteType === 'qr'
+                        ? 'bg-loopfund-neutral-50 dark:bg-loopfund-dark-surface text-loopfund-neutral-900 dark:text-loopfund-dark-text shadow-sm'
+                        : 'text-loopfund-neutral-600 dark:text-loopfund-neutral-400'
+                    }`}
+                  >
+                    <QrCode className="w-4 h-4 inline mr-2" />
+                    QR Code
+                  </button>
                 </div>
-              )}
-            </div>
+
+                {inviteType === 'direct' ? (
+                  /* Direct Invite Form */
+                  <form onSubmit={handleDirectInvite} className="space-y-6">
+                    <div>
+                      <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
+                        Email Address
+                      </label>
+                      <LoopFundInput
+                        type="email"
+                        value={inviteeEmail}
+                        onChange={(e) => setInviteeEmail(e.target.value)}
+                        placeholder="Enter any email address (registered or not)"
+                        required
+                      />
+                      <p className="font-body text-body-xs text-loopfund-neutral-500 dark:text-loopfund-neutral-400 mt-1">
+                        💡 Works for anyone - they'll get an email to join LoopFund and your group
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
+                        Personal Message (Optional)
+                      </label>
+                      <textarea
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Add a personal message to your invitation..."
+                        rows={3}
+                        className="w-full px-3 py-2 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-lg focus:ring-2 focus:ring-loopfund-emerald-500 focus:border-transparent dark:bg-loopfund-dark-surface dark:text-loopfund-dark-text resize-none font-body text-body"
+                        maxLength={500}
+                      />
+                      <p className="font-body text-body-xs text-loopfund-neutral-500 dark:text-loopfund-neutral-400 mt-1">
+                        {message.length}/500 characters
+                      </p>
+                    </div>
+
+                    <LoopFundButton
+                      type="submit"
+                      disabled={isLoading || !inviteeEmail.trim()}
+                      variant="primary"
+                      size="lg"
+                      className="w-full"
+                      icon={isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                    >
+                      {isLoading ? 'Sending...' : 'Send Invitation'}
+                    </LoopFundButton>
+                  </form>
+                ) : inviteType === 'public' ? (
+                  /* Public Invite Link */
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <motion.div 
+                        className="w-12 h-12 bg-gradient-to-r from-loopfund-coral-500 to-loopfund-gold-500 rounded-full flex items-center justify-center mx-auto mb-3 shadow-loopfund"
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        <Users className="w-6 h-6 text-white" />
+                      </motion.div>
+                      <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
+                        Public Invite Link
+                      </h3>
+                      <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                        Anyone with this link can join your group
+                      </p>
+                    </div>
+
+                    {!publicInviteLink ? (
+                      <LoopFundButton
+                        onClick={generatePublicLink}
+                        disabled={isLoading}
+                        variant="primary"
+                        size="lg"
+                        className="w-full"
+                        icon={isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <LinkIcon className="w-4 h-4" />}
+                      >
+                        {isLoading ? 'Generating...' : 'Generate Invite Link'}
+                      </LoopFundButton>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex items-center space-x-2 p-3 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-lg">
+                          <input
+                            type="text"
+                            value={publicInviteLink}
+                            readOnly
+                            className="flex-1 bg-transparent font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-300 border-none outline-none"
+                          />
+                          <button
+                            onClick={() => copyToClipboard(publicInviteLink)}
+                            className="p-2 rounded transition-colors"
+                          >
+                            {copied ? (
+                              <CheckCircle className="w-4 h-4 text-loopfund-emerald-500" />
+                            ) : (
+                              <Copy className="w-4 h-4 text-loopfund-neutral-500" />
+                            )}
+                          </button>
+                        </div>
+                        
+                        <LoopFundButton
+                          onClick={refreshPublicLink}
+                          variant="secondary"
+                          size="lg"
+                          className="w-full"
+                          icon={<RefreshCw className="w-4 h-4" />}
+                        >
+                          Generate New Link
+                        </LoopFundButton>
+                      </div>
+                    )}
+                  </div>
+                ) : inviteType === 'qr' ? (
+                  /* QR Code */
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <motion.div 
+                        className="w-16 h-16 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-loopfund"
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        <QrCode className="w-8 h-8 text-white" />
+                      </motion.div>
+                      <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
+                        QR Code Invitation
+                      </h3>
+                      <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                        Generate a QR code for easy group sharing
+                      </p>
+                    </div>
+
+                    {!publicInviteLink ? (
+                      <div className="text-center">
+                        <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-4">
+                          First generate a public invite link to create a QR code
+                        </p>
+                        <LoopFundButton
+                          onClick={generatePublicLink}
+                          variant="primary"
+                          size="lg"
+                          icon={isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <LinkIcon className="w-4 h-4" />}
+                          disabled={isLoading}
+                        >
+                          {isLoading ? 'Generating...' : 'Generate Public Link'}
+                        </LoopFundButton>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="text-center">
+                          <div className="inline-block p-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-2xl shadow-loopfund">
+                            {qrCodeDataUrl ? (
+                              <img
+                                id="qr-code"
+                                src={qrCodeDataUrl}
+                                alt="QR Code for group invitation"
+                                className="w-48 h-48 rounded-lg"
+                                onError={(e) => {
+                                  console.error('QR code image failed to load');
+                                  e.target.style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <div className="w-48 h-48 flex items-center justify-center bg-loopfund-neutral-100 dark:bg-loopfund-dark-surface rounded-lg">
+                                <div className="text-center">
+                                  <motion.div
+                                    className="w-8 h-8 border-2 border-loopfund-emerald-500 border-t-transparent rounded-full mx-auto mb-2"
+                                    animate={{ rotate: 360 }}
+                                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                  />
+                                  <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                                    Generating QR Code...
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {qrCodeDataUrl && (
+                          <div className="text-center mb-4">
+                            <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                              Scan this QR code to join the group
+                            </p>
+                          </div>
+                        )}
+                        
+                        <div className="flex justify-center space-x-3">
+                          <LoopFundButton
+                            onClick={downloadQR}
+                            variant="primary"
+                            size="md"
+                            icon={<Download className="w-4 h-4" />}
+                            disabled={!qrCodeDataUrl}
+                          >
+                            Download QR
+                          </LoopFundButton>
+                          <LoopFundButton
+                            onClick={() => copyToClipboard(publicInviteLink)}
+                            variant="secondary"
+                            size="md"
+                            icon={<Copy className="w-4 h-4" />}
+                          >
+                            Copy Link
+                          </LoopFundButton>
+                        </div>
+                        
+                        {!qrCodeDataUrl && (
+                          <div className="text-center">
+                            <LoopFundButton
+                              onClick={generateQRCode}
+                              variant="primary"
+                              size="lg"
+                              icon={<QrCode className="w-4 h-4" />}
+                              className="w-full"
+                            >
+                              Generate QR Code
+                            </LoopFundButton>
+                            <p className="font-body text-body-xs text-loopfund-neutral-500 dark:text-loopfund-neutral-400 mt-2">
+                              Click to generate QR code for easy sharing
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+            </LoopFundCard>
           </motion.div>
         </motion.div>
       )}

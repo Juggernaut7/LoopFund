@@ -10,7 +10,7 @@ class AnalyticsService {
       const startDate = this.getStartDate(timeRange);
       
       // Fetch user's goals and contributions
-      const [goals, contributions, groups] = await Promise.all([
+      const [goals, contributions, groups, userGroupContributions, userGoalContributions] = await Promise.all([
         Goal.find({ user: userId }),
         Contribution.find({ 
           user: userId, 
@@ -19,29 +19,90 @@ class AnalyticsService {
         Group.find({ 
           'members.user': userId,
           createdAt: { $gte: startDate }
-        })
+        }),
+        // Get user's contributions from Group.contributions arrays
+        Group.find({ 
+          'members.user': userId,
+          'contributions.userId': userId,
+          'contributions.paidAt': { $gte: startDate }
+        }).select('contributions name').populate('contributions.userId', 'name'),
+        // Get user's contributions from Goal.contributions arrays
+        Goal.find({ 
+          user: userId,
+          'contributions.userId': userId,
+          'contributions.paidAt': { $gte: startDate }
+        }).select('contributions name').populate('contributions.userId', 'name')
       ]);
 
+      // Extract and format group contributions
+      const groupContributions = userGroupContributions.flatMap(group => 
+        group.contributions
+          .filter(contrib => contrib.userId.toString() === userId.toString())
+          .map(contrib => ({
+            _id: contrib._id,
+            user: contrib.userId,
+            amount: contrib.amount,
+            description: contrib.description,
+            createdAt: contrib.paidAt || contrib.createdAt,
+            type: 'group_contribution',
+            group: { _id: group._id, name: group.name }
+          }))
+      );
+
+      // Extract and format goal contributions
+      const goalContributions = userGoalContributions.flatMap(goal => 
+        goal.contributions
+          .filter(contrib => contrib.userId.toString() === userId.toString())
+          .map(contrib => ({
+            _id: contrib._id,
+            user: contrib.userId,
+            amount: contrib.amount,
+            description: contrib.description,
+            createdAt: contrib.paidAt || contrib.createdAt,
+            type: 'goal_contribution',
+            goal: { _id: goal._id, name: goal.name }
+          }))
+      );
+
+      // Combine all contributions
+      const allContributions = [...contributions, ...groupContributions, ...goalContributions];
+
+      console.log('🔍 Analytics data debug:', {
+        userId,
+        goalsCount: goals.length,
+        contributionsCount: contributions.length,
+        groupContributionsCount: groupContributions.length,
+        goalContributionsCount: goalContributions.length,
+        allContributionsCount: allContributions.length,
+        groupsCount: groups.length,
+        sampleContributions: allContributions.slice(0, 3).map(c => ({
+          type: c.type,
+          amount: c.amount,
+          createdAt: c.createdAt
+        }))
+      });
+
       // Calculate summary metrics
-      const summary = this.calculateSummaryMetrics(goals, contributions, groups);
+      const summary = this.calculateSummaryMetrics(goals, allContributions, groups);
       
       // Generate savings trend data
-      const savingsTrend = this.generateSavingsTrend(contributions, startDate);
+      const savingsTrend = this.generateSavingsTrend(allContributions, startDate);
       
       // Calculate goal progress
       const goalProgress = this.calculateGoalProgress(goals);
       
       // Get top performers
-      const topPerformers = this.getTopPerformers(goals, contributions);
+      const topPerformers = this.getTopPerformers(goals, allContributions);
       
       // Get recent activity
-      const recentActivity = this.getRecentActivity(contributions, goals);
+      const recentActivity = this.getRecentActivity(allContributions, goals);
       
       // Generate financial projections
-      const financialProjections = this.generateFinancialProjections(goals, contributions);
+      const financialProjections = this.generateFinancialProjections(goals, allContributions);
 
       return {
         summary,
+        goals, // Add goals to the response
         savingsTrend,
         goalProgress,
         topPerformers,
@@ -64,11 +125,28 @@ class AnalyticsService {
         throw new Error('Group not found');
       }
 
-      // Get group contributions
-      const contributions = await Contribution.find({
-        group: groupId,
-        createdAt: { $gte: startDate }
-      }).populate('user', 'name');
+      // Get group contributions from both Contribution model and Group.contributions array
+      const [contributionModelContributions, groupContributions] = await Promise.all([
+        Contribution.find({
+          group: groupId,
+          createdAt: { $gte: startDate }
+        }).populate('user', 'name'),
+        // Get contributions from Group.contributions array
+        Group.findById(groupId).select('contributions').populate('contributions.userId', 'name')
+      ]);
+
+      // Combine both types of contributions
+      const contributions = [
+        ...contributionModelContributions,
+        ...(groupContributions?.contributions || []).map(contrib => ({
+          _id: contrib._id,
+          user: contrib.userId,
+          amount: contrib.amount,
+          description: contrib.description,
+          createdAt: contrib.paidAt || contrib.createdAt,
+          type: 'group_contribution'
+        }))
+      ];
 
       // Calculate group metrics
       const totalContributed = contributions.reduce((sum, c) => sum + c.amount, 0);
@@ -190,19 +268,45 @@ class AnalyticsService {
   }
 
   calculateSummaryMetrics(goals, contributions, groups) {
-    const totalSaved = contributions.reduce((sum, c) => sum + c.amount, 0);
-    const groupContributions = contributions.filter(c => c.group).reduce((sum, c) => sum + c.amount, 0);
-    const soloSavings = contributions.filter(c => !c.group).reduce((sum, c) => sum + c.amount, 0);
-    const activeGoals = goals.filter(g => g.status === 'active').length;
+    const totalSaved = contributions.reduce((sum, c) => sum + (c.amount || 0), 0);
+    const totalContributions = contributions.length;
+    
+    // Updated to handle new contribution types
+    const groupContributions = contributions.filter(c => 
+      c.type === 'group_contribution' || c.group
+    ).reduce((sum, c) => sum + (c.amount || 0), 0);
+    
+    const soloSavings = contributions.filter(c => 
+      c.type === 'goal_contribution' || (!c.group && !c.type)
+    ).reduce((sum, c) => sum + (c.amount || 0), 0);
+    
+    const activeGoals = goals.filter(g => g.isActive !== false).length;
     const completedGoals = goals.filter(g => g.status === 'completed').length;
     const groupCount = groups.length;
     const soloGoalCount = goals.filter(g => !g.isGroupGoal).length;
+    
+    // Calculate average contribution
+    const averageContribution = totalContributions > 0 ? totalSaved / totalContributions : 0;
+    
+    // Calculate this month's contributions
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const thisMonthContributions = contributions.filter(c => {
+      const contributionDate = new Date(c.createdAt || c.paidAt);
+      return contributionDate >= startOfMonth;
+    });
+    const thisMonth = thisMonthContributions.reduce((sum, c) => sum + (c.amount || 0), 0);
+    
+    // Calculate completion rate
+    const totalGoals = goals.length;
+    const completionRate = totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0;
     
     // Calculate savings rate (daily average)
     const days = 30; // Default to 30 days
     const savingsRate = days > 0 ? totalSaved / days : 0;
 
-    return {
+    console.log('🔍 Analytics calculation debug:', {
+      totalContributions,
       totalSaved,
       groupContributions,
       soloSavings,
@@ -210,6 +314,24 @@ class AnalyticsService {
       completedGoals,
       groupCount,
       soloGoalCount,
+      averageContribution,
+      thisMonth,
+      completionRate,
+      contributionTypes: contributions.map(c => ({ type: c.type, amount: c.amount, createdAt: c.createdAt }))
+    });
+
+    return {
+      totalSaved,
+      totalContributions,
+      groupContributions,
+      soloSavings,
+      activeGoals,
+      completedGoals,
+      groupCount,
+      soloGoalCount,
+      averageContribution: Math.round(averageContribution * 100) / 100,
+      thisMonth,
+      completionRate: Math.round(completionRate * 100) / 100,
       savingsRate: Math.round(savingsRate * 100) / 100
     };
   }
@@ -308,11 +430,16 @@ class AnalyticsService {
     const activities = [];
     
     contributions.slice(0, 20).forEach(contribution => {
+      const date = contribution.createdAt || contribution.paidAt || new Date();
+      const goalName = contribution.goal ? contribution.goal.name : 
+                      contribution.type === 'group_contribution' ? 'Group Contribution' :
+                      contribution.type === 'goal_contribution' ? 'Goal Contribution' : 'Unknown Goal';
+      
       activities.push({
         type: 'contribution',
-        goal: contribution.goal ? contribution.goal.name : 'Unknown Goal',
+        goal: goalName,
         amount: contribution.amount,
-        date: contribution.createdAt.toISOString().split('T')[0],
+        date: new Date(date).toISOString().split('T')[0],
         status: 'completed'
       });
     });
@@ -323,7 +450,7 @@ class AnalyticsService {
         type: 'goal_completed',
         goal: goal.name,
         amount: goal.targetAmount,
-        date: goal.updatedAt.toISOString().split('T')[0],
+        date: goal.updatedAt ? goal.updatedAt.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         status: 'completed'
       });
     });

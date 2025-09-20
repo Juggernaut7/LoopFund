@@ -22,20 +22,24 @@ import {
   Calendar,
   Clock,
   Eye,
-  ChevronRight
+  ChevronRight,
+  Sparkles,
+  Crown,
+  Gamepad2
 } from 'lucide-react';
-import Layout from '../components/layout/Layout';
 import CommunityFeed from '../components/community/CommunityFeed';
 import CommunityChallenges from '../components/community/CommunityChallenges';
 import PeerSupportGroups from '../components/community/PeerSupportGroups';
 import CommunityAnalytics from '../components/community/CommunityAnalytics';
 import CommunitySearch from '../components/community/CommunitySearch';
 import communityService from '../services/communityService';
+import { LoopFundButton, LoopFundCard } from '../components/ui';
 
 const CommunityPage = () => {
   const [activeTab, setActiveTab] = useState('feed');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createType, setCreateType] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const tabs = [
     { 
@@ -43,35 +47,40 @@ const CommunityPage = () => {
       name: 'Community Feed', 
       icon: MessageCircle, 
       description: 'Share stories and connect with others',
-      color: 'bg-blue-500'
+      color: 'emerald',
+      gradient: 'from-loopfund-emerald-500 to-loopfund-mint-500'
     },
     { 
       id: 'challenges', 
       name: 'Challenges', 
       icon: Target, 
       description: 'Join challenges and build habits together',
-      color: 'bg-green-500'
+      color: 'coral',
+      gradient: 'from-loopfund-coral-500 to-loopfund-orange-500'
     },
     { 
       id: 'groups', 
       name: 'Support Groups', 
       icon: Users, 
       description: 'Find your tribe and get support',
-      color: 'bg-purple-500'
+      color: 'lavender',
+      gradient: 'from-loopfund-lavender-500 to-loopfund-electric-500'
     },
     { 
       id: 'search', 
       name: 'Search', 
       icon: Search, 
       description: 'Find specific content and resources',
-      color: 'bg-orange-500'
+      color: 'gold',
+      gradient: 'from-loopfund-gold-500 to-loopfund-orange-500'
     },
     { 
       id: 'analytics', 
       name: 'Analytics', 
       icon: BarChart3, 
       description: 'Community insights and trends',
-      color: 'bg-indigo-500'
+      color: 'electric',
+      gradient: 'from-loopfund-electric-500 to-loopfund-lavender-500'
     }
   ];
 
@@ -81,7 +90,8 @@ const CommunityPage = () => {
       name: 'Share Story',
       description: 'Share your financial wellness journey',
       icon: MessageCircle,
-      color: 'bg-blue-500',
+      color: 'emerald',
+      gradient: 'from-loopfund-emerald-500 to-loopfund-mint-500',
       action: () => {
         setCreateType('post');
         setShowCreateModal(false);
@@ -94,7 +104,8 @@ const CommunityPage = () => {
       name: 'Create Challenge',
       description: 'Start a community challenge',
       icon: Target,
-      color: 'bg-green-500',
+      color: 'coral',
+      gradient: 'from-loopfund-coral-500 to-loopfund-orange-500',
       action: () => {
         setCreateType('challenge');
         setShowCreateModal(false);
@@ -106,20 +117,34 @@ const CommunityPage = () => {
       name: 'Create Group',
       description: 'Start a support group',
       icon: Users,
-      color: 'bg-purple-500',
+      color: 'lavender',
+      gradient: 'from-loopfund-lavender-500 to-loopfund-electric-500',
       action: () => {
         setCreateType('group');
         setShowCreateModal(false);
         setActiveTab('groups');
       }
+    },
+    {
+      id: 'therapy-game',
+      name: 'Therapy Game',
+      description: 'Interactive financial wellness therapy',
+      icon: Gamepad2,
+      color: 'electric',
+      gradient: 'from-loopfund-electric-500 to-loopfund-lavender-500',
+      comingSoon: true,
+      action: () => {
+        // Coming soon - no action for now
+        console.log('Therapy Game coming soon!');
+      }
     }
   ];
 
   const [communityStats, setCommunityStats] = useState([
-    { label: 'Active Members', value: 'Loading...', icon: Users, color: 'text-blue-600' },
-    { label: 'Posts Today', value: 'Loading...', icon: MessageCircle, color: 'text-green-600' },
-    { label: 'Active Challenges', value: 'Loading...', icon: Target, color: 'text-purple-600' },
-    { label: 'Support Groups', value: 'Loading...', icon: Users, color: 'text-orange-600' }
+    { label: 'Active Members', value: 'Loading...', icon: Users, color: 'emerald', gradient: 'from-loopfund-emerald-500 to-loopfund-mint-500' },
+    { label: 'Posts Today', value: 'Loading...', icon: MessageCircle, color: 'coral', gradient: 'from-loopfund-coral-500 to-loopfund-orange-500' },
+    { label: 'Active Challenges', value: 'Loading...', icon: Target, color: 'gold', gradient: 'from-loopfund-gold-500 to-loopfund-orange-500' },
+    { label: 'Support Groups', value: 'Loading...', icon: Users, color: 'lavender', gradient: 'from-loopfund-lavender-500 to-loopfund-electric-500' }
   ]);
 
   useEffect(() => {
@@ -128,32 +153,45 @@ const CommunityPage = () => {
 
   const loadCommunityStats = async () => {
     try {
-      const response = await communityService.getCommunityStats();
+      setLoading(true);
+      
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 5000)
+      );
+      
+      const response = await Promise.race([
+        communityService.getCommunityStats(),
+        timeoutPromise
+      ]);
+      
       if (response.success) {
         setCommunityStats([
-          { label: 'Active Members', value: response.data.totalMembers?.toString() || '0', icon: Users, color: 'text-blue-600' },
-          { label: 'Posts Today', value: response.data.postsToday?.toString() || '0', icon: MessageCircle, color: 'text-green-600' },
-          { label: 'Active Challenges', value: response.data.activeChallenges?.toString() || '0', icon: Target, color: 'text-purple-600' },
-          { label: 'Support Groups', value: response.data.supportGroups?.toString() || '0', icon: Users, color: 'text-orange-600' }
+          { label: 'Active Members', value: response.data.totalMembers?.toString() || '0', icon: Users, color: 'emerald', gradient: 'from-loopfund-emerald-500 to-loopfund-mint-500' },
+          { label: 'Posts Today', value: response.data.postsToday?.toString() || '0', icon: MessageCircle, color: 'coral', gradient: 'from-loopfund-coral-500 to-loopfund-orange-500' },
+          { label: 'Active Challenges', value: response.data.activeChallenges?.toString() || '0', icon: Target, color: 'gold', gradient: 'from-loopfund-gold-500 to-loopfund-orange-500' },
+          { label: 'Support Groups', value: response.data.supportGroups?.toString() || '0', icon: Users, color: 'lavender', gradient: 'from-loopfund-lavender-500 to-loopfund-electric-500' }
         ]);
       } else {
         // Set fallback data if API fails
         setCommunityStats([
-          { label: 'Active Members', value: '0', icon: Users, color: 'text-blue-600' },
-          { label: 'Posts Today', value: '0', icon: MessageCircle, color: 'text-green-600' },
-          { label: 'Active Challenges', value: '0', icon: Target, color: 'text-purple-600' },
-          { label: 'Support Groups', value: '0', icon: Users, color: 'text-orange-600' }
+          { label: 'Active Members', value: '0', icon: Users, color: 'emerald', gradient: 'from-loopfund-emerald-500 to-loopfund-mint-500' },
+          { label: 'Posts Today', value: '0', icon: MessageCircle, color: 'coral', gradient: 'from-loopfund-coral-500 to-loopfund-orange-500' },
+          { label: 'Active Challenges', value: '0', icon: Target, color: 'gold', gradient: 'from-loopfund-gold-500 to-loopfund-orange-500' },
+          { label: 'Support Groups', value: '0', icon: Users, color: 'lavender', gradient: 'from-loopfund-lavender-500 to-loopfund-electric-500' }
         ]);
       }
     } catch (error) {
       console.error('Error loading community stats:', error);
       // Set fallback data on error
       setCommunityStats([
-        { label: 'Active Members', value: '0', icon: Users, color: 'text-blue-600' },
-        { label: 'Posts Today', value: '0', icon: MessageCircle, color: 'text-green-600' },
-        { label: 'Active Challenges', value: '0', icon: Target, color: 'text-purple-600' },
-        { label: 'Support Groups', value: '0', icon: Users, color: 'text-orange-600' }
+        { label: 'Active Members', value: '0', icon: Users, color: 'emerald', gradient: 'from-loopfund-emerald-500 to-loopfund-mint-500' },
+        { label: 'Posts Today', value: '0', icon: MessageCircle, color: 'coral', gradient: 'from-loopfund-coral-500 to-loopfund-orange-500' },
+        { label: 'Active Challenges', value: '0', icon: Target, color: 'gold', gradient: 'from-loopfund-gold-500 to-loopfund-orange-500' },
+        { label: 'Support Groups', value: '0', icon: Users, color: 'lavender', gradient: 'from-loopfund-lavender-500 to-loopfund-electric-500' }
       ]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -179,9 +217,40 @@ const CommunityPage = () => {
     }
   };
 
+  // Loading state
+  if (loading) {
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated">
+          <div className="max-w-7xl mx-auto p-6">
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <motion.div
+                className="text-center"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6 }}
+              >
+                <motion.div
+                  className="w-16 h-16 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-2xl flex items-center justify-center shadow-loopfund mx-auto mb-6"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                >
+                  <Users className="w-8 h-8 text-white" />
+                </motion.div>
+                <h2 className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
+                  Loading Your Community
+                </h2>
+                <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                  Connecting you with your financial wellness community...
+                </p>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+    );
+  }
+
   return (
-    <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated">
         <div className="max-w-7xl mx-auto p-6">
           {/* Header */}
           <motion.div 
@@ -190,21 +259,26 @@ const CommunityPage = () => {
             className="mb-8"
           >
             <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              <div className="relative">
+                {/* Floating background elements */}
+                <div className="absolute -top-4 -left-4 w-16 h-16 bg-gradient-to-r from-loopfund-emerald-500/20 to-loopfund-mint-500/20 rounded-full animate-float"></div>
+                <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-gradient-to-r from-loopfund-coral-500/20 to-loopfund-orange-500/20 rounded-full animate-float-delayed"></div>
+                
+                <h1 className="text-3xl font-display font-bold text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2 relative z-10">
                   Financial Wellness Community
                 </h1>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="font-body text-body-lg text-loopfund-neutral-600 dark:text-loopfund-neutral-400 relative z-10">
                   Connect, support, and grow together in your financial wellness journey
                 </p>
               </div>
-              <button
+              <LoopFundButton
                 onClick={() => setShowCreateModal(true)}
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                variant="primary"
+                size="lg"
+                icon={<Plus className="w-4 h-4" />}
               >
-                <Plus className="w-4 h-4" />
-                <span>Create</span>
-              </button>
+                Create
+              </LoopFundButton>
             </div>
           </motion.div>
 
@@ -213,22 +287,39 @@ const CommunityPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+            className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8"
           >
             {communityStats.map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <div key={index} className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-slate-700">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</p>
-                      <p className="text-xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+                <motion.div 
+                  key={index} 
+                  className="relative"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <LoopFundCard variant="elevated" className="p-6 hover:shadow-loopfund-lg transition-all duration-300">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-1">{stat.label}</p>
+                        <p className="text-2xl font-display font-bold text-loopfund-neutral-900 dark:text-loopfund-dark-text">{stat.value}</p>
+                      </div>
+                      <motion.div 
+                        className={`w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-r ${stat.gradient} shadow-loopfund`}
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        <Icon className="w-6 h-6 text-white" />
+                      </motion.div>
                     </div>
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.color.replace('text-', 'bg-')} bg-opacity-10`}>
-                      <Icon className={`w-5 h-5 ${stat.color}`} />
+                    {/* Floating sparkles on hover */}
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Sparkles className="w-4 h-4 text-loopfund-gold-500 animate-pulse" />
                     </div>
-                  </div>
-                </div>
+                  </LoopFundCard>
+                </motion.div>
               );
             })}
           </motion.div>
@@ -238,30 +329,69 @@ const CommunityPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-slate-700 mb-8"
+            className="mb-8"
           >
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {quickActions.map((action) => {
-                const Icon = action.icon;
-                return (
-                  <button
-                    key={action.id}
-                    onClick={action.action}
-                    className="flex items-center space-x-3 p-4 rounded-lg border border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 hover:shadow-sm transition-all"
-                  >
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${action.color}`}>
-                      <Icon className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-medium text-gray-900 dark:text-white">{action.name}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{action.description}</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400 ml-auto" />
-                  </button>
-                );
-              })}
-            </div>
+            <LoopFundCard variant="elevated" className="p-8">
+              <div className="flex items-center space-x-3 mb-6">
+                <motion.div
+                  className="p-2 bg-gradient-to-r from-loopfund-gold-500 to-loopfund-orange-500 rounded-xl shadow-loopfund"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <Zap className="w-6 h-6 text-white" />
+                </motion.div>
+                <h2 className="text-lg font-display font-semibold text-loopfund-neutral-900 dark:text-loopfund-dark-text">Quick Actions</h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {quickActions.map((action, index) => {
+                  const Icon = action.icon;
+                  return (
+                    <motion.button
+                      key={action.id}
+                      onClick={action.action}
+                      className={`group flex items-center space-x-4 p-6 rounded-xl border transition-all duration-300 ${
+                        action.comingSoon 
+                          ? 'border-loopfund-neutral-300 dark:border-loopfund-neutral-600 bg-loopfund-neutral-100 dark:bg-loopfund-dark-surface opacity-75 cursor-not-allowed' 
+                          : 'border-loopfund-neutral-200 dark:border-loopfund-neutral-700 hover:border-loopfund-neutral-300 dark:hover:border-loopfund-neutral-600 hover:shadow-loopfund bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated'
+                      }`}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={action.comingSoon ? {} : { scale: 1.02 }}
+                      whileTap={action.comingSoon ? {} : { scale: 0.98 }}
+                    >
+                      <motion.div 
+                        className={`w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-r ${action.gradient} shadow-loopfund transition-transform ${
+                          action.comingSoon ? '' : 'group-hover:scale-110'
+                        }`}
+                        whileHover={action.comingSoon ? {} : { rotate: 5 }}
+                      >
+                        <Icon className="w-6 h-6 text-white" />
+                      </motion.div>
+                      <div className="text-left flex-1">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <p className="font-display font-medium text-loopfund-neutral-900 dark:text-loopfund-dark-text">{action.name}</p>
+                          {action.comingSoon && (
+                            <span className="px-2 py-1 text-xs font-body font-medium bg-gradient-to-r from-loopfund-gold-500 to-loopfund-orange-500 text-white rounded-full">
+                              Coming Soon
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm font-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">{action.description}</p>
+                      </div>
+                      {!action.comingSoon && (
+                        <motion.div
+                          whileHover={{ x: 5 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                        >
+                          <ChevronRight className="w-5 h-5 text-loopfund-neutral-400 group-hover:text-loopfund-emerald-500 transition-colors" />
+                        </motion.div>
+                      )}
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </LoopFundCard>
           </motion.div>
 
           {/* Tab Navigation */}
@@ -269,27 +399,46 @@ const CommunityPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-slate-700 mb-8"
+            className="mb-8"
           >
-            <div className="flex flex-wrap gap-2">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                      activeTab === tab.id
-                        ? 'bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300 dark:hover:bg-slate-600'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>{tab.name}</span>
-                  </button>
-                );
-              })}
-            </div>
+            <LoopFundCard variant="elevated" className="p-6">
+              <div className="flex flex-wrap gap-3">
+                {tabs.map((tab, index) => {
+                  const Icon = tab.icon;
+                  return (
+                    <motion.button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`group flex items-center space-x-3 px-6 py-4 rounded-xl transition-all duration-300 font-body ${
+                        activeTab === tab.id
+                          ? `bg-loopfund-${tab.color}-100 dark:bg-loopfund-${tab.color}-900/20 text-loopfund-${tab.color}-600 dark:text-loopfund-${tab.color}-400 border-2 border-loopfund-${tab.color}-200 dark:border-loopfund-${tab.color}-800 shadow-loopfund`
+                          : 'bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated text-loopfund-neutral-700 dark:text-loopfund-neutral-300 hover:bg-loopfund-neutral-200 dark:hover:bg-loopfund-dark-surface border-2 border-transparent hover:border-loopfund-neutral-300 dark:hover:border-loopfund-neutral-600'
+                      }`}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <motion.div
+                        className={`p-1 rounded-lg ${
+                          activeTab === tab.id 
+                            ? `bg-gradient-to-r ${tab.gradient}` 
+                            : 'bg-loopfund-neutral-200 dark:bg-loopfund-neutral-700 group-hover:bg-loopfund-neutral-300 dark:group-hover:bg-loopfund-neutral-600'
+                        }`}
+                        whileHover={{ rotate: 5 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        <Icon className={`w-4 h-4 ${
+                          activeTab === tab.id ? 'text-white' : 'text-loopfund-neutral-600 dark:text-loopfund-neutral-400'
+                        }`} />
+                      </motion.div>
+                      <span className="font-medium">{tab.name}</span>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </LoopFundCard>
           </motion.div>
 
           {/* Tab Content */}
@@ -320,47 +469,82 @@ const CommunityPage = () => {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md"
+                className="w-full max-w-md"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="text-center">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">What would you like to create?</h2>
-                  <div className="space-y-3">
-                    {quickActions.map((action) => {
-                      const Icon = action.icon;
-                      return (
-                        <button
-                          key={action.id}
-                          onClick={() => {
-                            action.action();
-                            setShowCreateModal(false);
-                          }}
-                          className="w-full flex items-center space-x-3 p-4 rounded-lg border border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 hover:shadow-sm transition-all"
-                        >
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${action.color}`}>
-                            <Icon className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="text-left">
-                            <p className="font-medium text-gray-900 dark:text-white">{action.name}</p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">{action.description}</p>
-                          </div>
-                        </button>
-                      );
-                    })}
+                <LoopFundCard variant="elevated" className="p-8">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center space-x-3 mb-6">
+                      <motion.div
+                        className="p-3 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-xl shadow-loopfund"
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        <Crown className="w-6 h-6 text-white" />
+                      </motion.div>
+                      <h2 className="text-xl font-display font-bold text-loopfund-neutral-900 dark:text-loopfund-dark-text">What would you like to create?</h2>
+                    </div>
+                    <div className="space-y-4">
+                      {quickActions.map((action, index) => {
+                        const Icon = action.icon;
+                        return (
+                          <motion.button
+                            key={action.id}
+                            onClick={() => {
+                              if (!action.comingSoon) {
+                                action.action();
+                                setShowCreateModal(false);
+                              }
+                            }}
+                            className={`w-full flex items-center space-x-4 p-6 rounded-xl border transition-all duration-300 ${
+                              action.comingSoon 
+                                ? 'border-loopfund-neutral-300 dark:border-loopfund-neutral-600 bg-loopfund-neutral-100 dark:bg-loopfund-dark-surface opacity-75 cursor-not-allowed' 
+                                : 'border-loopfund-neutral-200 dark:border-loopfund-neutral-700 hover:border-loopfund-neutral-300 dark:hover:border-loopfund-neutral-600 hover:shadow-loopfund bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated group'
+                            }`}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            whileHover={action.comingSoon ? {} : { scale: 1.02 }}
+                            whileTap={action.comingSoon ? {} : { scale: 0.98 }}
+                          >
+                            <motion.div 
+                              className={`w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-r ${action.gradient} shadow-loopfund transition-transform ${
+                                action.comingSoon ? '' : 'group-hover:scale-110'
+                              }`}
+                              whileHover={action.comingSoon ? {} : { rotate: 5 }}
+                            >
+                              <Icon className="w-6 h-6 text-white" />
+                            </motion.div>
+                            <div className="text-left flex-1">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <p className="font-display font-medium text-loopfund-neutral-900 dark:text-loopfund-dark-text">{action.name}</p>
+                                {action.comingSoon && (
+                                  <span className="px-2 py-1 text-xs font-body font-medium bg-gradient-to-r from-loopfund-gold-500 to-loopfund-orange-500 text-white rounded-full">
+                                    Coming Soon
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm font-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">{action.description}</p>
+                            </div>
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+                    <LoopFundButton
+                      onClick={() => setShowCreateModal(false)}
+                      variant="secondary"
+                      size="lg"
+                      className="mt-6"
+                    >
+                      Cancel
+                    </LoopFundButton>
                   </div>
-                  <button
-                    onClick={() => setShowCreateModal(false)}
-                    className="mt-4 px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
+                </LoopFundCard>
               </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-    </Layout>
   );
 };
 

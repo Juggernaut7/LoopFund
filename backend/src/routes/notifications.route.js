@@ -1,44 +1,101 @@
-const { Router } = require('express');
+const express = require('express');
+const { body } = require('express-validator');
 const { requireAuth } = require('../middleware/auth');
 const {
   getUserNotifications,
-  getNotificationStats,
   markAsRead,
   markAllAsRead,
-  archiveNotification,
-  archiveMultipleNotifications,
   deleteNotification,
-  createNotification,
-  getUnreadCount
+  getNotificationStats,
+  getCronStatus,
+  triggerCronJob,
+  createTestNotification,
+  schedulePaymentReminder,
+  getUpcomingReminders,
+  sendPaymentDueNotification,
+  sendEmailReminder,
+  updateNotificationPreferences,
+  getNotificationPreferences,
+  markReminderCompleted,
+  scheduleRecurringNotifications,
+  cancelScheduledNotifications
 } = require('../controllers/notification.controller');
 
-const router = Router();
+const router = express.Router();
 
-// Get user notifications with filters and pagination
-router.get('/', requireAuth, getUserNotifications);
+// All routes require authentication
+router.use(requireAuth);
+
+// Get user notifications
+router.get('/', getUserNotifications);
 
 // Get notification statistics
-router.get('/stats', requireAuth, getNotificationStats);
-
-// Get unread count for header badge
-router.get('/unread-count', requireAuth, getUnreadCount);
+router.get('/stats', getNotificationStats);
 
 // Mark notification as read
-router.put('/:notificationId/read', requireAuth, markAsRead);
+router.patch('/:notificationId/read', markAsRead);
 
 // Mark all notifications as read
-router.put('/mark-all-read', requireAuth, markAllAsRead);
-
-// Archive notification
-router.put('/:notificationId/archive', requireAuth, archiveNotification);
-
-// Archive multiple notifications
-router.put('/archive', requireAuth, archiveMultipleNotifications);
+router.patch('/read-all', markAllAsRead);
 
 // Delete notification
-router.delete('/:notificationId', requireAuth, deleteNotification);
+router.delete('/:notificationId', deleteNotification);
 
-// Create notification (for testing/admin purposes)
-router.post('/', requireAuth, createNotification);
+// Admin routes
+router.get('/admin/cron-status', getCronStatus);
+router.post('/admin/trigger/:jobName', triggerCronJob);
+
+// Test notification creation (for development)
+router.post('/test', [
+  body('title').optional().isString().trim().isLength({ max: 100 }),
+  body('message').optional().isString().trim().isLength({ max: 500 }),
+  body('type').optional().isIn(['success', 'warning', 'error', 'info', 'achievement']),
+  body('category').optional().isIn(['goal', 'group', 'achievement', 'system', 'reminder', 'payment'])
+], createTestNotification);
+
+// Goal notification endpoints
+router.post('/schedule-payment-reminder', [
+  body('goalId').notEmpty().withMessage('Goal ID is required'),
+  body('scheduledTime').isISO8601().withMessage('Scheduled time must be a valid date'),
+  body('amount').isNumeric().withMessage('Amount must be a number'),
+  body('frequency').isIn(['daily', 'weekly', 'monthly', 'yearly']).withMessage('Invalid frequency'),
+  body('goalName').optional().isString()
+], schedulePaymentReminder);
+
+router.get('/upcoming-reminders', getUpcomingReminders);
+
+router.post('/payment-due', [
+  body('goalId').notEmpty().withMessage('Goal ID is required'),
+  body('amount').isNumeric().withMessage('Amount must be a number'),
+  body('frequency').isIn(['daily', 'weekly', 'monthly', 'yearly']).withMessage('Invalid frequency')
+], sendPaymentDueNotification);
+
+router.post('/send-email-reminder', [
+  body('goalId').notEmpty().withMessage('Goal ID is required'),
+  body('reminderType').optional().isIn(['payment_due', 'advance_reminder', 'overdue'])
+], sendEmailReminder);
+
+router.put('/preferences', [
+  body('email').optional().isBoolean(),
+  body('push').optional().isBoolean(),
+  body('sms').optional().isBoolean(),
+  body('reminderFrequency').optional().isIn(['daily', 'weekly', 'monthly']),
+  body('reminderTime').optional().isString(),
+  body('advanceReminder').optional().isInt({ min: 0, max: 7 })
+], updateNotificationPreferences);
+
+router.get('/preferences', getNotificationPreferences);
+
+router.put('/reminders/:reminderId/completed', markReminderCompleted);
+
+router.post('/schedule-recurring', [
+  body('goalId').notEmpty().withMessage('Goal ID is required'),
+  body('frequency').isIn(['daily', 'weekly', 'monthly', 'yearly']).withMessage('Invalid frequency'),
+  body('amount').isNumeric().withMessage('Amount must be a number'),
+  body('endDate').isISO8601().withMessage('End date must be a valid date'),
+  body('startDate').optional().isISO8601().withMessage('Start date must be a valid date')
+], scheduleRecurringNotifications);
+
+router.delete('/cancel-scheduled/:goalId', cancelScheduledNotifications);
 
 module.exports = router;

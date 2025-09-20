@@ -14,7 +14,7 @@ const DashboardHeader = () => {
   };
 
   return (
-    <header className="bg-white dark:bg-dark-surface border-b border-neutral-200 dark:border-neutral-700">
+    <header className="bg-loopfund-neutral-50 dark:bg-loopfund-dark-surface border-b border-loopfund-neutral-300 dark:border-loopfund-neutral-600">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
@@ -26,31 +26,31 @@ const DashboardHeader = () => {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/dashboard" className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors">
+            <Link to="/dashboard" className="text-loopfund-neutral-600 dark:text-loopfund-neutral-400 hover:text-loopfund-neutral-900 dark:hover:text-loopfund-dark-text transition-colors">
               Dashboard
             </Link>
-            <Link to="/groups" className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors">
+            <Link to="/groups" className="text-loopfund-neutral-600 dark:text-loopfund-neutral-400 hover:text-loopfund-neutral-900 dark:hover:text-loopfund-dark-text transition-colors">
               Groups
             </Link>
-            <Link to="/transactions" className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors">
+            <Link to="/transactions" className="text-loopfund-neutral-600 dark:text-loopfund-neutral-400 hover:text-loopfund-neutral-900 dark:hover:text-loopfund-dark-text transition-colors">
               Transactions
             </Link>
           </nav>
 
           {/* User Actions */}
           <div className="flex items-center space-x-4">
-            <button className="p-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors">
+            <button className="p-2 text-loopfund-neutral-600 dark:text-loopfund-neutral-400 hover:text-loopfund-neutral-900 dark:hover:text-loopfund-dark-text transition-colors">
               <Bell className="w-5 h-5" />
             </button>
             <button 
               onClick={handleSettingsClick}
-              className="p-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+              className="p-2 text-loopfund-neutral-600 dark:text-loopfund-neutral-400 hover:text-loopfund-neutral-900 dark:hover:text-loopfund-dark-text transition-colors"
             >
               <Settings className="w-5 h-5" />
             </button>
             <button 
               onClick={handleProfileClick}
-              className="p-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+              className="p-2 text-loopfund-neutral-600 dark:text-loopfund-neutral-400 hover:text-loopfund-neutral-900 dark:hover:text-loopfund-dark-text transition-colors"
             >
               <User className="w-5 h-5" />
             </button>

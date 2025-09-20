@@ -23,7 +23,6 @@ import {
   LineChart,
   Activity
 } from 'lucide-react';
-import Layout from '../components/layout/Layout';
 import { useToast } from '../context/ToastContext';
 import { useAuthStore } from '../store/useAuthStore';
 import ModernAIFinancialAdvisor from '../components/ai/ModernAIFinancialAdvisor';
@@ -101,7 +100,6 @@ const AIAdvisorPage = () => {
   };
 
   return (
-    <Layout>
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
         {/* Header */}
         <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4">
@@ -235,7 +233,6 @@ const AIAdvisorPage = () => {
           )}
         </AnimatePresence>
       </div>
-    </Layout>
   );
 };
 
