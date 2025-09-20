@@ -26,7 +26,7 @@ const paymentSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['group_creation', 'goal_creation', 'premium_upgrade', 'challenge_access', 'other'],
+    enum: ['group_creation', 'group_contribution', 'goal_creation', 'goal_contribution', 'premium_upgrade', 'challenge_access', 'wallet_deposit', 'other'],
     required: true
   },
   metadata: {

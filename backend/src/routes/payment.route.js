@@ -507,6 +507,233 @@ router.get('/analytics', requireAuth, async (req, res) => {
   }
 });
 
+// Initialize contribution payment
+router.post('/initialize-contribution', requireAuth, [
+  body('groupId').isMongoId().withMessage('Valid group ID is required'),
+  body('amount').isNumeric().withMessage('Amount must be a number'),
+  body('description').optional().isString()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false, 
+        errors: errors.array() 
+      });
+    }
+
+    const { groupId, amount, description } = req.body;
+    const userId = req.user.userId;
+
+    const paymentResult = await paymentService.initializeContributionPayment(userId, groupId, {
+      amount,
+      description
+    });
+
+    if (!paymentResult.success) {
+      return res.status(400).json({
+        success: false,
+        error: paymentResult.error
+      });
+    }
+
+    res.json({
+      success: true,
+      data: paymentResult.data
+    });
+  } catch (error) {
+    console.error('Contribution payment initialization error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+});
+
+// Verify contribution payment
+router.get('/verify-contribution/:reference', requireAuth, async (req, res) => {
+  try {
+    const { reference } = req.params;
+    const userId = req.user.userId;
+
+    // Verify the payment belongs to the user
+    const payment = await Payment.findOne({ reference, userId });
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        error: 'Payment not found'
+      });
+    }
+
+    const verificationResult = await paymentService.verifyContributionPayment(reference);
+
+    if (!verificationResult.success) {
+      return res.status(400).json({
+        success: false,
+        error: verificationResult.error
+      });
+    }
+
+    res.json({
+      success: true,
+      data: verificationResult.data
+    });
+  } catch (error) {
+    console.error('Contribution payment verification error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+});
+
+// Initialize goal contribution payment
+router.post('/initialize-goal-contribution', requireAuth, [
+  body('goalId').notEmpty().withMessage('Goal ID is required'),
+  body('amount').isNumeric().withMessage('Amount must be a number'),
+  body('amount').isFloat({ min: 0.01 }).withMessage('Amount must be greater than 0'),
+  body('description').optional().isString().trim().isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation failed',
+        details: errors.array()
+      });
+    }
+
+    const userId = req.user.userId;
+    const { goalId, amount, description } = req.body;
+
+    const paymentResult = await paymentService.initializeGoalContributionPayment(userId, goalId, {
+      amount: parseFloat(amount),
+      description: description || ''
+    });
+
+    if (paymentResult.success) {
+      res.json({
+        success: true,
+        data: paymentResult.data
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        error: paymentResult.error
+      });
+    }
+  } catch (error) {
+    console.error('Goal contribution payment initialization error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+});
+
+// Verify goal contribution payment
+router.get('/verify-goal-contribution/:reference', requireAuth, async (req, res) => {
+  try {
+    const { reference } = req.params;
+    const userId = req.user.userId;
+
+    // Verify the payment belongs to the user
+    const payment = await Payment.findOne({ reference, userId });
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        error: 'Payment not found'
+      });
+    }
+
+    const verificationResult = await paymentService.verifyGoalContributionPayment(reference);
+
+    if (!verificationResult.success) {
+      return res.status(400).json({
+        success: false,
+        error: verificationResult.error
+      });
+    }
+
+    res.json({
+      success: true,
+      data: verificationResult.data
+    });
+  } catch (error) {
+    console.error('Goal contribution payment verification error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+});
+
+// Manual payment verification endpoint (for debugging)
+router.post('/verify-payment-manual', requireAuth, [
+  body('reference').notEmpty().withMessage('Payment reference is required')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation failed',
+        details: errors.array()
+      });
+    }
+
+    const { reference } = req.body;
+    const userId = req.user.userId;
+
+    console.log('🔍 Manual verification request for reference:', reference);
+
+    // Check if it's a goal contribution
+    if (reference.startsWith('GOAL_CONTRIB_')) {
+      const verificationResult = await paymentService.verifyGoalContributionPayment(reference);
+      
+      if (verificationResult.success) {
+        res.json({
+          success: true,
+          data: verificationResult.data,
+          message: 'Goal contribution verified successfully'
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          error: verificationResult.error
+        });
+      }
+    } else if (reference.startsWith('GROUP_CONTRIB_')) {
+      const verificationResult = await paymentService.verifyContributionPayment(reference);
+      
+      if (verificationResult.success) {
+        res.json({
+          success: true,
+          data: verificationResult.data,
+          message: 'Group contribution verified successfully'
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          error: verificationResult.error
+        });
+      }
+    } else {
+      res.status(400).json({
+        success: false,
+        error: 'Unknown payment type'
+      });
+    }
+  } catch (error) {
+    console.error('Manual payment verification error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+});
+
 // Webhook endpoint for Paystack
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   try {
@@ -536,6 +763,80 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
   } catch (error) {
     console.error('Webhook error:', error);
     res.status(400).json({ received: false, error: error.message });
+  }
+});
+
+// Initialize wallet deposit payment
+router.post('/initialize-wallet-deposit', requireAuth, [
+  body('amount').isNumeric().withMessage('Amount must be a number'),
+  body('description').optional().isString(),
+  body('reference').optional().isString(),
+  body('userEmail').isEmail().withMessage('Valid email is required'),
+  body('userName').optional().isString()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false, 
+        errors: errors.array() 
+      });
+    }
+
+    const { amount, description, reference, userEmail, userName } = req.body;
+    const userId = req.user.userId;
+
+    const depositData = {
+      amount: parseFloat(amount),
+      description,
+      reference,
+      userEmail,
+      userName
+    };
+
+    const result = await paymentService.initializeWalletDeposit(userId, depositData);
+
+    res.json({
+      success: true,
+      message: 'Wallet deposit payment initialized successfully',
+      data: result.data
+    });
+  } catch (error) {
+    console.error('Wallet deposit initialization error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Internal server error'
+    });
+  }
+});
+
+// Verify wallet deposit payment
+router.post('/verify-wallet-deposit', requireAuth, [
+  body('reference').notEmpty().withMessage('Payment reference is required')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false, 
+        errors: errors.array() 
+      });
+    }
+
+    const { reference } = req.body;
+    const result = await paymentService.verifyWalletDeposit(reference);
+
+    res.json({
+      success: true,
+      message: 'Wallet deposit verified successfully',
+      data: result.data
+    });
+  } catch (error) {
+    console.error('Wallet deposit verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Internal server error'
+    });
   }
 });
 

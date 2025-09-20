@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, Clock, AlertCircle, ArrowRight } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, AlertCircle, ArrowRight, Sparkles, Crown, Zap, Loader2 } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
+import { LoopFundButton, LoopFundCard } from '../components/ui';
 import api from '../services/api';
 
 const PaymentVerificationPage = () => {
@@ -83,13 +84,13 @@ const PaymentVerificationPage = () => {
   const getStatusIcon = () => {
     switch (verificationStatus) {
       case 'success':
-        return <CheckCircle className="text-green-500" size={64} />;
+        return <CheckCircle className="w-16 h-16 text-loopfund-emerald-500" />;
       case 'failed':
-        return <XCircle className="text-red-500" size={64} />;
+        return <XCircle className="w-16 h-16 text-loopfund-coral-500" />;
       case 'pending':
-        return <Clock className="text-yellow-500" size={64} />;
+        return <Clock className="w-16 h-16 text-loopfund-gold-500" />;
       default:
-        return <AlertCircle className="text-blue-500" size={64} />;
+        return <AlertCircle className="w-16 h-16 text-loopfund-electric-500" />;
     }
   };
 
@@ -125,152 +126,255 @@ const PaymentVerificationPage = () => {
     }
   };
 
+  const getStatusGradient = () => {
+    switch (verificationStatus) {
+      case 'success':
+        return 'bg-gradient-emerald';
+      case 'failed':
+        return 'bg-gradient-coral';
+      case 'pending':
+        return 'bg-gradient-gold';
+      default:
+        return 'bg-gradient-electric';
+    }
+  };
+
   const getStatusColor = () => {
     switch (verificationStatus) {
       case 'success':
-        return 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800';
+        return 'bg-loopfund-emerald-50 border-loopfund-emerald-200 dark:bg-loopfund-emerald-900/20 dark:border-loopfund-emerald-800';
       case 'failed':
-        return 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800';
+        return 'bg-loopfund-coral-50 border-loopfund-coral-200 dark:bg-loopfund-coral-900/20 dark:border-loopfund-coral-800';
       case 'pending':
-        return 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800';
+        return 'bg-loopfund-gold-50 border-loopfund-gold-200 dark:bg-loopfund-gold-900/20 dark:border-loopfund-gold-800';
       default:
-        return 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800';
+        return 'bg-loopfund-electric-50 border-loopfund-electric-200 dark:bg-loopfund-electric-900/20 dark:border-loopfund-electric-800';
     }
   };
 
   if (!reference) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-white dark:from-dark-bg dark:to-dark-surface flex items-center justify-center">
-        <div className="text-center">
-          <XCircle className="text-red-500 mx-auto mb-4" size={48} />
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center">
+        <motion.div 
+          className="text-center"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div
+            className="w-20 h-20 bg-loopfund-coral-100 dark:bg-loopfund-coral-900/20 rounded-3xl flex items-center justify-center shadow-loopfund-lg mx-auto mb-6"
+            whileHover={{ scale: 1.1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          >
+            <XCircle className="w-10 h-10 text-loopfund-coral-600" />
+          </motion.div>
+          <h1 className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-3">
             Invalid Payment Reference
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-6">
             No payment reference provided for verification.
           </p>
-          <button
+          <LoopFundButton
             onClick={() => navigate('/dashboard')}
-            className="btn-primary"
+            variant="primary"
+            size="lg"
+            icon={<ArrowRight className="w-5 h-5" />}
           >
             Go to Dashboard
-          </button>
-        </div>
+          </LoopFundButton>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-white dark:from-dark-bg dark:to-dark-surface flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         className="max-w-md w-full"
       >
-        <div className={`${getStatusColor()} border-2 rounded-2xl p-8 text-center`}>
-          {/* Status Icon */}
-          <div className="mb-6">
-            {getStatusIcon()}
+        <LoopFundCard variant="elevated" className="relative">
+          {/* Background Elements */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-10 -right-10 w-20 h-20 bg-gradient-loopfund opacity-5 rounded-full blur-2xl animate-float" />
+            <div className="absolute -bottom-10 -left-10 w-16 h-16 bg-gradient-coral opacity-5 rounded-full blur-xl animate-float-delayed" />
           </div>
 
-          {/* Status Title */}
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            {getStatusTitle()}
-          </h1>
-
-          {/* Status Message */}
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {getStatusMessage()}
-          </p>
-
-          {/* Payment Details */}
-          {paymentData && (
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 text-left">
-              <h3 className="font-medium text-gray-900 dark:text-white mb-3">
-                Payment Details
-              </h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Reference:</span>
-                  <span className="font-mono text-gray-900 dark:text-white">
-                    {paymentData.reference}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Amount:</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    ₦{(paymentData.amount / 100).toLocaleString()}
-                  </span>
-                </div>
-                {paymentData.groupName && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Group:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {paymentData.groupName}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="space-y-3">
-            {verificationStatus === 'success' && paymentData?.groupId && (
-              <button
-                onClick={() => navigate(`/groups/${paymentData.groupId}`)}
-                className="w-full btn-primary flex items-center justify-center space-x-2"
-              >
-                <span>View Your Group</span>
-                <ArrowRight size={20} />
-              </button>
-            )}
-
-            {verificationStatus === 'failed' && (
-              <div className="space-y-3">
-                <button
-                  onClick={retryVerification}
-                  disabled={retryCount >= 3}
-                  className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {retryCount >= 3 ? 'Max Retries Reached' : `Retry Verification (${3 - retryCount} left)`}
-                </button>
-                <button
-                  onClick={() => navigate('/create-group')}
-                  className="w-full btn-secondary"
-                >
-                  Try Again
-                </button>
-              </div>
-            )}
-
-            {verificationStatus === 'pending' && (
-              <button
-                onClick={retryVerification}
-                className="w-full btn-primary"
-              >
-                Check Again
-              </button>
-            )}
-
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="w-full text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium py-2 px-4 rounded-xl transition-colors"
+          <div className="relative p-8 text-center">
+            {/* Status Icon */}
+            <motion.div 
+              className="mb-8"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-              Go to Dashboard
-            </button>
-          </div>
+              <motion.div
+                className={`w-20 h-20 ${getStatusGradient()} rounded-3xl flex items-center justify-center shadow-loopfund-lg mx-auto`}
+                animate={verificationStatus === 'verifying' ? { rotate: 360 } : {}}
+                transition={verificationStatus === 'verifying' ? { duration: 2, repeat: Infinity, ease: "linear" } : {}}
+              >
+                {verificationStatus === 'verifying' ? (
+                  <Loader2 className="w-10 h-10 text-white" />
+                ) : (
+                  getStatusIcon()
+                )}
+              </motion.div>
+            </motion.div>
 
-          {/* Error Display */}
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
-            </div>
-          )}
-        </div>
+            {/* Status Title */}
+            <motion.h1 
+              className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              {getStatusTitle()}
+            </motion.h1>
+
+            {/* Status Message */}
+            <motion.p 
+              className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              {getStatusMessage()}
+            </motion.p>
+
+            {/* Payment Details */}
+            {paymentData && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <LoopFundCard variant="elevated" className="mb-8">
+                  <div className="p-6">
+                    <div className="flex items-center space-x-3 mb-6">
+                      <motion.div 
+                        className="w-10 h-10 bg-gradient-gold rounded-2xl flex items-center justify-center shadow-loopfund"
+                        whileHover={{ rotate: 15, scale: 1.1 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      >
+                        <Crown className="w-5 h-5 text-white" />
+                      </motion.div>
+                      <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                        Payment Details
+                      </h3>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center py-3 px-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-xl">
+                        <span className="font-body text-body text-loopfund-neutral-700 dark:text-loopfund-neutral-300">Reference:</span>
+                        <span className="font-mono font-body text-body text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                          {paymentData.reference}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-3 px-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-xl">
+                        <span className="font-body text-body text-loopfund-neutral-700 dark:text-loopfund-neutral-300">Amount:</span>
+                        <span className="font-display text-h4 text-loopfund-emerald-600">
+                          ₦{(paymentData.amount / 100).toLocaleString()}
+                        </span>
+                      </div>
+                      {paymentData.groupName && (
+                        <div className="flex justify-between items-center py-3 px-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-xl">
+                          <span className="font-body text-body text-loopfund-neutral-700 dark:text-loopfund-neutral-300">Group:</span>
+                          <span className="font-body text-body font-medium text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                            {paymentData.groupName}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </LoopFundCard>
+              </motion.div>
+            )}
+
+            {/* Action Buttons */}
+            <motion.div 
+              className="space-y-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              {verificationStatus === 'success' && paymentData?.groupId && (
+                <LoopFundButton
+                  onClick={() => navigate(`/groups/${paymentData.groupId}`)}
+                  variant="primary"
+                  size="lg"
+                  icon={<ArrowRight className="w-5 h-5" />}
+                  className="w-full"
+                >
+                  View Your Group
+                </LoopFundButton>
+              )}
+
+              {verificationStatus === 'failed' && (
+                <div className="space-y-4">
+                  <LoopFundButton
+                    onClick={retryVerification}
+                    disabled={retryCount >= 3}
+                    variant="primary"
+                    size="lg"
+                    icon={<Zap className="w-5 h-5" />}
+                    className="w-full"
+                  >
+                    {retryCount >= 3 ? 'Max Retries Reached' : `Retry Verification (${3 - retryCount} left)`}
+                  </LoopFundButton>
+                  <LoopFundButton
+                    onClick={() => navigate('/create-group')}
+                    variant="secondary"
+                    size="lg"
+                    className="w-full"
+                  >
+                    Try Again
+                  </LoopFundButton>
+                </div>
+              )}
+
+              {verificationStatus === 'pending' && (
+                <LoopFundButton
+                  onClick={retryVerification}
+                  variant="primary"
+                  size="lg"
+                  icon={<Clock className="w-5 h-5" />}
+                  className="w-full"
+                >
+                  Check Again
+                </LoopFundButton>
+              )}
+
+              <LoopFundButton
+                onClick={() => navigate('/dashboard')}
+                variant="secondary"
+                size="lg"
+                className="w-full"
+              >
+                Go to Dashboard
+              </LoopFundButton>
+            </motion.div>
+
+            {/* Error Display */}
+            <AnimatePresence>
+              {error && (
+                <motion.div 
+                  className="mt-6 p-4 bg-loopfund-coral-50 dark:bg-loopfund-coral-900/20 border border-loopfund-coral-200 dark:border-loopfund-coral-800 rounded-2xl"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                >
+                  <div className="flex items-center space-x-3">
+                    <AlertCircle className="w-5 h-5 text-loopfund-coral-600" />
+                    <p className="font-body text-body text-loopfund-coral-600 dark:text-loopfund-coral-400">{error}</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </LoopFundCard>
       </motion.div>
     </div>
   );
 };
 
-export default PaymentVerificationPage; 
+export default PaymentVerificationPage;

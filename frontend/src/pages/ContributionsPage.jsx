@@ -16,7 +16,6 @@ import {
   AlertCircle,
   Clock
 } from 'lucide-react';
-import Layout from '../components/layout/Layout';
 import { useToast } from '../context/ToastContext';
 import ContributionForm from '../components/contributions/ContributionForm';
 import ContributionTimeline from '../components/contributions/ContributionTimeline';
@@ -148,7 +147,6 @@ const ContributionsPage = () => {
 
   if (isLoading) {
     return (
-      <Layout>
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
           <motion.div
             animate={{ rotate: 360 }}
@@ -156,12 +154,10 @@ const ContributionsPage = () => {
             className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full"
           />
         </div>
-      </Layout>
     );
   }
 
   return (
-    <Layout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -273,7 +269,6 @@ const ContributionsPage = () => {
           )}
         </AnimatePresence>
       </div>
-    </Layout>
   );
 };
 

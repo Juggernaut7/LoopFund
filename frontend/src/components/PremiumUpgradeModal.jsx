@@ -130,7 +130,7 @@ const PremiumUpgradeModal = ({ isOpen, onClose, triggerFeature = null }) => {
             <div className="relative p-8 border-b border-slate-200 dark:border-slate-700">
               <button
                 onClick={onClose}
-                className="absolute top-6 right-6 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
+                className="absolute top-6 right-6 p-2 rounded-full transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -158,7 +158,7 @@ const PremiumUpgradeModal = ({ isOpen, onClose, triggerFeature = null }) => {
                     className={`flex-1 p-6 rounded-xl border-2 transition-all ${
                       selectedPlan === key
                         ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                        : 'border-slate-200 dark:border-slate-700'
                     }`}
                   >
                     <div className="text-center">
@@ -227,7 +227,7 @@ const PremiumUpgradeModal = ({ isOpen, onClose, triggerFeature = null }) => {
                 <button
                   onClick={handleUpgrade}
                   disabled={isProcessing}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isProcessing ? 'Processing...' : `Upgrade to Premium - $${plans[selectedPlan].price}/${plans[selectedPlan].period}`}
                 </button>

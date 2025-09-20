@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sun, Cloud, CloudRain, CloudSnow, Wind, Thermometer } from 'lucide-react';
+import { Sun, Cloud, CloudRain, CloudSnow, Wind, Thermometer, Sparkles } from 'lucide-react';
 
 const WeatherWidget = () => {
   const [weather, setWeather] = useState({
@@ -15,17 +15,17 @@ const WeatherWidget = () => {
   const getWeatherIcon = (condition) => {
     switch (condition) {
       case 'sunny':
-        return <Sun size={24} className="text-yellow-500" />;
+        return <Sun size={24} className="text-loopfund-gold-500" />;
       case 'cloudy':
-        return <Cloud size={24} className="text-gray-500" />;
+        return <Cloud size={24} className="text-loopfund-neutral-500" />;
       case 'rainy':
-        return <CloudRain size={24} className="text-blue-500" />;
+        return <CloudRain size={24} className="text-loopfund-electric-500" />;
       case 'snowy':
-        return <CloudSnow size={24} className="text-blue-300" />;
+        return <CloudSnow size={24} className="text-loopfund-lavender-500" />;
       case 'windy':
-        return <Wind size={24} className="text-gray-400" />;
+        return <Wind size={24} className="text-loopfund-neutral-400" />;
       default:
-        return <Sun size={24} className="text-yellow-500" />;
+        return <Sun size={24} className="text-loopfund-gold-500" />;
     }
   };
 
@@ -108,43 +108,77 @@ const WeatherWidget = () => {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, delay: 0.7 }}
-      className="bg-blue-600 rounded-xl p-4 text-white relative overflow-hidden"
+      className="bg-gradient-to-br from-loopfund-electric-500 via-loopfund-lavender-500 to-loopfund-electric-600 rounded-2xl p-6 text-white relative overflow-hidden"
     >
-      {/* Background pattern */}
-      <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10" />
-      <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-8 -translate-x-8" />
+      {/* Revolutionary Background Elements */}
+      <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12 animate-float" />
+      <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-10 -translate-x-10 animate-float-delayed" />
+      <div className="absolute top-1/2 left-1/2 w-16 h-16 bg-white/5 rounded-full -translate-x-8 -translate-y-8 animate-float-slow" />
+      
+      {/* Revolutionary Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='20' cy='20' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+        }}></div>
+      </div>
       
       <div className="relative z-10">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-sm font-medium text-blue-100">Weather</h3>
-            <p className="text-xs text-blue-200">{weather.location}</p>
+            <h3 className="font-body text-body-sm font-medium text-white/90">Weather</h3>
+            <p className="font-body text-body-xs text-white/70">{weather.location}</p>
           </div>
-          {getWeatherIcon(weather.condition)}
+          <motion.div
+            whileHover={{ scale: 1.2, rotate: 10 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          >
+            {getWeatherIcon(weather.condition)}
+          </motion.div>
         </div>
         
         {isLoading ? (
-          <div className="flex items-center justify-center py-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+          <div className="flex items-center justify-center py-6">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full"
+            />
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Thermometer size={16} className="text-blue-200" />
-                <span className="text-2xl font-bold">{weather.temperature}°F</span>
+              <div className="flex items-center space-x-3">
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
+                  <Thermometer size={18} className="text-white/80" />
+                </motion.div>
+                <span className="font-display text-h4 text-white">{weather.temperature}°F</span>
               </div>
               <div className="text-right">
-                <p className="text-xs text-blue-200">Humidity: {weather.humidity}%</p>
-                <p className="text-xs text-blue-200">Wind: {weather.windSpeed} mph</p>
+                <p className="font-body text-body-xs text-white/80">Humidity: {weather.humidity}%</p>
+                <p className="font-body text-body-xs text-white/80">Wind: {weather.windSpeed} mph</p>
               </div>
             </div>
             
-            <div className="mt-3 pt-3 border-t border-white/20">
-              <p className="text-xs text-blue-200">
-                Perfect weather for saving! ☀️
+            <motion.div 
+              className="mt-4 pt-4 border-t border-white/20"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+            >
+              <p className="font-body text-body-xs text-white/80 flex items-center">
+                <motion.span
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  className="mr-2"
+                >
+                  ☀️
+                </motion.span>
+                Perfect weather for saving!
               </p>
-            </div>
+            </motion.div>
           </>
         )}
       </div>
@@ -152,4 +186,4 @@ const WeatherWidget = () => {
   );
 };
 
-export default WeatherWidget; 
+export default WeatherWidget;

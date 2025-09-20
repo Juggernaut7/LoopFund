@@ -1,3 +1,6 @@
+/* LoopFund Revolutionary Design System */
+@import './styles/loopfund-design-system.css';
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
@@ -13,9 +16,9 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 210 100% 40%; /* Synergy Blue */
+    --primary: 168 100% 38%; /* LoopFund Emerald */
     --primary-foreground: 210 40% 98%;
-    --secondary: 168 100% 38%; /* Velocity Teal */
+    --secondary: 0 100% 50%; /* LoopFund Coral */
     --secondary-foreground: 222.2 84% 4.9%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -25,7 +28,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 210 100% 40%;
+    --ring: 168 100% 38%;
     --radius: 0.75rem;
   }
 
@@ -36,9 +39,9 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 210 100% 50%; /* Synergy Blue - brighter for dark mode */
+    --primary: 168 100% 45%; /* LoopFund Emerald - brighter for dark mode */
     --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 168 100% 45%; /* Velocity Teal - brighter for dark mode */
+    --secondary: 0 100% 55%; /* LoopFund Coral - brighter for dark mode */
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
@@ -48,15 +51,15 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 210 100% 50%;
+    --ring: 168 100% 45%;
   }
 
   * {
-    @apply border-neutral-200 dark:border-neutral-700;
+    @apply border-loopfund-neutral-300 dark:border-loopfund-neutral-600;
   }
   
   body {
-    @apply bg-neutral-50 dark:bg-dark-bg text-neutral-900 dark:text-dark-text;
+    @apply bg-loopfund-neutral-50 dark:bg-loopfund-dark-bg text-loopfund-neutral-900 dark:text-loopfund-dark-text;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
@@ -70,15 +73,15 @@
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-neutral-100 dark:bg-neutral-800;
+    @apply bg-loopfund-neutral-200 dark:bg-loopfund-neutral-700;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-neutral-300 dark:bg-neutral-600 rounded-full;
+    @apply bg-loopfund-neutral-400 dark:bg-loopfund-neutral-500 rounded-full;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-neutral-400 dark:bg-neutral-500;
+    @apply bg-loopfund-neutral-500 dark:bg-loopfund-neutral-400;
   }
 }
 
@@ -98,11 +101,11 @@
   }
 
   .btn-secondary {
-    @apply bg-white dark:bg-dark-surface text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-95;
+    @apply bg-loopfund-neutral-50 dark:bg-loopfund-dark-surface text-loopfund-neutral-900 dark:text-loopfund-dark-text border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg active:scale-95;
   }
 
   .btn-ghost {
-    @apply text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white font-medium transition-colors duration-200;
+    @apply text-loopfund-neutral-600 dark:text-loopfund-neutral-400 hover:text-loopfund-neutral-900 dark:hover:text-loopfund-dark-text font-medium transition-colors duration-200;
   }
 
   /* Text gradients */
@@ -134,11 +137,11 @@
 
   /* Gradient backgrounds */
   .bg-gradient-hero {
-    @apply bg-gradient-to-br from-neutral-50 via-white to-neutral-100 dark:from-dark-bg dark:via-dark-surface dark:to-dark-bg;
+    @apply bg-gradient-to-br from-loopfund-neutral-50 via-white to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-bg;
   }
 
   .bg-gradient-features {
-    @apply bg-gradient-to-br from-neutral-50 to-white dark:from-dark-bg dark:to-dark-surface;
+    @apply bg-gradient-to-br from-loopfund-neutral-50 to-white dark:from-loopfund-dark-bg dark:to-loopfund-dark-surface;
   }
 
   /* Floating elements */

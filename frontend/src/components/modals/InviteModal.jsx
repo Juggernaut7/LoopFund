@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Copy, Share2, QrCode, Users, Mail, MessageCircle, Link as LinkIcon, Download } from 'lucide-react';
 import QRCode from 'qrcode';
+import LoopFundCard from '../ui/LoopFundCard';
+import LoopFundButton from '../ui/LoopFundButton';
+import LoopFundInput from '../ui/LoopFundInput';
 
 const InviteModal = ({ isOpen, onClose, groupId, groupName, currentMembers = [] }) => {
   const [inviteLink, setInviteLink] = useState('');
@@ -25,6 +28,13 @@ const InviteModal = ({ isOpen, onClose, groupId, groupName, currentMembers = [] 
     }
   }, [isOpen, groupId, inviteLink]);
 
+  // Regenerate QR code when switching to QR tab
+  useEffect(() => {
+    if (inviteMethod === 'qr' && inviteLink && !qrCodeDataUrl) {
+      generateQRCode();
+    }
+  }, [inviteMethod, inviteLink, qrCodeDataUrl]);
+
   const generateInviteData = () => {
     const baseUrl = window.location.origin;
     const link = `${baseUrl}/join/${groupId}`;
@@ -36,17 +46,25 @@ const InviteModal = ({ isOpen, onClose, groupId, groupName, currentMembers = [] 
 
   const generateQRCode = async () => {
     try {
+      if (!inviteLink) {
+        console.warn('No invite link available for QR code generation');
+        return;
+      }
+      
       const dataUrl = await QRCode.toDataURL(inviteLink, {
         width: 200,
         margin: 2,
         color: {
           dark: '#000000',
           light: '#FFFFFF'
-        }
+        },
+        errorCorrectionLevel: 'M'
       });
       setQrCodeDataUrl(dataUrl);
+      console.log('QR code generated successfully:', dataUrl.substring(0, 50) + '...');
     } catch (err) {
       console.error('Failed to generate QR code:', err);
+      setQrCodeDataUrl('');
     }
   };
 
@@ -156,12 +174,26 @@ const InviteModal = ({ isOpen, onClose, groupId, groupName, currentMembers = [] 
   };
 
   const downloadQR = () => {
-    const canvas = document.querySelector('#qr-code canvas');
-    if (canvas) {
+    if (!qrCodeDataUrl) {
+      console.error('No QR code available for download');
+      return;
+    }
+    
+    try {
+      // Create a temporary link element to download the QR code
       const link = document.createElement('a');
-      link.download = `loopfund-invite-${groupName}.png`;
-      link.href = canvas.toDataURL();
+      link.download = `loopfund-invite-${groupName.replace(/[^a-zA-Z0-9]/g, '-')}.png`;
+      link.href = qrCodeDataUrl;
+      link.target = '_blank';
+      
+      // Append to body, click, and remove
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
+      
+      console.log('QR code download initiated');
+    } catch (error) {
+      console.error('Failed to download QR code:', error);
     }
   };
 
@@ -181,239 +213,292 @@ const InviteModal = ({ isOpen, onClose, groupId, groupName, currentMembers = [] 
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
+          className="max-w-2xl w-full max-h-[90vh] overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                Invite Members
-              </h2>
-              <p className="text-slate-600 dark:text-slate-400">
-                Invite friends and family to join "{groupName}"
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
-            >
-              <X className="w-5 h-5 text-slate-500" />
-            </button>
-          </div>
-
-          {/* Content */}
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-            {/* Method Tabs */}
-            <div className="flex space-x-1 mb-6 bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
-              {[
-                { id: 'link', label: 'Invite Link', icon: LinkIcon },
-                { id: 'qr', label: 'QR Code', icon: QrCode },
-                { id: 'email', label: 'Email Invites', icon: Mail },
-                { id: 'share', label: 'Share', icon: Share2 }
-              ].map((method) => (
-                <button
-                  key={method.id}
-                  onClick={() => setInviteMethod(method.id)}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                    inviteMethod === method.id
-                      ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  <method.icon className="w-4 h-4" />
-                  <span>{method.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Current Members */}
-            <div className="mb-6 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-              <div className="flex items-center space-x-2 mb-3">
-                <Users className="w-4 h-4 text-slate-500" />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Current Members ({currentMembers.length})
-                </span>
+          <LoopFundCard variant="elevated" className="overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-loopfund-neutral-200 dark:border-loopfund-neutral-700">
+              <div>
+                <h2 className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                  Invite Members
+                </h2>
+                <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                  Invite friends and family to join "{groupName}"
+                </p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {currentMembers.map((member, index) => (
-                  <div
-                    key={index}
-                    className="px-3 py-1 bg-white dark:bg-slate-600 rounded-full text-xs text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600"
+              <button
+                onClick={onClose}
+                className="p-2 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-loopfund-neutral-500" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+              {/* Method Tabs */}
+              <div className="flex space-x-1 mb-6 bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated rounded-lg p-1">
+                {[
+                  { id: 'link', label: 'Invite Link', icon: LinkIcon },
+                  { id: 'qr', label: 'QR Code', icon: QrCode },
+                  { id: 'email', label: 'Email Invites', icon: Mail },
+                  { id: 'share', label: 'Share', icon: Share2 }
+                ].map((method) => (
+                  <button
+                    key={method.id}
+                    onClick={() => setInviteMethod(method.id)}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-md font-body text-body-sm font-medium transition-all duration-200 ${
+                      inviteMethod === method.id
+                        ? 'bg-loopfund-neutral-50 dark:bg-loopfund-dark-surface text-loopfund-neutral-900 dark:text-loopfund-dark-text shadow-sm'
+                        : 'text-loopfund-neutral-600 dark:text-loopfund-neutral-400'
+                    }`}
                   >
-                    {member.name || member.email}
-                  </div>
+                    <method.icon className="w-4 h-4" />
+                    <span>{method.label}</span>
+                  </button>
                 ))}
               </div>
-            </div>
 
-            {/* Method Content */}
-            <div className="space-y-6">
-              {/* Invite Link */}
-              {inviteMethod === 'link' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      Invite Link
-                    </label>
-                    <div className="flex space-x-2">
-                      <input
-                        type="text"
-                        value={inviteLink}
-                        readOnly
-                        className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white text-sm"
-                      />
-                      <button
-                        onClick={() => copyToClipboard(inviteLink)}
-                        className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
-                          copied
-                            ? 'bg-green-500 text-white'
-                            : 'bg-blue-600 hover:bg-blue-700 text-white'
-                        }`}
-                      >
-                        {copied ? 'Copied!' : <Copy className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      Invite Code
-                    </label>
-                    <div className="flex space-x-2">
-                      <input
-                        type="text"
-                        value={inviteCode}
-                        readOnly
-                        className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white text-sm font-mono text-center"
-                      />
-                      <button
-                        onClick={() => copyToClipboard(inviteCode)}
-                        className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-medium text-sm transition-colors"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
+              {/* Current Members */}
+              <div className="mb-6 p-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-lg">
+                <div className="flex items-center space-x-2 mb-3">
+                  <Users className="w-4 h-4 text-loopfund-neutral-500" />
+                  <span className="font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300">
+                    Current Members ({currentMembers.length})
+                  </span>
                 </div>
-              )}
-
-              {/* QR Code */}
-              {inviteMethod === 'qr' && (
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <div className="inline-block p-4 bg-white rounded-2xl shadow-lg">
-                      <img
-                        id="qr-code"
-                        src={qrCodeDataUrl}
-                        alt="QR Code"
-                        className="w-48 h-48 rounded-lg"
-                      />
+                <div className="flex flex-wrap gap-2">
+                  {currentMembers.map((member, index) => (
+                    <div
+                      key={index}
+                      className="px-3 py-1 bg-loopfund-neutral-50 dark:bg-loopfund-dark-surface rounded-full font-body text-body-xs text-loopfund-neutral-700 dark:text-loopfund-neutral-300 border border-loopfund-neutral-200 dark:border-loopfund-neutral-600"
+                    >
+                      {member.name || member.email}
                     </div>
-                  </div>
-                  <div className="flex justify-center space-x-3">
-                    <button
-                      onClick={downloadQR}
-                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-                    >
-                      <Download className="w-4 h-4" />
-                      <span>Download QR</span>
-                    </button>
-                    <button
-                      onClick={() => copyToClipboard(inviteLink)}
-                      className="flex items-center space-x-2 px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors"
-                    >
-                      <Copy className="w-4 h-4" />
-                      <span>Copy Link</span>
-                    </button>
-                  </div>
+                  ))}
                 </div>
-              )}
+              </div>
 
-              {/* Email Invites */}
-              {inviteMethod === 'email' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      Email Addresses
-                    </label>
-                    <div className="space-y-3">
-                      {emailInvites.map((email, index) => (
-                        <div key={index} className="flex space-x-2">
-                          <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => updateEmail(index, e.target.value)}
-                            placeholder="Enter email address"
-                            className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm"
-                          />
-                          {emailInvites.length > 1 && (
-                            <button
-                              onClick={() => removeEmailField(index)}
-                              className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      ))}
+              {/* Method Content */}
+              <div className="space-y-6">
+                {/* Invite Link */}
+                {inviteMethod === 'link' && (
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
+                        Invite Link
+                      </label>
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          value={inviteLink}
+                          readOnly
+                          className="flex-1 px-3 py-2 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-lg bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated text-loopfund-neutral-900 dark:text-loopfund-dark-text font-body text-body-sm"
+                        />
+                        <LoopFundButton
+                          onClick={() => copyToClipboard(inviteLink)}
+                          variant={copied ? "success" : "primary"}
+                          size="sm"
+                          icon={copied ? null : <Copy className="w-4 h-4" />}
+                        >
+                          {copied ? 'Copied!' : ''}
+                        </LoopFundButton>
+                      </div>
                     </div>
-                    <button
-                      onClick={addEmailField}
-                      className="mt-3 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-                    >
-                      + Add another email
-                    </button>
-                  </div>
-                  
-                  <button
-                    onClick={sendEmailInvites}
-                    disabled={isLoading || emailInvites.every(email => email.trim() === '')}
-                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white rounded-lg font-medium transition-colors disabled:cursor-not-allowed"
-                  >
-                    {isLoading ? 'Sending...' : 'Send Invites'}
-                  </button>
-                </div>
-              )}
-
-              {/* Share */}
-              {inviteMethod === 'share' && (
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <Share2 className="w-16 h-16 text-blue-500 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                      Share Your Group
-                    </h3>
-                    <p className="text-slate-600 dark:text-slate-400 mb-6">
-                      Share this group with friends and family using your preferred method
-                    </p>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      onClick={shareInvite}
-                      className="flex flex-col items-center space-y-2 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
-                    >
-                      <Share2 className="w-6 h-6 text-blue-600" />
-                      <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                        Native Share
-                      </span>
-                    </button>
                     
-                    <button
-                      onClick={() => copyToClipboard(inviteLink)}
-                      className="flex flex-col items-center space-y-2 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
-                    >
-                      <Copy className="w-6 h-6 text-green-600" />
-                      <span className="text-sm font-medium text-green-700 dark:text-green-300">
-                        Copy Link
-                      </span>
-                    </button>
+                    <div>
+                      <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
+                        Invite Code
+                      </label>
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          value={inviteCode}
+                          readOnly
+                          className="flex-1 px-3 py-2 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-lg bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated text-loopfund-neutral-900 dark:text-loopfund-dark-text font-body text-body-sm font-mono text-center"
+                        />
+                        <LoopFundButton
+                          onClick={() => copyToClipboard(inviteCode)}
+                          variant="secondary"
+                          size="sm"
+                          icon={<Copy className="w-4 h-4" />}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+
+                {/* QR Code */}
+                {inviteMethod === 'qr' && (
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <div className="inline-block p-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-2xl shadow-loopfund">
+                        {qrCodeDataUrl ? (
+                          <img
+                            id="qr-code"
+                            src={qrCodeDataUrl}
+                            alt="QR Code for group invitation"
+                            className="w-48 h-48 rounded-lg"
+                            onError={(e) => {
+                              console.error('QR code image failed to load');
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-48 h-48 flex items-center justify-center bg-loopfund-neutral-100 dark:bg-loopfund-dark-surface rounded-lg">
+                            <div className="text-center">
+                              <motion.div
+                                className="w-8 h-8 border-2 border-loopfund-emerald-500 border-t-transparent rounded-full mx-auto mb-2"
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                              />
+                              <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                                Generating QR Code...
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {qrCodeDataUrl && (
+                      <div className="text-center mb-4">
+                        <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                          Scan this QR code to join the group
+                        </p>
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-center space-x-3">
+                      <LoopFundButton
+                        onClick={downloadQR}
+                        variant="primary"
+                        size="md"
+                        icon={<Download className="w-4 h-4" />}
+                        disabled={!qrCodeDataUrl}
+                      >
+                        Download QR
+                      </LoopFundButton>
+                      <LoopFundButton
+                        onClick={() => copyToClipboard(inviteLink)}
+                        variant="secondary"
+                        size="md"
+                        icon={<Copy className="w-4 h-4" />}
+                      >
+                        Copy Link
+                      </LoopFundButton>
+                    </div>
+                    
+                    {!qrCodeDataUrl && (
+                      <div className="text-center">
+                        <LoopFundButton
+                          onClick={generateQRCode}
+                          variant="outline"
+                          size="sm"
+                          icon={<QrCode className="w-4 h-4" />}
+                        >
+                          Generate QR Code
+                        </LoopFundButton>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Email Invites */}
+                {inviteMethod === 'email' && (
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
+                        Email Addresses
+                      </label>
+                      <div className="space-y-3">
+                        {emailInvites.map((email, index) => (
+                          <div key={index} className="flex space-x-2">
+                            <LoopFundInput
+                              type="email"
+                              value={email}
+                              onChange={(e) => updateEmail(index, e.target.value)}
+                              placeholder="Enter email address"
+                              className="flex-1"
+                            />
+                            {emailInvites.length > 1 && (
+                              <LoopFundButton
+                                onClick={() => removeEmailField(index)}
+                                variant="danger"
+                                size="sm"
+                                icon={<X className="w-4 h-4" />}
+                              />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        onClick={addEmailField}
+                        className="mt-3 font-body text-body-sm text-loopfund-emerald-600 dark:text-loopfund-emerald-400 font-medium"
+                      >
+                        + Add another email
+                      </button>
+                    </div>
+                    
+                    <LoopFundButton
+                      onClick={sendEmailInvites}
+                      disabled={isLoading || emailInvites.every(email => email.trim() === '')}
+                      variant="primary"
+                      size="lg"
+                      className="w-full"
+                    >
+                      {isLoading ? 'Sending...' : 'Send Invites'}
+                    </LoopFundButton>
+                  </div>
+                )}
+
+                {/* Share */}
+                {inviteMethod === 'share' && (
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <motion.div 
+                        className="w-16 h-16 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-loopfund"
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        <Share2 className="w-8 h-8 text-white" />
+                      </motion.div>
+                      <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
+                        Share Your Group
+                      </h3>
+                      <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-6">
+                        Share this group with friends and family using your preferred method
+                      </p>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <motion.button
+                        onClick={shareInvite}
+                        className="flex flex-col items-center space-y-2 p-4 bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/20 border border-loopfund-emerald-200 dark:border-loopfund-emerald-700 rounded-lg transition-colors"
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        <Share2 className="w-6 h-6 text-loopfund-emerald-600" />
+                        <span className="font-body text-body-sm font-medium text-loopfund-emerald-700 dark:text-loopfund-emerald-300">
+                          Native Share
+                        </span>
+                      </motion.button>
+                      
+                      <motion.button
+                        onClick={() => copyToClipboard(inviteLink)}
+                        className="flex flex-col items-center space-y-2 p-4 bg-loopfund-coral-50 dark:bg-loopfund-coral-900/20 border border-loopfund-coral-200 dark:border-loopfund-coral-700 rounded-lg transition-colors"
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        <Copy className="w-6 h-6 text-loopfund-coral-600" />
+                        <span className="font-body text-body-sm font-medium text-loopfund-coral-700 dark:text-loopfund-coral-300">
+                          Copy Link
+                        </span>
+                      </motion.button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          </LoopFundCard>
         </motion.div>
       </motion.div>
     </AnimatePresence>

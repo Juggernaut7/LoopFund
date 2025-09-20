@@ -261,97 +261,99 @@ class DashboardService {
     }
   }
 
-  // Replace the getDashboardStats method with this simpler version
+  // Get dashboard stats using the new analytics service
   async getDashboardStats() {
     try {
-      console.log('🔑 Fetching dashboard stats...');
+      console.log('🔑 Fetching dashboard stats from analytics service...');
       
-      // Get user's goals first
-      const goalsResponse = await this.getUserGoals();
-      const goals = goalsResponse.data || [];
-      console.log('🎯 Found goals:', goals.length);
-      
-      // Get all contributions by fetching from each goal
-      const allContributions = [];
-      
-      for (const goal of goals) {
-        try {
-          console.log(`🔍 Fetching contributions for goal: ${goal.name}`);
-          const contributionsResponse = await fetch(`${this.baseURL}/contributions/goal/${goal._id}`, {
-            headers: this.getAuthHeaders()
-          });
-          
-          if (contributionsResponse.ok) {
-            const contributionsData = await contributionsResponse.json();
-            const contributions = contributionsData.data || [];
-            console.log(`💰 Found ${contributions.length} contributions for goal ${goal.name}`);
-            allContributions.push(...contributions);
-          }
-        } catch (error) {
-          console.warn(`⚠️ Failed to fetch contributions for goal ${goal._id}:`, error);
-        }
-      }
-      
-      console.log('📊 Total contributions found:', allContributions.length);
-      console.log('💰 Contribution amounts:', allContributions.map(c => c.amount));
-      
-      // Calculate stats
-      const totalContributed = allContributions.reduce((sum, contrib) => sum + (contrib.amount || 0), 0);
-      const totalContributions = allContributions.length;
-      const averageContribution = totalContributions > 0 ? totalContributed / totalContributions : 0;
-      
-      // Get this month's contributions
-      const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const thisMonthContributions = allContributions.filter(contrib => 
-        new Date(contrib.createdAt) >= startOfMonth
-      );
-      const thisMonthTotal = thisMonthContributions.reduce((sum, contrib) => sum + (contrib.amount || 0), 0);
+      // Use the analytics service that includes Paystack contributions
+      const analyticsResponse = await fetch(`${this.baseURL}/analytics/user`, {
+        headers: this.getAuthHeaders()
+      });
 
-      const activeGoals = goals.filter(goal => !goal.isCompleted).length;
-      
-      // Calculate overall progress
-      const totalGoalAmount = goals.reduce((sum, goal) => sum + (goal.targetAmount || 0), 0);
-      const totalCurrentAmount = goals.reduce((sum, goal) => sum + (goal.currentAmount || 0), 0);
-      const completionRate = totalGoalAmount > 0 ? (totalCurrentAmount / totalGoalAmount) * 100 : 0;
+      console.log('📊 Analytics response status:', analyticsResponse.status);
+
+      if (!analyticsResponse.ok) {
+        const errorText = await analyticsResponse.text();
+        console.error('❌ Analytics response error:', errorText);
+        throw new Error(`Failed to fetch analytics data: ${analyticsResponse.status}`);
+      }
+
+      const analyticsData = await analyticsResponse.json();
+      console.log('📊 Analytics data received:', analyticsData);
+
+      if (!analyticsData.success) {
+        console.error('❌ Analytics data not successful:', analyticsData.error);
+        throw new Error(analyticsData.error || 'Failed to fetch analytics');
+      }
+
+      const { summary, goals, recentActivity } = analyticsData.data;
 
       // Get user profile
       const profileResponse = await this.getUserProfile();
       const user = profileResponse.data;
 
       const stats = {
-        totalContributed,
-        totalContributions,
-        averageContribution: Math.round(averageContribution * 100) / 100,
-        thisMonth: thisMonthTotal,
-        activeGoals,
-        completionRate: Math.round(completionRate * 100) / 100,
-        totalSaved: totalContributed,
-        groupSavings: 0,
-        individualSavings: totalContributed
+        totalContributed: summary.totalSaved || 0,
+        totalContributions: summary.totalContributions || 0,
+        averageContribution: summary.averageContribution || 0,
+        thisMonth: summary.thisMonth || 0,
+        activeGoals: summary.activeGoals || 0,
+        completionRate: summary.completionRate || 0,
+        totalSaved: summary.totalSaved || 0,
+        groupSavings: summary.groupContributions || 0,
+        individualSavings: summary.soloSavings || 0
       };
 
-      console.log('📈 Calculated stats:', stats);
+      console.log('📈 Dashboard stats calculated:', stats);
 
       return {
         success: true,
         data: {
           stats,
           profile: user,
-          goals: goals.slice(0, 4),
-          recentContributions: allContributions.slice(0, 5).map(contrib => ({
-            _id: contrib._id,
-            amount: contrib.amount,
-            goalName: contrib.goalName || 'General Savings',
-            goalType: contrib.goalType || 'individual',
-            createdAt: contrib.createdAt
-          }))
+          goals: goals?.slice(0, 4) || [],
+          recentContributions: recentActivity?.slice(0, 5) || []
         }
       };
 
     } catch (error) {
       console.error('❌ Dashboard service error:', error);
-      throw error;
+      
+      // Fallback to basic stats if analytics fails
+      console.log('🔄 Falling back to basic stats calculation...');
+      try {
+        const goalsResponse = await this.getUserGoals();
+        const goals = goalsResponse.data || [];
+        
+        const stats = {
+          totalContributed: 0,
+          totalContributions: 0,
+          averageContribution: 0,
+          thisMonth: 0,
+          activeGoals: goals.filter(g => g.isActive !== false).length,
+          completionRate: 0,
+          totalSaved: 0,
+          groupSavings: 0,
+          individualSavings: 0
+        };
+
+        const profileResponse = await this.getUserProfile();
+        const user = profileResponse.data;
+
+        return {
+          success: true,
+          data: {
+            stats,
+            profile: user,
+            goals: goals.slice(0, 4),
+            recentContributions: []
+          }
+        };
+      } catch (fallbackError) {
+        console.error('❌ Fallback also failed:', fallbackError);
+        throw error; // Throw original error
+      }
     }
   }
 

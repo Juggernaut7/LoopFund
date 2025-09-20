@@ -32,10 +32,13 @@ import {
   AlertCircle,
   Globe,
   Lock,
-  Shield
+  Shield,
+  Sparkles,
+  Crown,
 } from 'lucide-react';
 import communityService from '../../services/communityService';
 import { useAuthStore } from '../../store/useAuthStore';
+import { LoopFundButton, LoopFundCard, LoopFundInput } from '../ui';
 
 const CommunitySearch = () => {
   const { user } = useAuthStore();
@@ -190,30 +193,30 @@ const CommunitySearch = () => {
   const getResultIcon = (result) => {
     switch (result.type) {
       case 'post':
-        return <MessageCircle className="w-5 h-5 text-blue-600" />;
+        return <MessageCircle className="w-5 h-5 text-loopfund-emerald-600" />;
       case 'challenge':
-        return <Target className="w-5 h-5 text-green-600" />;
+        return <Target className="w-5 h-5 text-loopfund-coral-600" />;
       case 'group':
-        return <Users className="w-5 h-5 text-purple-600" />;
+        return <Users className="w-5 h-5 text-loopfund-lavender-600" />;
       case 'resource':
-        return <BookOpen className="w-5 h-5 text-orange-600" />;
+        return <BookOpen className="w-5 h-5 text-loopfund-gold-600" />;
       default:
-        return <MessageCircle className="w-5 h-5 text-gray-600" />;
+        return <MessageCircle className="w-5 h-5 text-loopfund-neutral-600" />;
     }
   };
 
   const getResultColor = (result) => {
     switch (result.type) {
       case 'post':
-        return 'border-blue-200 bg-blue-50';
+        return 'border-loopfund-emerald-200 bg-loopfund-emerald-50 dark:border-loopfund-emerald-800 dark:bg-loopfund-emerald-900/20';
       case 'challenge':
-        return 'border-green-200 bg-green-50';
+        return 'border-loopfund-coral-200 bg-loopfund-coral-50 dark:border-loopfund-coral-800 dark:bg-loopfund-coral-900/20';
       case 'group':
-        return 'border-purple-200 bg-purple-50';
+        return 'border-loopfund-lavender-200 bg-loopfund-lavender-50 dark:border-loopfund-lavender-800 dark:bg-loopfund-lavender-900/20';
       case 'resource':
-        return 'border-orange-200 bg-orange-50';
+        return 'border-loopfund-gold-200 bg-loopfund-gold-50 dark:border-loopfund-gold-800 dark:bg-loopfund-gold-900/20';
       default:
-        return 'border-gray-200 bg-gray-50';
+        return 'border-loopfund-neutral-200 bg-loopfund-neutral-50 dark:border-loopfund-neutral-700 dark:bg-loopfund-dark-elevated';
     }
   };
 
@@ -228,11 +231,11 @@ const CommunitySearch = () => {
   const highlightSearchTerm = (text) => {
     if (!searchTerm) return text;
     const regex = new RegExp(`(${searchTerm})`, 'gi');
-    return text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
+    return text.replace(regex, '<mark class="bg-loopfund-gold-200 dark:bg-loopfund-gold-900/30">$1</mark>');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated">
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
         <motion.div 
@@ -240,11 +243,15 @@ const CommunitySearch = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
+          {/* Floating background elements */}
+          <div className="absolute top-4 right-4 w-20 h-20 bg-gradient-to-r from-loopfund-gold-500/10 to-loopfund-orange-500/10 rounded-full animate-float"></div>
+          <div className="absolute bottom-4 left-4 w-16 h-16 bg-gradient-to-r from-loopfund-electric-500/10 to-loopfund-lavender-500/10 rounded-full animate-float-delayed"></div>
+          
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="font-display text-display-lg text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
               Community Search
             </h1>
-            <p className="text-gray-600">
+            <p className="font-body text-body-lg text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
               Find posts, challenges, groups, and resources in the community
             </p>
           </div>
@@ -255,156 +262,158 @@ const CommunitySearch = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-8"
+          className="mb-8"
         >
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search Input */}
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
+          <LoopFundCard variant="elevated" className="p-6">
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Search Input */}
+              <div className="flex-1">
+                <LoopFundInput
                   type="text"
                   placeholder="Search for posts, challenges, groups, or resources..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+                  icon={<Search size={20} />}
+                  rightIcon={searchTerm ? <X size={20} /> : null}
+                  onRightIconClick={() => setSearchTerm('')}
+                  className="w-full text-lg"
                 />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                )}
               </div>
+
+              {/* Search Type */}
+              <div className="flex items-center space-x-2">
+                <select
+                  value={searchType}
+                  onChange={(e) => setSearchType(e.target.value)}
+                  className="px-3 py-3 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-xl bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated text-loopfund-neutral-900 dark:text-loopfund-dark-text focus:ring-2 focus:ring-loopfund-emerald-500 focus:border-transparent font-body text-body"
+                >
+                  {searchTypes.map((type) => (
+                    <option key={type.id} value={type.id}>{type.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Filters Toggle */}
+              <LoopFundButton
+                onClick={() => setShowFilters(!showFilters)}
+                variant={showFilters ? "primary" : "secondary"}
+                size="lg"
+                icon={<Filter size={16} />}
+              >
+                Filters
+              </LoopFundButton>
             </div>
 
-            {/* Search Type */}
-            <div className="flex items-center space-x-2">
-              <select
-                value={searchType}
-                onChange={(e) => setSearchType(e.target.value)}
-                className="px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {searchTypes.map((type) => (
-                  <option key={type.id} value={type.id}>{type.name}</option>
-                ))}
-              </select>
-            </div>
+            {/* Advanced Filters */}
+            <AnimatePresence>
+              {showFilters && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-6 pt-6 border-t border-loopfund-neutral-200 dark:border-loopfund-neutral-700"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Category Filter */}
+                    <div>
+                      <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
+                        Category
+                      </label>
+                      <select
+                        value={filters.category}
+                        onChange={(e) => handleFilterChange('category', e.target.value)}
+                        className="w-full px-3 py-2 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-xl bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated text-loopfund-neutral-900 dark:text-loopfund-dark-text focus:ring-2 focus:ring-loopfund-emerald-500 focus:border-transparent font-body text-body"
+                      >
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>{category.name}</option>
+                        ))}
+                      </select>
+                    </div>
 
-            {/* Filters Toggle */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-colors ${
-                showFilters 
-                  ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              <Filter className="w-4 h-4" />
-              <span>Filters</span>
-            </button>
-          </div>
+                    {/* Mood Filter */}
+                    <div>
+                      <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
+                        Mood
+                      </label>
+                      <select
+                        value={filters.mood}
+                        onChange={(e) => handleFilterChange('mood', e.target.value)}
+                        className="w-full px-3 py-2 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-xl bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated text-loopfund-neutral-900 dark:text-loopfund-dark-text focus:ring-2 focus:ring-loopfund-emerald-500 focus:border-transparent font-body text-body"
+                      >
+                        {moods.map((mood) => (
+                          <option key={mood.id} value={mood.id}>
+                            {mood.icon} {mood.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-          {/* Advanced Filters */}
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-6 pt-6 border-t border-gray-200"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {/* Category Filter */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Category
-                    </label>
-                    <select
-                      value={filters.category}
-                      onChange={(e) => handleFilterChange('category', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      {categories.map((category) => (
-                        <option key={category.id} value={category.id}>{category.name}</option>
-                      ))}
-                    </select>
+                    {/* Date Range Filter */}
+                    <div>
+                      <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
+                        Date Range
+                      </label>
+                      <select
+                        value={filters.dateRange}
+                        onChange={(e) => handleFilterChange('dateRange', e.target.value)}
+                        className="w-full px-3 py-2 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-xl bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated text-loopfund-neutral-900 dark:text-loopfund-dark-text focus:ring-2 focus:ring-loopfund-emerald-500 focus:border-transparent font-body text-body"
+                      >
+                        {dateRanges.map((range) => (
+                          <option key={range.id} value={range.id}>{range.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Engagement Filter */}
+                    <div>
+                      <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
+                        Engagement
+                      </label>
+                      <select
+                        value={filters.engagement}
+                        onChange={(e) => handleFilterChange('engagement', e.target.value)}
+                        className="w-full px-3 py-2 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-xl bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated text-loopfund-neutral-900 dark:text-loopfund-dark-text focus:ring-2 focus:ring-loopfund-emerald-500 focus:border-transparent font-body text-body"
+                      >
+                        {engagementLevels.map((level) => (
+                          <option key={level.id} value={level.id}>{level.name}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
-                  {/* Mood Filter */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Mood
-                    </label>
-                    <select
-                      value={filters.mood}
-                      onChange={(e) => handleFilterChange('mood', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  {/* Clear Filters */}
+                  <div className="mt-4 flex justify-end">
+                    <LoopFundButton
+                      onClick={clearFilters}
+                      variant="secondary"
+                      size="sm"
+                      icon={<X size={16} />}
                     >
-                      {moods.map((mood) => (
-                        <option key={mood.id} value={mood.id}>
-                          {mood.icon} {mood.name}
-                        </option>
-                      ))}
-                    </select>
+                      Clear All Filters
+                    </LoopFundButton>
                   </div>
-
-                  {/* Date Range Filter */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Date Range
-                    </label>
-                    <select
-                      value={filters.dateRange}
-                      onChange={(e) => handleFilterChange('dateRange', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      {dateRanges.map((range) => (
-                        <option key={range.id} value={range.id}>{range.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Engagement Filter */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Engagement
-                    </label>
-                    <select
-                      value={filters.engagement}
-                      onChange={(e) => handleFilterChange('engagement', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      {engagementLevels.map((level) => (
-                        <option key={level.id} value={level.id}>{level.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Clear Filters */}
-                <div className="mt-4 flex justify-end">
-                  <button
-                    onClick={clearFilters}
-                    className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                  >
-                    Clear All Filters
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </LoopFundCard>
         </motion.div>
 
         {/* Search Results */}
         <div className="space-y-6">
           {loading && (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Searching...</p>
-            </div>
+            <motion.div 
+              className="text-center py-12"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6 }}
+            >
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                className="w-12 h-12 border-4 border-loopfund-emerald-200 border-t-loopfund-emerald-600 rounded-full mx-auto"
+              ></motion.div>
+              <p className="mt-4 font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Searching...</p>
+            </motion.div>
           )}
 
           {!loading && searchResults && searchResults.length > 0 && (
@@ -414,10 +423,10 @@ const CommunitySearch = () => {
               transition={{ delay: 0.2 }}
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">
+                <h2 className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
                   Search Results ({searchResults.length})
                 </h2>
-                <p className="text-sm text-gray-600">
+                <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
                   Showing results for "{searchTerm}"
                 </p>
               </div>
@@ -429,114 +438,143 @@ const CommunitySearch = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className={`bg-white rounded-xl p-6 shadow-sm border ${getResultColor(result)} hover:shadow-md transition-shadow`}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    className="cursor-pointer"
                   >
-                    <div className="flex items-start space-x-4">
-                      {/* Result Icon */}
-                      <div className="flex-shrink-0">
-                        {getResultIcon(result)}
-                      </div>
+                    <LoopFundCard variant="elevated" className={`p-6 hover:shadow-loopfund-lg transition-all duration-300 ${getResultColor(result)}`}>
+                      <div className="flex items-start space-x-4">
+                        {/* Result Icon */}
+                        <motion.div 
+                          className="flex-shrink-0"
+                          whileHover={{ scale: 1.1, rotate: 5 }}
+                        >
+                          {getResultIcon(result)}
+                        </motion.div>
 
-                      {/* Result Content */}
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <h3 className="font-semibold text-gray-900 mb-1">
-                              <span dangerouslySetInnerHTML={{ __html: highlightSearchTerm(result.title) }} />
-                            </h3>
-                            <div className="flex items-center space-x-4 text-sm text-gray-500">
-                              <span className="flex items-center space-x-1">
-                                <Clock className="w-3 h-3" />
-                                <span>{formatDate(result.createdAt)}</span>
-                              </span>
-                              {result.author && (
+                        {/* Result Content */}
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <h3 className="font-display font-semibold text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-1">
+                                <span dangerouslySetInnerHTML={{ __html: highlightSearchTerm(result.title) }} />
+                              </h3>
+                              <div className="flex items-center space-x-4 font-body text-sm text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
                                 <span className="flex items-center space-x-1">
-                                  <Users className="w-3 h-3" />
-                                  <span>{result.author.name}</span>
+                                  <Clock className="w-3 h-3" />
+                                  <span>{formatDate(result.createdAt)}</span>
                                 </span>
-                              )}
-                              {result.type && (
-                                <span className="capitalize bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
-                                  {result.type}
+                                {result.author && (
+                                  <span className="flex items-center space-x-1">
+                                    <Users className="w-3 h-3" />
+                                    <span>{result.author.name}</span>
+                                  </span>
+                                )}
+                                {result.type && (
+                                  <span className="capitalize bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated text-loopfund-neutral-700 dark:text-loopfund-neutral-300 px-2 py-1 rounded-full text-xs font-body">
+                                    {result.type}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Result Description */}
+                          {result.description && (
+                            <p className="font-body text-body text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-3 line-clamp-2">
+                              <span dangerouslySetInnerHTML={{ __html: highlightSearchTerm(result.description) }} />
+                            </p>
+                          )}
+
+                          {/* Result Tags */}
+                          {result.tags && result.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              {result.tags.slice(0, 5).map((tag, tagIndex) => (
+                                <motion.span
+                                  key={tagIndex}
+                                  className="px-2 py-1 bg-loopfund-emerald-100 dark:bg-loopfund-emerald-900/20 text-loopfund-emerald-700 dark:text-loopfund-emerald-300 text-xs rounded-full font-body"
+                                  whileHover={{ scale: 1.05 }}
+                                >
+                                  #{tag}
+                                </motion.span>
+                              ))}
+                              {result.tags.length > 5 && (
+                                <span className="px-2 py-1 bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated text-loopfund-neutral-600 dark:text-loopfund-neutral-400 text-xs rounded-full font-body">
+                                  +{result.tags.length - 5} more
                                 </span>
                               )}
                             </div>
-                          </div>
-                        </div>
+                          )}
 
-                        {/* Result Description */}
-                        {result.description && (
-                          <p className="text-gray-700 mb-3 line-clamp-2">
-                            <span dangerouslySetInnerHTML={{ __html: highlightSearchTerm(result.description) }} />
-                          </p>
-                        )}
-
-                        {/* Result Tags */}
-                        {result.tags && result.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            {result.tags.slice(0, 5).map((tag, tagIndex) => (
-                              <span
-                                key={tagIndex}
-                                className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"
-                              >
-                                #{tag}
-                              </span>
-                            ))}
-                            {result.tags.length > 5 && (
-                              <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                                +{result.tags.length - 5} more
-                              </span>
+                          {/* Result Stats */}
+                          <div className="flex items-center space-x-6 font-body text-sm text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
+                            {result.engagement && (
+                              <>
+                                <motion.span 
+                                  className="flex items-center space-x-1"
+                                  whileHover={{ scale: 1.05 }}
+                                >
+                                  <Heart className="w-3 h-3 text-loopfund-coral-500" />
+                                  <span>{result.engagement.likes || 0}</span>
+                                </motion.span>
+                                <motion.span 
+                                  className="flex items-center space-x-1"
+                                  whileHover={{ scale: 1.05 }}
+                                >
+                                  <MessageCircle className="w-3 h-3 text-loopfund-emerald-500" />
+                                  <span>{result.engagement.comments || 0}</span>
+                                </motion.span>
+                                <motion.span 
+                                  className="flex items-center space-x-1"
+                                  whileHover={{ scale: 1.05 }}
+                                >
+                                  <Share2 className="w-3 h-3 text-loopfund-gold-500" />
+                                  <span>{result.engagement.shares || 0}</span>
+                                </motion.span>
+                                <motion.span 
+                                  className="flex items-center space-x-1"
+                                  whileHover={{ scale: 1.05 }}
+                                >
+                                  <Eye className="w-3 h-3 text-loopfund-electric-500" />
+                                  <span>{result.engagement.views || 0}</span>
+                                </motion.span>
+                              </>
                             )}
                           </div>
-                        )}
+                        </div>
 
-                        {/* Result Stats */}
-                        <div className="flex items-center space-x-6 text-sm text-gray-500">
-                          {result.engagement && (
-                            <>
-                              <span className="flex items-center space-x-1">
-                                <Heart className="w-3 h-3" />
-                                <span>{result.engagement.likes || 0}</span>
-                              </span>
-                              <span className="flex items-center space-x-1">
-                                <MessageCircle className="w-3 h-3" />
-                                <span>{result.engagement.comments || 0}</span>
-                              </span>
-                              <span className="flex items-center space-x-1">
-                                <Share2 className="w-3 h-3" />
-                                <span>{result.engagement.shares || 0}</span>
-                              </span>
-                              <span className="flex items-center space-x-1">
-                                <Eye className="w-3 h-3" />
-                                <span>{result.engagement.views || 0}</span>
-                              </span>
-                            </>
-                          )}
+                        {/* Action Button */}
+                        <div className="flex-shrink-0">
+                          <LoopFundButton
+                            variant="primary"
+                            size="sm"
+                            icon={<ChevronRight size={16} />}
+                          >
+                            View
+                          </LoopFundButton>
                         </div>
                       </div>
-
-                      {/* Action Button */}
-                      <div className="flex-shrink-0">
-                        <button className="flex items-center space-x-1 px-3 py-2 text-blue-600 hover:text-blue-700 font-medium">
-                          <span>View</span>
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
+                    </LoopFundCard>
                   </motion.div>
                 ))}
               </div>
 
               {/* Load More */}
               {hasMore && (
-                <div className="text-center mt-8">
-                  <button
+                <motion.div 
+                  className="text-center mt-8"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <LoopFundButton
                     onClick={loadMore}
-                    className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                    variant="secondary"
+                    size="lg"
+                    icon={<TrendingUp size={18} />}
                   >
                     Load More Results
-                  </button>
-                </div>
+                  </LoopFundButton>
+                </motion.div>
               )}
             </motion.div>
           )}
@@ -548,19 +586,25 @@ const CommunitySearch = () => {
               transition={{ delay: 0.2 }}
               className="text-center py-12"
             >
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No results found</h3>
-              <p className="text-gray-600 mb-4">
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="w-16 h-16 bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated rounded-full flex items-center justify-center mx-auto mb-4"
+              >
+                <Search className="w-8 h-8 text-loopfund-neutral-400" />
+              </motion.div>
+              <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">No results found</h3>
+              <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-4">
                 Try adjusting your search terms or filters
               </p>
-              <button
+              <LoopFundButton
                 onClick={() => setSearchTerm('')}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                variant="primary"
+                size="lg"
+                icon={<X size={18} />}
               >
                 Clear Search
-              </button>
+              </LoopFundButton>
             </motion.div>
           )}
         </div>

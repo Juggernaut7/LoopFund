@@ -12,10 +12,21 @@ import {
   Filter,
   Search,
   Download,
-  Archive
+  Archive,
+  Sparkles,
+  Zap,
+  Crown,
+  Trophy,
+  Target,
+  Users,
+  DollarSign,
+  TrendingUp,
+  CheckCircle,
+  XCircle,
+  AlertTriangle
 } from 'lucide-react';
-import Layout from '../components/layout/Layout';
 import { useToast } from '../context/ToastContext';
+import { LoopFundButton, LoopFundCard, LoopFundInput } from '../components/ui';
 
 const NotificationsPage = () => {
   const [notifications, setNotifications] = useState([]);
@@ -42,7 +53,7 @@ const NotificationsPage = () => {
       if (!response.ok) throw new Error('Failed to fetch notifications');
       
       const data = await response.json();
-      setNotifications(data.data || []);
+      setNotifications(Array.isArray(data.data) ? data.data : []);
     } catch (error) {
       console.error('Error fetching notifications:', error);
       toast.error('Error', 'Failed to load notifications');
@@ -145,335 +156,426 @@ const NotificationsPage = () => {
 
   const getNotificationIcon = (type) => {
     switch (type) {
-      case 'success': return <Check className="w-5 h-5 text-green-500" />;
-      case 'warning': return <AlertCircle className="w-5 h-5 text-yellow-500" />;
-      case 'error': return <AlertCircle className="w-5 h-5 text-red-500" />;
-      case 'info': return <Info className="w-5 h-5 text-blue-500" />;
-      case 'achievement': return <Star className="w-5 h-5 text-purple-500" />;
-      default: return <Bell className="w-5 h-5 text-slate-500" />;
+      case 'success': return <CheckCircle className="w-5 h-5 text-loopfund-emerald-500" />;
+      case 'warning': return <AlertTriangle className="w-5 h-5 text-loopfund-gold-500" />;
+      case 'error': return <XCircle className="w-5 h-5 text-loopfund-coral-500" />;
+      case 'info': return <Info className="w-5 h-5 text-loopfund-electric-500" />;
+      case 'achievement': return <Trophy className="w-5 h-5 text-loopfund-gold-500" />;
+      default: return <Bell className="w-5 h-5 text-loopfund-neutral-500" />;
     }
   };
 
   const getNotificationColor = (type) => {
     switch (type) {
-      case 'success': return 'border-l-green-500 bg-green-50 dark:bg-green-900/20';
-      case 'warning': return 'border-l-yellow-500 bg-yellow-50 dark:bg-yellow-900/20';
-      case 'error': return 'border-l-red-500 bg-red-50 dark:bg-red-900/20';
-      case 'info': return 'border-l-blue-500 bg-blue-50 dark:bg-blue-900/20';
-      case 'achievement': return 'border-l-purple-500 bg-purple-50 dark:bg-purple-900/20';
-      default: return 'border-l-slate-500 bg-slate-50 dark:bg-slate-900/20';
+      case 'success': return 'border-l-loopfund-emerald-500 bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/20';
+      case 'warning': return 'border-l-loopfund-gold-500 bg-loopfund-gold-50 dark:bg-loopfund-gold-900/20';
+      case 'error': return 'border-l-loopfund-coral-500 bg-loopfund-coral-50 dark:bg-loopfund-coral-900/20';
+      case 'info': return 'border-l-loopfund-electric-500 bg-loopfund-electric-50 dark:bg-loopfund-electric-900/20';
+      case 'achievement': return 'border-l-loopfund-gold-500 bg-loopfund-gold-50 dark:bg-loopfund-gold-900/20';
+      default: return 'border-l-loopfund-neutral-500 bg-loopfund-neutral-50 dark:bg-loopfund-neutral-900/20';
     }
   };
 
-  const filteredNotifications = notifications.filter(notification => {
+  const filteredNotifications = (notifications || []).filter(notification => {
+    if (!notification) return false;
     const matchesFilter = filter === 'all' || notification.type === filter;
-    const matchesSearch = notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         notification.message.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (notification.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (notification.message || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesArchived = showArchived ? notification.isArchived : !notification.isArchived;
     
     return matchesFilter && matchesSearch && matchesArchived;
   });
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-  const totalCount = notifications.length;
+  const unreadCount = (notifications || []).filter(n => n && !n.isRead).length;
+  const totalCount = (notifications || []).length;
 
   if (isLoading) {
     return (
-      <Layout>
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center">
           <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full"
-          />
+            className="text-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <motion.div
+              className="w-16 h-16 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-2xl flex items-center justify-center shadow-loopfund mx-auto mb-6"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            >
+              <Bell className="w-8 h-8 text-white" />
+            </motion.div>
+            <h2 className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
+              Loading Notifications
+            </h2>
+            <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+              Fetching your latest updates...
+            </p>
+          </motion.div>
         </div>
-      </Layout>
     );
   }
 
   return (
-    <Layout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-              Notifications
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400 mt-2">
-              Stay updated with your savings progress and achievements
-            </p>
-          </div>
-          <div className="flex items-center space-x-3">
-            {selectedNotifications.length > 0 && (
-              <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                onClick={archiveNotifications}
-                className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
+      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated">
+        <div className="max-w-7xl mx-auto p-6 space-y-8">
+          {/* Header */}
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-between"
+          >
+            <div className="relative">
+              {/* Floating background elements */}
+              <div className="absolute -top-4 -left-4 w-8 h-8 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-full opacity-20 animate-float" />
+              <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-gradient-to-r from-loopfund-coral-500 to-loopfund-orange-500 rounded-full opacity-20 animate-float-delayed" />
+              
+              <h1 className="font-display text-display-lg text-loopfund-neutral-900 dark:text-loopfund-dark-text relative z-10">
+                Notifications
+              </h1>
+              <p className="font-body text-body-lg text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mt-2 relative z-10">
+                Stay updated with your savings progress and achievements
+              </p>
+            </div>
+            <div className="flex items-center space-x-3">
+              {selectedNotifications.length > 0 && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                >
+                  <LoopFundButton
+                    onClick={archiveNotifications}
+                    variant="gold"
+                    size="md"
+                    icon={<Archive className="w-4 h-4" />}
+                  >
+                    Archive ({selectedNotifications.length})
+                  </LoopFundButton>
+                </motion.div>
+              )}
+              <LoopFundButton
+                onClick={markAllAsRead}
+                variant="primary"
+                size="md"
+                icon={<Check className="w-4 h-4" />}
               >
-                <Archive className="w-4 h-4" />
-                <span>Archive ({selectedNotifications.length})</span>
-              </motion.button>
-            )}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={markAllAsRead}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
-            >
-              <Check className="w-4 h-4" />
-              <span>Mark All Read</span>
-            </motion.button>
-          </div>
-        </div>
+                Mark All Read
+              </LoopFundButton>
+            </div>
+          </motion.div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <motion.div
+          {/* Stats Cards */}
+          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700"
+            className="grid grid-cols-1 md:grid-cols-4 gap-6"
           >
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                <Bell className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Total</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalCount}</p>
-              </div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              whileHover={{ scale: 1.02, y: -5 }}
+            >
+              <LoopFundCard variant="elevated" className="p-6 hover:shadow-loopfund-lg transition-all duration-300">
+                <div className="flex items-center space-x-4">
+                  <motion.div 
+                    className="w-12 h-12 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-xl flex items-center justify-center shadow-loopfund"
+                    whileHover={{ rotate: 5, scale: 1.1 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <Bell className="w-6 h-6 text-white" />
+                  </motion.div>
+                  <div>
+                    <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Total</p>
+                    <p className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text">{totalCount}</p>
+                  </div>
+                </div>
+                <motion.div
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  initial={{ scale: 0 }}
+                  whileHover={{ scale: 1 }}
+                >
+                  <Sparkles className="w-4 h-4 text-loopfund-gold-500" />
+                </motion.div>
+              </LoopFundCard>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              whileHover={{ scale: 1.02, y: -5 }}
+            >
+              <LoopFundCard variant="elevated" className="p-6 hover:shadow-loopfund-lg transition-all duration-300">
+                <div className="flex items-center space-x-4">
+                  <motion.div 
+                    className="w-12 h-12 bg-gradient-to-r from-loopfund-coral-500 to-loopfund-orange-500 rounded-xl flex items-center justify-center shadow-loopfund"
+                    whileHover={{ rotate: 5, scale: 1.1 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <AlertCircle className="w-6 h-6 text-white" />
+                  </motion.div>
+                  <div>
+                    <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Unread</p>
+                    <p className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text">{unreadCount}</p>
+                  </div>
+                </div>
+              </LoopFundCard>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              whileHover={{ scale: 1.02, y: -5 }}
+            >
+              <LoopFundCard variant="elevated" className="p-6 hover:shadow-loopfund-lg transition-all duration-300">
+                <div className="flex items-center space-x-4">
+                  <motion.div 
+                    className="w-12 h-12 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-xl flex items-center justify-center shadow-loopfund"
+                    whileHover={{ rotate: 5, scale: 1.1 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <CheckCircle className="w-6 h-6 text-white" />
+                  </motion.div>
+                  <div>
+                    <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Read</p>
+                    <p className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text">{totalCount - unreadCount}</p>
+                  </div>
+                </div>
+              </LoopFundCard>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              whileHover={{ scale: 1.02, y: -5 }}
+            >
+              <LoopFundCard variant="elevated" className="p-6 hover:shadow-loopfund-lg transition-all duration-300">
+                <div className="flex items-center space-x-4">
+                  <motion.div 
+                    className="w-12 h-12 bg-gradient-to-r from-loopfund-gold-500 to-loopfund-orange-500 rounded-xl flex items-center justify-center shadow-loopfund"
+                    whileHover={{ rotate: 5, scale: 1.1 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <Trophy className="w-6 h-6 text-white" />
+                  </motion.div>
+                  <div>
+                    <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Achievements</p>
+                    <p className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                      {(notifications || []).filter(n => n && n.type === 'achievement').length}
+                    </p>
+                  </div>
+                </div>
+              </LoopFundCard>
+            </motion.div>
           </motion.div>
 
-          <motion.div
+          {/* Filters and Search */}
+          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700"
           >
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
-                <AlertCircle className="w-6 h-6 text-red-600" />
+            <LoopFundCard variant="elevated" className="p-6">
+              <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-6">
+                {/* Search */}
+                <div className="flex-1">
+                  <LoopFundInput
+                    type="text"
+                    placeholder="Search notifications..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    icon={<Search className="w-5 h-5" />}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Filter Tabs */}
+                <div className="flex space-x-1 bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated rounded-xl p-1">
+                  {[
+                    { id: 'all', label: 'All', count: totalCount, color: 'emerald' },
+                    { id: 'unread', label: 'Unread', count: unreadCount, color: 'coral' },
+                    { id: 'success', label: 'Success', count: (notifications || []).filter(n => n && n.type === 'success').length, color: 'emerald' },
+                    { id: 'warning', label: 'Warning', count: (notifications || []).filter(n => n && n.type === 'warning').length, color: 'gold' },
+                    { id: 'achievement', label: 'Achievements', count: (notifications || []).filter(n => n && n.type === 'achievement').length, color: 'gold' }
+                  ].map((tab) => (
+                    <motion.button
+                      key={tab.id}
+                      onClick={() => setFilter(tab.id)}
+                      className={`px-4 py-2 rounded-lg text-sm font-body font-medium transition-all duration-300 ${
+                        filter === tab.id
+                          ? `bg-loopfund-${tab.color}-100 dark:bg-loopfund-${tab.color}-900/20 text-loopfund-${tab.color}-700 dark:text-loopfund-${tab.color}-300 shadow-loopfund border border-loopfund-${tab.color}-200 dark:border-loopfund-${tab.color}-800`
+                          : 'text-loopfund-neutral-600 dark:text-loopfund-neutral-400 hover:text-loopfund-neutral-900 dark:hover:text-loopfund-neutral-100 hover:bg-loopfund-neutral-200 dark:hover:bg-loopfund-dark-surface'
+                      }`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {tab.label} ({tab.count})
+                    </motion.button>
+                  ))}
+                </div>
+
+                {/* Archive Toggle */}
+                <div className="flex items-center space-x-3">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      id="showArchived"
+                      checked={showArchived}
+                      onChange={(e) => setShowArchived(e.target.checked)}
+                      className="w-5 h-5 text-loopfund-emerald-600 bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-lg focus:ring-loopfund-emerald-500 focus:ring-2 dark:ring-offset-loopfund-dark-bg"
+                    />
+                  </div>
+                  <label htmlFor="showArchived" className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400 cursor-pointer">
+                    Show Archived
+                  </label>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Unread</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{unreadCount}</p>
-              </div>
-            </div>
+            </LoopFundCard>
           </motion.div>
 
-          <motion.div
+          {/* Notifications List */}
+          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700"
+            className="space-y-4"
           >
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-                <Check className="w-6 h-6 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Read</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalCount - unreadCount}</p>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700"
-          >
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
-                <Star className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Achievements</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {notifications.filter(n => n.type === 'achievement').length}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Filters and Search */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-          <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-6">
-            {/* Search */}
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search notifications..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                />
-              </div>
-            </div>
-
-            {/* Filter Tabs */}
-            <div className="flex space-x-1 bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
-              {[
-                { id: 'all', label: 'All', count: totalCount },
-                { id: 'unread', label: 'Unread', count: unreadCount },
-                { id: 'success', label: 'Success', count: notifications.filter(n => n.type === 'success').length },
-                { id: 'warning', label: 'Warning', count: notifications.filter(n => n.type === 'warning').length },
-                { id: 'achievement', label: 'Achievements', count: notifications.filter(n => n.type === 'achievement').length }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setFilter(tab.id)}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    filter === tab.id
-                      ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            {filteredNotifications.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-16"
+              >
+                <LoopFundCard variant="elevated" className="p-12">
+                  <motion.div
+                    className="w-20 h-20 bg-gradient-to-r from-loopfund-neutral-400 to-loopfund-neutral-500 rounded-2xl flex items-center justify-center shadow-loopfund mx-auto mb-6"
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <Bell className="w-10 h-10 text-white" />
+                  </motion.div>
+                  <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
+                    No notifications found
+                  </h3>
+                  <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                    {searchTerm ? 'Try adjusting your search terms' : 'You\'re all caught up!'}
+                  </p>
+                </LoopFundCard>
+              </motion.div>
+            ) : (
+              filteredNotifications.map((notification, index) => (
+                <motion.div
+                  key={notification._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  whileHover={{ scale: 1.01, y: -2 }}
+                  className={`p-6 rounded-2xl border-l-4 transition-all duration-300 hover:shadow-loopfund ${
+                    getNotificationColor(notification.type)
+                  } ${notification.isRead ? 'opacity-75' : ''} ${
+                    selectedNotifications.includes(notification._id) 
+                      ? 'ring-2 ring-loopfund-emerald-500 bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/30' 
+                      : ''
                   }`}
                 >
-                  {tab.label} ({tab.count})
-                </button>
-              ))}
-            </div>
+                  <div className="flex items-start space-x-4">
+                    {/* Checkbox */}
+                    <input
+                      type="checkbox"
+                      checked={selectedNotifications.includes(notification._id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedNotifications(prev => [...prev, notification._id]);
+                        } else {
+                          setSelectedNotifications(prev => prev.filter(id => id !== notification._id));
+                        }
+                      }}
+                      className="w-5 h-5 text-loopfund-emerald-600 bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-lg focus:ring-loopfund-emerald-500 focus:ring-2 dark:ring-offset-loopfund-dark-bg mt-1"
+                    />
 
-            {/* Archive Toggle */}
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="showArchived"
-                checked={showArchived}
-                onChange={(e) => setShowArchived(e.target.checked)}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <label htmlFor="showArchived" className="text-sm text-slate-600 dark:text-slate-400">
-                Show Archived
-              </label>
-            </div>
-          </div>
-        </div>
+                    {/* Icon */}
+                    <motion.div 
+                      className="flex-shrink-0 p-2 bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated rounded-xl"
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      {getNotificationIcon(notification.type)}
+                    </motion.div>
 
-        {/* Notifications List */}
-        <div className="space-y-3">
-          {filteredNotifications.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700"
-            >
-              <Bell className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
-                No notifications found
-              </h3>
-              <p className="text-slate-600 dark:text-slate-400">
-                {searchTerm ? 'Try adjusting your search terms' : 'You\'re all caught up!'}
-              </p>
-            </motion.div>
-          ) : (
-            filteredNotifications.map((notification, index) => (
-              <motion.div
-                key={notification._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className={`p-4 rounded-xl border-l-4 transition-all duration-200 hover:shadow-md ${
-                  getNotificationColor(notification.type)
-                } ${notification.isRead ? 'opacity-75' : ''} ${
-                  selectedNotifications.includes(notification._id) 
-                    ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/30' 
-                    : ''
-                }`}
-              >
-                <div className="flex items-start space-x-4">
-                  {/* Checkbox */}
-                  <input
-                    type="checkbox"
-                    checked={selectedNotifications.includes(notification._id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedNotifications(prev => [...prev, notification._id]);
-                      } else {
-                        setSelectedNotifications(prev => prev.filter(id => id !== notification._id));
-                      }
-                    }}
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mt-1"
-                  />
-
-                  {/* Icon */}
-                  <div className="flex-shrink-0">
-                    {getNotificationIcon(notification.type)}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className={`text-sm font-medium ${
-                          notification.isRead 
-                            ? 'text-slate-600 dark:text-slate-400' 
-                            : 'text-slate-900 dark:text-white'
-                        }`}>
-                          {notification.title}
-                        </p>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                          {notification.message}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2 ml-4">
-                        {!notification.isRead && (
-                          <button
-                            onClick={() => markAsRead(notification._id)}
-                            className="p-2 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors"
-                            title="Mark as read"
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className={`font-body text-body-sm font-medium ${
+                            notification.isRead 
+                              ? 'text-loopfund-neutral-600 dark:text-loopfund-neutral-400' 
+                              : 'text-loopfund-neutral-900 dark:text-loopfund-dark-text'
+                          }`}>
+                            {notification.title}
+                          </p>
+                          <p className="font-body text-body text-loopfund-neutral-500 dark:text-loopfund-neutral-400 mt-1">
+                            {notification.message}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2 ml-4">
+                          {!notification.isRead && (
+                            <motion.button
+                              onClick={() => markAsRead(notification._id)}
+                              className="p-2 hover:bg-loopfund-emerald-100 dark:hover:bg-loopfund-emerald-900/30 rounded-xl transition-colors"
+                              title="Mark as read"
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              <CheckCircle className="w-4 h-4 text-loopfund-emerald-600" />
+                            </motion.button>
+                          )}
+                          <motion.button
+                            onClick={() => deleteNotification(notification._id)}
+                            className="p-2 hover:bg-loopfund-coral-100 dark:hover:bg-loopfund-coral-900/30 rounded-xl transition-colors"
+                            title="Delete notification"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
                           >
-                            <Check className="w-4 h-4 text-green-600" />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => deleteNotification(notification._id)}
-                          className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                          title="Delete notification"
-                        >
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </button>
-                      </div>
+                            <Trash2 className="w-4 h-4 text-loopfund-coral-600" />
+                          </motion.button>
+                        </div>
                     </div>
 
-                    {/* Metadata */}
-                    <div className="flex items-center space-x-4 mt-3 text-xs text-slate-500 dark:text-slate-400">
-                      <div className="flex items-center space-x-1">
-                        <Clock className="w-3 h-3" />
-                        <span>{new Date(notification.createdAt).toLocaleString()}</span>
+                      {/* Metadata */}
+                      <div className="flex items-center space-x-4 mt-4 text-xs font-body text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
+                        <div className="flex items-center space-x-2">
+                          <Clock className="w-4 h-4" />
+                          <span>{new Date(notification.createdAt).toLocaleString()}</span>
+                        </div>
+                        {notification.category && (
+                          <span className="px-3 py-1 bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated rounded-full font-body text-body-sm">
+                            {notification.category}
+                          </span>
+                        )}
+                        {notification.priority && (
+                          <span className={`px-3 py-1 rounded-full font-body text-body-sm ${
+                            notification.priority === 'high' 
+                              ? 'bg-loopfund-coral-100 text-loopfund-coral-700 dark:bg-loopfund-coral-900/30 dark:text-loopfund-coral-300'
+                              : notification.priority === 'medium'
+                              ? 'bg-loopfund-gold-100 text-loopfund-gold-700 dark:bg-loopfund-gold-900/30 dark:text-loopfund-gold-300'
+                              : 'bg-loopfund-emerald-100 text-loopfund-emerald-700 dark:bg-loopfund-emerald-900/30 dark:text-loopfund-emerald-300'
+                          }`}>
+                            {notification.priority}
+                          </span>
+                        )}
                       </div>
-                      {notification.category && (
-                        <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded-full">
-                          {notification.category}
-                        </span>
-                      )}
-                      {notification.priority && (
-                        <span className={`px-2 py-1 rounded-full ${
-                          notification.priority === 'high' 
-                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                            : notification.priority === 'medium'
-                            ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
-                            : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                        }`}>
-                          {notification.priority}
-                        </span>
-                      )}
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            ))
-          )}
+                </motion.div>
+              ))
+            )}
+          </motion.div>
         </div>
       </div>
-    </Layout>
   );
 };
 

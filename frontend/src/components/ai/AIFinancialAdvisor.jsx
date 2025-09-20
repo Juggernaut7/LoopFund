@@ -12,8 +12,12 @@ import {
   Sparkles,
   BookOpen,
   BarChart3,
-  PiggyBank
+  PiggyBank,
+  X,
+  Crown,
+  Zap
 } from 'lucide-react';
+import { LoopFundButton, LoopFundCard, LoopFundInput } from '../ui';
 
 const AIFinancialAdvisor = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -199,11 +203,24 @@ const AIFinancialAdvisor = () => {
       {/* Floating AI Button */}
       <motion.button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-50"
-        whileHover={{ scale: 1.1 }}
+        className="fixed bottom-6 right-6 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 text-white p-4 rounded-full shadow-loopfund-lg hover:shadow-loopfund-xl transition-all duration-300 z-50"
+        whileHover={{ scale: 1.1, rotate: 5 }}
         whileTap={{ scale: 0.9 }}
+        animate={{ 
+          boxShadow: [
+            "0 10px 25px rgba(16, 185, 129, 0.3)",
+            "0 15px 35px rgba(16, 185, 129, 0.4)",
+            "0 10px 25px rgba(16, 185, 129, 0.3)"
+          ]
+        }}
+        transition={{ duration: 2, repeat: Infinity }}
       >
-        <Brain className="w-6 h-6" />
+        <motion.div
+          animate={{ rotate: [0, 10, -10, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <Brain className="w-6 h-6" />
+        </motion.div>
       </motion.button>
 
       {/* AI Chat Modal */}
@@ -220,63 +237,82 @@ const AIFinancialAdvisor = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col"
+              className="bg-loopfund-neutral-50 dark:bg-loopfund-dark-surface rounded-2xl shadow-loopfund-xl w-full max-w-4xl h-[80vh] flex flex-col border border-loopfund-neutral-200 dark:border-loopfund-neutral-700"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-2xl">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <Brain className="w-8 h-8" />
+              <div className="bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 text-white p-6 rounded-t-2xl relative overflow-hidden">
+                {/* Floating background elements */}
+                <div className="absolute top-4 right-4 w-12 h-12 bg-white/10 rounded-full animate-float"></div>
+                <div className="absolute bottom-4 left-4 w-8 h-8 bg-white/10 rounded-full animate-float-delayed"></div>
+                <div className="absolute top-1/2 right-1/4 w-6 h-6 bg-white/5 rounded-full animate-float-slow"></div>
+                
+                <div className="flex items-center justify-between relative z-10">
+                  <div className="flex items-center space-x-4">
+                    <motion.div
+                      className="p-3 bg-white/20 rounded-xl backdrop-blur-sm"
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <Brain className="w-8 h-8" />
+                    </motion.div>
                     <div>
-                      <h2 className="text-2xl font-bold">LoopFund AI</h2>
-                      <p className="text-blue-100">Your Personal Financial Advisor</p>
+                      <h2 className="text-2xl font-display font-bold">LoopFund AI</h2>
+                      <p className="text-loopfund-neutral-100 font-body">Your Personal Financial Advisor</p>
                     </div>
                   </div>
-                  <button
+                  <motion.button
                     onClick={() => setIsOpen(false)}
-                    className="text-white hover:text-blue-100 transition-colors"
+                    className="p-2 bg-white/20 hover:bg-white/30 rounded-xl transition-colors backdrop-blur-sm"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                   >
-                    ✕
-                  </button>
+                    <X className="w-6 h-6" />
+                  </motion.button>
                 </div>
               </div>
 
               {/* Tab Navigation */}
-              <div className="flex border-b">
-                <button
+              <div className="flex border-b border-loopfund-neutral-200 dark:border-loopfund-neutral-700">
+                <motion.button
                   onClick={() => setActiveTab('chat')}
-                  className={`flex-1 py-3 px-4 text-center transition-colors ${
+                  className={`flex-1 py-4 px-4 text-center transition-all duration-300 font-body ${
                     activeTab === 'chat'
-                      ? 'border-b-2 border-blue-600 text-blue-600'
-                      : 'text-gray-600 hover:text-blue-600'
+                      ? 'border-b-2 border-loopfund-emerald-500 text-loopfund-emerald-600 dark:text-loopfund-emerald-400 bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/20'
+                      : 'text-loopfund-neutral-600 dark:text-loopfund-neutral-400 hover:text-loopfund-emerald-600 dark:hover:text-loopfund-emerald-400 hover:bg-loopfund-neutral-50 dark:hover:bg-loopfund-dark-elevated'
                   }`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <MessageCircle className="w-5 h-5 mx-auto mb-1" />
-                  Chat
-                </button>
-                <button
+                  <MessageCircle className="w-5 h-5 mx-auto mb-2" />
+                  <span className="text-sm font-medium">Chat</span>
+                </motion.button>
+                <motion.button
                   onClick={() => setActiveTab('tools')}
-                  className={`flex-1 py-3 px-4 text-center transition-colors ${
+                  className={`flex-1 py-4 px-4 text-center transition-all duration-300 font-body ${
                     activeTab === 'tools'
-                      ? 'border-b-2 border-blue-600 text-blue-600'
-                      : 'text-gray-600 hover:text-blue-600'
+                      ? 'border-b-2 border-loopfund-coral-500 text-loopfund-coral-600 dark:text-loopfund-coral-400 bg-loopfund-coral-50 dark:bg-loopfund-coral-900/20'
+                      : 'text-loopfund-neutral-600 dark:text-loopfund-neutral-400 hover:text-loopfund-coral-600 dark:hover:text-loopfund-coral-400 hover:bg-loopfund-neutral-50 dark:hover:bg-loopfund-dark-elevated'
                   }`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <Calculator className="w-5 h-5 mx-auto mb-1" />
-                  Tools
-                </button>
-                <button
+                  <Calculator className="w-5 h-5 mx-auto mb-2" />
+                  <span className="text-sm font-medium">Tools</span>
+                </motion.button>
+                <motion.button
                   onClick={() => setActiveTab('tips')}
-                  className={`flex-1 py-3 px-4 text-center transition-colors ${
+                  className={`flex-1 py-4 px-4 text-center transition-all duration-300 font-body ${
                     activeTab === 'tips'
-                      ? 'border-b-2 border-blue-600 text-blue-600'
-                      : 'text-blue-600'
+                      ? 'border-b-2 border-loopfund-gold-500 text-loopfund-gold-600 dark:text-loopfund-gold-400 bg-loopfund-gold-50 dark:bg-loopfund-gold-900/20'
+                      : 'text-loopfund-neutral-600 dark:text-loopfund-neutral-400 hover:text-loopfund-gold-600 dark:hover:text-loopfund-gold-400 hover:bg-loopfund-neutral-50 dark:hover:bg-loopfund-dark-elevated'
                   }`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <BookOpen className="w-5 h-5 mx-auto mb-1" />
-                  Tips
-                </button>
+                  <BookOpen className="w-5 h-5 mx-auto mb-2" />
+                  <span className="text-sm font-medium">Tips</span>
+                </motion.button>
               </div>
 
               {/* Content Area */}
@@ -284,24 +320,39 @@ const AIFinancialAdvisor = () => {
                 {activeTab === 'chat' && (
                   <div className="flex flex-col h-full">
                     {/* Chat Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    <div className="flex-1 overflow-y-auto p-6 space-y-4">
                       {conversation.length === 0 && (
-                        <div className="text-center text-gray-500 mt-8">
-                          <Brain className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                          <h3 className="text-xl font-semibold mb-2">Welcome to LoopFund AI!</h3>
-                          <p className="mb-4">Ask me anything about your finances, savings, or investments.</p>
-                          <div className="grid grid-cols-2 gap-2 max-w-md mx-auto">
+                        <motion.div 
+                          className="text-center text-loopfund-neutral-500 dark:text-loopfund-neutral-400 mt-8"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.5 }}
+                        >
+                          <motion.div
+                            animate={{ rotate: [0, 10, -10, 0] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          >
+                            <Brain className="w-16 h-16 mx-auto mb-4 text-loopfund-neutral-300" />
+                          </motion.div>
+                          <h3 className="text-xl font-display font-semibold mb-2 text-loopfund-neutral-900 dark:text-loopfund-dark-text">Welcome to LoopFund AI!</h3>
+                          <p className="mb-6 font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Ask me anything about your finances, savings, or investments.</p>
+                          <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
                             {quickQuestions.slice(0, 4).map((question, index) => (
-                              <button
+                              <motion.button
                                 key={index}
                                 onClick={() => handleQuickQuestion(question)}
-                                className="text-sm bg-blue-50 text-blue-600 p-2 rounded-lg hover:bg-blue-100 transition-colors"
+                                className="text-sm font-body bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/20 text-loopfund-emerald-600 dark:text-loopfund-emerald-400 p-3 rounded-xl hover:bg-loopfund-emerald-100 dark:hover:bg-loopfund-emerald-900/30 transition-all duration-300 border border-loopfund-emerald-200 dark:border-loopfund-emerald-800"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                               >
                                 {question}
-                              </button>
+                              </motion.button>
                             ))}
                           </div>
-                        </div>
+                        </motion.div>
                       )}
                       
                       {conversation.map((msg, index) => (
@@ -314,13 +365,13 @@ const AIFinancialAdvisor = () => {
                           <div
                             className={`max-w-[80%] p-4 rounded-2xl ${
                               msg.type === 'user'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-800'
+                                ? 'bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 text-white shadow-loopfund'
+                                : 'bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated text-loopfund-neutral-900 dark:text-loopfund-dark-text border border-loopfund-neutral-200 dark:border-loopfund-neutral-700'
                             }`}
                           >
-                            {formatMessage(msg.content)}
-                            <div className={`text-xs mt-2 ${
-                              msg.type === 'user' ? 'text-blue-100' : 'text-gray-500'
+                            <div className="font-body text-body">{formatMessage(msg.content)}</div>
+                            <div className={`text-xs mt-2 font-body ${
+                              msg.type === 'user' ? 'text-loopfund-neutral-100' : 'text-loopfund-neutral-500 dark:text-loopfund-neutral-400'
                             }`}>
                               {msg.timestamp.toLocaleTimeString()}
                             </div>
@@ -334,10 +385,10 @@ const AIFinancialAdvisor = () => {
                           animate={{ opacity: 1 }}
                           className="flex justify-start"
                         >
-                          <div className="bg-gray-100 p-4 rounded-2xl">
-                            <div className="flex items-center space-x-2">
-                              <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-                              <span className="text-gray-600">AI is thinking...</span>
+                          <div className="bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated p-4 rounded-2xl border border-loopfund-neutral-200 dark:border-loopfund-neutral-700">
+                            <div className="flex items-center space-x-3">
+                              <Loader2 className="w-5 h-5 animate-spin text-loopfund-emerald-600" />
+                              <span className="text-loopfund-neutral-600 dark:text-loopfund-neutral-400 font-body">AI is thinking...</span>
                             </div>
                           </div>
                         </motion.div>
@@ -347,24 +398,24 @@ const AIFinancialAdvisor = () => {
                     </div>
 
                     {/* Input Area */}
-                    <div className="p-4 border-t">
-                      <div className="flex space-x-2">
-                        <input
+                    <div className="p-6 border-t border-loopfund-neutral-200 dark:border-loopfund-neutral-700">
+                      <div className="flex space-x-3">
+                        <LoopFundInput
                           type="text"
                           value={message}
                           onChange={(e) => setMessage(e.target.value)}
                           onKeyPress={handleKeyPress}
                           placeholder="Ask me about your finances..."
-                          className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           disabled={isLoading}
+                          className="flex-1"
                         />
-                        <button
+                        <LoopFundButton
                           onClick={handleSendMessage}
                           disabled={!message.trim() || isLoading}
-                          className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          <Send className="w-5 h-5" />
-                        </button>
+                          variant="primary"
+                          size="lg"
+                          icon={<Send className="w-5 h-5" />}
+                        />
                       </div>
                     </div>
                   </div>
@@ -372,51 +423,97 @@ const AIFinancialAdvisor = () => {
 
                 {activeTab === 'tools' && (
                   <div className="p-6">
-                    <h3 className="text-xl font-semibold mb-4">Financial Tools</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <button
+                    <div className="flex items-center space-x-3 mb-6">
+                      <motion.div
+                        className="p-2 bg-gradient-to-r from-loopfund-coral-500 to-loopfund-orange-500 rounded-xl shadow-loopfund"
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        <Calculator className="w-6 h-6 text-white" />
+                      </motion.div>
+                      <h3 className="text-xl font-display font-semibold text-loopfund-neutral-900 dark:text-loopfund-dark-text">Financial Tools</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <motion.button
                         onClick={getSavingsPlan}
                         disabled={isLoading}
-                        className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors text-left"
+                        className="p-6 border border-loopfund-neutral-200 dark:border-loopfund-neutral-700 rounded-xl hover:border-loopfund-emerald-300 dark:hover:border-loopfund-emerald-600 hover:bg-loopfund-emerald-50 dark:hover:bg-loopfund-emerald-900/20 transition-all duration-300 text-left group"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
                       >
-                        <Target className="w-8 h-8 text-blue-600 mb-2" />
-                        <h4 className="font-semibold">Savings Plan Generator</h4>
-                        <p className="text-sm text-gray-600">Get a personalized savings plan</p>
-                      </button>
+                        <div className="p-3 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-xl w-fit mb-4 group-hover:scale-110 transition-transform">
+                          <Target className="w-8 h-8 text-white" />
+                        </div>
+                        <h4 className="font-display font-semibold text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">Savings Plan Generator</h4>
+                        <p className="text-sm font-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Get a personalized savings plan</p>
+                      </motion.button>
                       
-                      <button
+                      <motion.button
                         onClick={getBudgetAnalysis}
                         disabled={isLoading}
-                        className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors text-left"
+                        className="p-6 border border-loopfund-neutral-200 dark:border-loopfund-neutral-700 rounded-xl hover:border-loopfund-coral-300 dark:hover:border-loopfund-coral-600 hover:bg-loopfund-coral-50 dark:hover:bg-loopfund-coral-900/20 transition-all duration-300 text-left group"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
                       >
-                        <BarChart3 className="w-8 h-8 text-green-600 mb-2" />
-                        <h4 className="font-semibold">Budget Analysis</h4>
-                        <p className="text-sm text-gray-600">Analyze your spending patterns</p>
-                      </button>
+                        <div className="p-3 bg-gradient-to-r from-loopfund-coral-500 to-loopfund-orange-500 rounded-xl w-fit mb-4 group-hover:scale-110 transition-transform">
+                          <BarChart3 className="w-8 h-8 text-white" />
+                        </div>
+                        <h4 className="font-display font-semibold text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">Budget Analysis</h4>
+                        <p className="text-sm font-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Analyze your spending patterns</p>
+                      </motion.button>
                       
-                      <button
-                        className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors text-left"
+                      <motion.button
+                        className="p-6 border border-loopfund-neutral-200 dark:border-loopfund-neutral-700 rounded-xl hover:border-loopfund-gold-300 dark:hover:border-loopfund-gold-600 hover:bg-loopfund-gold-50 dark:hover:bg-loopfund-gold-900/20 transition-all duration-300 text-left group"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
                       >
-                        <TrendingUp className="w-8 h-8 text-purple-600 mb-2" />
-                        <h4 className="font-semibold">Investment Advice</h4>
-                        <p className="text-sm text-gray-600">Get investment recommendations</p>
-                      </button>
+                        <div className="p-3 bg-gradient-to-r from-loopfund-gold-500 to-loopfund-orange-500 rounded-xl w-fit mb-4 group-hover:scale-110 transition-transform">
+                          <TrendingUp className="w-8 h-8 text-white" />
+                        </div>
+                        <h4 className="font-display font-semibold text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">Investment Advice</h4>
+                        <p className="text-sm font-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Get investment recommendations</p>
+                      </motion.button>
                       
-                      <button
-                        className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors text-left"
+                      <motion.button
+                        className="p-6 border border-loopfund-neutral-200 dark:border-loopfund-neutral-700 rounded-xl hover:border-loopfund-electric-300 dark:hover:border-loopfund-electric-600 hover:bg-loopfund-electric-50 dark:hover:bg-loopfund-electric-900/20 transition-all duration-300 text-left group"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
                       >
-                        <PiggyBank className="w-8 h-8 text-orange-600 mb-2" />
-                        <h4 className="font-semibold">Emergency Fund Calculator</h4>
-                        <p className="text-sm text-gray-600">Calculate your emergency fund needs</p>
-                      </button>
+                        <div className="p-3 bg-gradient-to-r from-loopfund-electric-500 to-loopfund-lavender-500 rounded-xl w-fit mb-4 group-hover:scale-110 transition-transform">
+                          <PiggyBank className="w-8 h-8 text-white" />
+                        </div>
+                        <h4 className="font-display font-semibold text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">Emergency Fund Calculator</h4>
+                        <p className="text-sm font-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Calculate your emergency fund needs</p>
+                      </motion.button>
                     </div>
                   </div>
                 )}
 
                 {activeTab === 'tips' && (
                   <div className="p-6">
-                    <h3 className="text-xl font-semibold mb-4">Quick Financial Tips</h3>
-                    <div className="space-y-3">
+                    <div className="flex items-center space-x-3 mb-6">
+                      <motion.div
+                        className="p-2 bg-gradient-to-r from-loopfund-gold-500 to-loopfund-orange-500 rounded-xl shadow-loopfund"
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        <BookOpen className="w-6 h-6 text-white" />
+                      </motion.div>
+                      <h3 className="text-xl font-display font-semibold text-loopfund-neutral-900 dark:text-loopfund-dark-text">Quick Financial Tips</h3>
+                    </div>
+                    <div className="space-y-4">
                       {[
                         "💰 Pay yourself first - save 20% of your income before spending",
                         "📊 Track your expenses for 30 days to identify spending patterns",
@@ -434,9 +531,9 @@ const AIFinancialAdvisor = () => {
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.1 }}
-                          className="p-3 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg"
+                          className="p-4 bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/20 border-l-4 border-loopfund-emerald-500 rounded-r-xl hover:bg-loopfund-emerald-100 dark:hover:bg-loopfund-emerald-900/30 transition-colors"
                         >
-                          <p className="text-gray-800">{tip}</p>
+                          <p className="text-loopfund-neutral-800 dark:text-loopfund-dark-text font-body text-body">{tip}</p>
                         </motion.div>
                       ))}
                     </div>

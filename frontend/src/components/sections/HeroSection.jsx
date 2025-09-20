@@ -123,7 +123,7 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-responsive-xl font-bold text-neutral-900 dark:text-white leading-tight"
+            className="text-responsive-xl font-bold text-loopfund-neutral-900 dark:text-loopfund-dark-text leading-tight"
           >
             Save Together,{' '}
             <span className="text-gradient">Achieve Together</span>
@@ -134,7 +134,7 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="text-responsive-md text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto leading-relaxed"
+            className="text-responsive-md text-loopfund-neutral-600 dark:text-loopfund-neutral-400 max-w-3xl mx-auto leading-relaxed"
           >
             LoopFund makes group savings simple, transparent, and rewarding. 
             Set goals, invite friends, and track progress together without the awkward money talks.

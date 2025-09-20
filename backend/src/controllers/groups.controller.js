@@ -31,6 +31,15 @@ async function createGroupController(req, res, next) {
 async function joinGroupController(req, res, next) {
   try {
     const group = await joinGroup({ inviteCode: req.body.inviteCode, userId: req.user.userId });
+    
+    // Send notification to group members about new member
+    try {
+      await notificationService.notifyGroupJoin(group._id, req.user.userId);
+    } catch (notificationError) {
+      console.error('Error sending group join notification:', notificationError);
+      // Don't fail the join if notification fails
+    }
+    
     res.json({ success: true, data: group });
   } catch (error) {
     next(error);

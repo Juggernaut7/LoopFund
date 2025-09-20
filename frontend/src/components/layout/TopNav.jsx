@@ -106,24 +106,26 @@ const TopNav = ({ toggleSidebar, isCollapsed, unreadCount = 0 }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
+    <div className="bg-white dark:bg-loopfund-dark-surface border-b border-loopfund-neutral-200/20 dark:border-loopfund-neutral-600/30 shadow-loopfund-sm">
       <div className="flex items-center justify-between px-6 py-4">
         {/* Left Section */}
         <div className="flex items-center space-x-4">
           {/* Mobile Menu Button */}
-          <button
+          <motion.button
             onClick={toggleSidebar}
-            className="lg:hidden p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+            className="lg:hidden p-2 rounded-xl bg-loopfund-neutral-100 dark:bg-loopfund-midnight-800/50 hover:bg-loopfund-neutral-200 dark:hover:bg-loopfund-midnight-700/50 transition-all duration-200"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <Menu size={20} className="text-slate-600 dark:text-slate-300" />
-          </button>
+            <Menu size={20} className="text-loopfund-neutral-600 dark:text-loopfund-neutral-300" />
+          </motion.button>
 
           {/* Page Title */}
           <div className="hidden sm:block">
-            <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
+            <h1 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
               {getPageTitle()}
             </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="font-body text-body-sm text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
               Welcome back, {user?.firstName || user?.name || 'User'}! Here's what's happening today.
             </p>
           </div>
@@ -133,12 +135,12 @@ const TopNav = ({ toggleSidebar, isCollapsed, unreadCount = 0 }) => {
         <div className="flex-1 max-w-md mx-4">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search size={18} className="text-slate-400" />
+              <Search size={18} className="text-loopfund-neutral-400" />
             </div>
             <input
               type="text"
               placeholder="Search goals, groups, or transactions..."
-              className="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-xl bg-loopfund-neutral-50 dark:bg-loopfund-midnight-800/50 text-loopfund-neutral-900 dark:text-loopfund-dark-text placeholder-loopfund-neutral-500 dark:placeholder-loopfund-neutral-400 focus:outline-none focus:ring-2 focus:ring-loopfund-emerald-500 focus:border-transparent transition-all duration-200"
             />
           </div>
         </div>
@@ -150,28 +152,35 @@ const TopNav = ({ toggleSidebar, isCollapsed, unreadCount = 0 }) => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={toggleTheme}
-            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+            className="p-2 rounded-xl bg-loopfund-neutral-100 dark:bg-loopfund-midnight-800/50 hover:bg-loopfund-neutral-200 dark:hover:bg-loopfund-midnight-700/50 transition-all duration-200"
           >
             {isDark ? (
-              <Sun size={18} className="text-yellow-500" />
+              <Sun size={18} className="text-loopfund-gold-500" />
             ) : (
-              <Moon size={18} className="text-slate-600" />
+              <Moon size={18} className="text-loopfund-neutral-600" />
             )}
           </motion.button>
 
           {/* Notifications */}
           <div className="relative">
-            <button
+            <motion.button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+              className="relative p-2 rounded-xl bg-loopfund-neutral-100 dark:bg-loopfund-midnight-800/50 hover:bg-loopfund-neutral-200 dark:hover:bg-loopfund-midnight-700/50 transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <Bell size={18} className="text-slate-600 dark:text-slate-300" />
+              <Bell size={18} className="text-loopfund-neutral-600 dark:text-loopfund-neutral-300" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                <motion.span 
+                  className="absolute -top-1 -right-1 w-5 h-5 bg-loopfund-coral-500 text-white text-xs rounded-full flex items-center justify-center"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
                   {unreadCount}
-                </span>
+                </motion.span>
               )}
-            </button>
+            </motion.button>
 
             {/* Notifications Dropdown */}
             <AnimatePresence>
@@ -189,23 +198,29 @@ const TopNav = ({ toggleSidebar, isCollapsed, unreadCount = 0 }) => {
 
           {/* User Menu */}
           <div className="relative" ref={userMenuRef}>
-            <button
+            <motion.button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex items-center space-x-2 p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+              className="flex items-center space-x-2 p-2 rounded-xl bg-loopfund-neutral-100 dark:bg-loopfund-midnight-800/50 hover:bg-loopfund-neutral-200 dark:hover:bg-loopfund-midnight-700/50 transition-all duration-200"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+              <motion.div 
+                className="w-8 h-8 bg-gradient-to-br from-loopfund-coral-500 to-loopfund-orange-500 rounded-full flex items-center justify-center shadow-lg"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              >
                 <User size={16} className="text-white" />
-              </div>
+              </motion.div>
               <div className="hidden sm:block text-left">
-                <p className="text-sm font-medium text-slate-900 dark:text-white">
+                <p className="font-body text-body-sm font-medium text-loopfund-neutral-900 dark:text-loopfund-dark-text">
                   {user?.firstName ? `${user.firstName} ${user.lastName}` : user?.name || 'User'}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="font-body text-body-xs text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
                   {user?.role || 'User'}
                 </p>
               </div>
-              <ChevronDown size={16} className="text-slate-600 dark:text-slate-300" />
-            </button>
+              <ChevronDown size={16} className="text-loopfund-neutral-600 dark:text-loopfund-neutral-300" />
+            </motion.button>
 
             {/* User Dropdown */}
             <AnimatePresence>
@@ -215,47 +230,51 @@ const TopNav = ({ toggleSidebar, isCollapsed, unreadCount = 0 }) => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 z-50"
+                  className="absolute right-0 mt-2 w-56 bg-white dark:bg-loopfund-dark-surface rounded-xl shadow-loopfund border border-loopfund-neutral-200/20 dark:border-loopfund-neutral-600/30 z-50"
                 >
-                  <div className="p-4 border-b border-slate-200 dark:border-slate-700">
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">
+                  <div className="p-4 border-b border-loopfund-neutral-200/20 dark:border-loopfund-neutral-600/30">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-900 dark:text-loopfund-dark-text">
                       {user?.firstName ? `${user.firstName} ${user.lastName}` : user?.name || 'User'}
                     </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                    <p className="font-body text-body-sm text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
                       {user?.email || 'No email available'}
                     </p>
                   </div>
                   <div className="py-2">
-                    <button 
+                    <motion.button 
                       onClick={handleProfileClick}
-                      className="w-full flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                      className="w-full flex items-center px-4 py-2 font-body text-body-sm text-loopfund-neutral-700 dark:text-loopfund-neutral-300 hover:bg-loopfund-neutral-100 dark:hover:bg-loopfund-midnight-800/50 transition-colors"
+                      whileHover={{ x: 2 }}
                     >
                       <User size={16} className="mr-3" />
                       Profile
-                    </button>
-                    <button 
+                    </motion.button>
+                    <motion.button 
                       onClick={handleSettingsClick}
-                      className="w-full flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                      className="w-full flex items-center px-4 py-2 font-body text-body-sm text-loopfund-neutral-700 dark:text-loopfund-neutral-300 hover:bg-loopfund-neutral-100 dark:hover:bg-loopfund-midnight-800/50 transition-colors"
+                      whileHover={{ x: 2 }}
                     >
                       <Settings size={16} className="mr-3" />
                       Settings
-                    </button>
-                    <button 
+                    </motion.button>
+                    <motion.button 
                       onClick={handleHelpClick}
-                      className="w-full flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                      className="w-full flex items-center px-4 py-2 font-body text-body-sm text-loopfund-neutral-700 dark:text-loopfund-neutral-300 hover:bg-loopfund-neutral-100 dark:hover:bg-loopfund-midnight-800/50 transition-colors"
+                      whileHover={{ x: 2 }}
                     >
                       <HelpCircle size={16} className="mr-3" />
                       Help & Support
-                    </button>
+                    </motion.button>
                   </div>
-                  <div className="border-t border-slate-200 dark:border-slate-700 py-2">
-                    <button 
+                  <div className="border-t border-loopfund-neutral-200/20 dark:border-loopfund-neutral-600/30 py-2">
+                    <motion.button 
                       onClick={handleLogout}
-                      className="w-full flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      className="w-full flex items-center px-4 py-2 font-body text-body-sm text-loopfund-coral-600 dark:text-loopfund-coral-400 hover:bg-loopfund-coral-50 dark:hover:bg-loopfund-coral-900/20 transition-colors"
+                      whileHover={{ x: 2 }}
                     >
                       <LogOut size={16} className="mr-3" />
                       Sign out
-                    </button>
+                    </motion.button>
                   </div>
                 </motion.div>
               )}
@@ -267,4 +286,4 @@ const TopNav = ({ toggleSidebar, isCollapsed, unreadCount = 0 }) => {
   );
 };
 
-export default TopNav; 
+export default TopNav;

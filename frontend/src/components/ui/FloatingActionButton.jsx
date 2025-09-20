@@ -18,7 +18,8 @@ const FloatingActionButton = () => {
     {
       icon: Target,
       label: 'New Goal',
-      color: 'bg-blue-600 hover:bg-blue-700',
+      gradient: 'from-loopfund-emerald-500 to-loopfund-mint-500',
+      hoverGradient: 'from-loopfund-emerald-600 to-loopfund-mint-600',
       action: () => {
         navigate('/goals/create');
         setIsOpen(false);
@@ -27,7 +28,8 @@ const FloatingActionButton = () => {
     {
       icon: Users,
       label: 'Create Group',
-      color: 'bg-blue-600 hover:bg-blue-700',
+      gradient: 'from-loopfund-coral-500 to-loopfund-orange-500',
+      hoverGradient: 'from-loopfund-coral-600 to-loopfund-orange-600',
       action: () => {
         navigate('/groups/create');
         setIsOpen(false);
@@ -36,7 +38,8 @@ const FloatingActionButton = () => {
     {
       icon: Wallet,
       label: 'Make Payment',
-      color: 'bg-blue-600 hover:bg-blue-700',
+      gradient: 'from-loopfund-gold-500 to-loopfund-orange-500',
+      hoverGradient: 'from-loopfund-gold-600 to-loopfund-orange-600',
       action: () => {
         navigate('/contributions/pay');
         setIsOpen(false);
@@ -45,7 +48,8 @@ const FloatingActionButton = () => {
     {
       icon: Sparkles,
       label: 'Quick Save',
-      color: 'bg-blue-600 hover:bg-blue-700',
+      gradient: 'from-loopfund-electric-500 to-loopfund-lavender-500',
+      hoverGradient: 'from-loopfund-electric-600 to-loopfund-lavender-600',
       action: () => {
         navigate('/contributions/quick-save');
         setIsOpen(false);
@@ -71,10 +75,21 @@ const FloatingActionButton = () => {
                 exit={{ opacity: 0, x: 20, scale: 0.8 }}
                 transition={{ delay: index * 0.1 }}
                 onClick={action.action}
-                className={`${action.color} text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center space-x-3 group`}
+                className={`bg-gradient-to-r ${action.gradient} hover:bg-gradient-to-r hover:${action.hoverGradient} text-white p-3 rounded-full shadow-loopfund hover:shadow-loopfund-lg transition-all duration-300 flex items-center space-x-3 group relative overflow-hidden`}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <action.icon size={20} />
-                <span className="text-sm font-medium whitespace-nowrap">
+                {/* Shimmer effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                
+                <motion.div
+                  className="relative z-10"
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
+                  <action.icon size={20} />
+                </motion.div>
+                <span className="font-body text-body-sm font-medium whitespace-nowrap relative z-10">
                   {action.label}
                 </span>
               </motion.button>
@@ -87,8 +102,18 @@ const FloatingActionButton = () => {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+        className="bg-gradient-to-br from-loopfund-emerald-500 to-loopfund-mint-500 hover:from-loopfund-emerald-600 hover:to-loopfund-mint-600 text-white p-4 rounded-full shadow-loopfund hover:shadow-loopfund-lg transition-all duration-300 relative overflow-hidden group"
       >
+        {/* Revolutionary Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='20' cy='20' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}></div>
+        </div>
+        
+        {/* Shimmer effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+        
         <AnimatePresence mode="wait">
           {isOpen ? (
             <motion.div
@@ -97,6 +122,7 @@ const FloatingActionButton = () => {
               animate={{ rotate: 0, opacity: 1 }}
               exit={{ rotate: 90, opacity: 0 }}
               transition={{ duration: 0.2 }}
+              className="relative z-10"
             >
               <X size={24} />
             </motion.div>
@@ -107,6 +133,7 @@ const FloatingActionButton = () => {
               animate={{ rotate: 0, opacity: 1 }}
               exit={{ rotate: -90, opacity: 0 }}
               transition={{ duration: 0.2 }}
+              className="relative z-10"
             >
               <Plus size={24} />
             </motion.div>
@@ -117,4 +144,4 @@ const FloatingActionButton = () => {
   );
 };
 
-export default FloatingActionButton; 
+export default FloatingActionButton;

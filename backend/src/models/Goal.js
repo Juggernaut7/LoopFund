@@ -48,7 +48,15 @@ const GoalSchema = new mongoose.Schema({
   },
   lastContributionDate: { 
     type: Date 
-  }
+  },
+  contributions: [{
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    amount: { type: Number, required: true, min: 0 },
+    description: { type: String, trim: true },
+    paymentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment' },
+    paidAt: { type: Date, default: Date.now },
+    status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'completed' }
+  }]
 }, { 
   timestamps: true 
 });

@@ -3,8 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
-import Logo from './Logo';
-import logo from '../../assets/logo.jpg'; // Add this import
+import LoopFundButton from '../ui/LoopFundButton';
+import logo from '../../assets/logo.jpg';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -38,13 +38,13 @@ const Navigation = () => {
       transition={{ duration: 0.6 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled 
-          ? 'bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-lg border-b border-slate-200/50 dark:border-slate-700/50' 
+          ? 'bg-loopfund-neutral-50/95 dark:bg-loopfund-dark-surface/95 backdrop-blur-md shadow-lg border-b border-loopfund-neutral-200/50 dark:border-loopfund-neutral-600/50' 
           : 'bg-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
-          {/* Logo with Real Image */}
+          {/* Revolutionary Logo */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -52,97 +52,116 @@ const Navigation = () => {
           >
             <Link to="/" className="flex items-center space-x-3 group">
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="w-10 h-10 rounded-xl overflow-hidden shadow-lg"
+                whileHover={{ scale: 1.05, rotate: 5 }}
+                className="w-10 h-10 rounded-xl overflow-hidden shadow-lg bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-coral-500 p-1"
               >
                 <img 
                   src={logo} 
                   alt="LoopFund Logo" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-lg"
                 />
               </motion.div>
-              <span className="text-2xl font-bold text-blue-600">
+              <span className="font-display text-display-sm text-loopfund-midnight-900 dark:text-loopfund-dark-text group-hover:text-gradient transition-all duration-300">
                 LoopFund
               </span>
             </Link>
           </motion.div>
 
-          {/* Desktop Navigation */}
+          {/* Revolutionary Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <Link
+            {navItems.map((item, index) => (
+              <motion.div
                 key={item.name}
-                to={item.path}
-                className={`text-sm font-medium transition-all duration-200 hover:text-blue-600 dark:hover:text-blue-400 ${
-                  isActive(item.path)
-                    ? 'text-blue-600 dark:text-blue-400'
-                    : 'text-slate-700 dark:text-slate-300'
-                }`}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
               >
-                {item.name}
-              </Link>
+                <Link
+                  to={item.path}
+                  className={`font-body text-body-sm font-medium transition-all duration-300 relative group ${
+                    isActive(item.path)
+                      ? 'text-loopfund-emerald-600 dark:text-loopfund-emerald-400'
+                      : 'text-loopfund-neutral-700 dark:text-loopfund-neutral-300 hover:text-loopfund-coral-600 dark:hover:text-loopfund-coral-400'
+                  }`}
+                >
+                  {item.name}
+                  {/* Animated Underline */}
+                  <motion.div
+                    className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-coral-500"
+                    initial={{ width: 0 }}
+                    animate={{ 
+                      width: isActive(item.path) ? '100%' : 0 
+                    }}
+                    whileHover={{ width: '100%' }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                  />
+                </Link>
+              </motion.div>
             ))}
           </div>
 
-          {/* CTA Buttons & Theme Toggle */}
+          {/* Revolutionary CTA Buttons & Theme Toggle */}
           <div className="hidden lg:flex items-center space-x-4">
-            {/* Theme Toggle */}
+            {/* Revolutionary Theme Toggle */}
             <motion.button
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleTheme}
-              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors duration-200"
+              className="p-2 rounded-xl bg-loopfund-neutral-100 dark:bg-loopfund-neutral-800 hover:bg-loopfund-emerald-100 dark:hover:bg-loopfund-emerald-900/30 transition-all duration-300 border border-loopfund-neutral-200 dark:border-loopfund-neutral-700"
               aria-label="Toggle theme"
             >
               {isDark ? (
-                <Sun size={20} className="text-yellow-500" />
+                <Sun size={20} className="text-loopfund-gold-500" />
               ) : (
-                <Moon size={20} className="text-slate-600" />
+                <Moon size={20} className="text-loopfund-midnight-600" />
               )}
             </motion.button>
 
             <Link
               to="/signin"
-              className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              className="font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 hover:text-loopfund-coral-600 dark:hover:text-loopfund-coral-400 transition-colors duration-300"
             >
               Sign In
             </Link>
-            <Link
-              to="/signup"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            <LoopFundButton
+              variant="primary"
+              size="sm"
+              onClick={() => window.location.href = '/signup'}
+              className="group"
             >
               Get Started
-            </Link>
+            </LoopFundButton>
           </div>
 
-          {/* Mobile menu button */}
+          {/* Revolutionary Mobile menu button */}
           <div className="lg:hidden flex items-center space-x-2">
-            {/* Theme Toggle for Mobile */}
+            {/* Revolutionary Theme Toggle for Mobile */}
             <motion.button
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleTheme}
-              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors duration-200"
+              className="p-2 rounded-xl bg-loopfund-neutral-100 dark:bg-loopfund-neutral-800 hover:bg-loopfund-emerald-100 dark:hover:bg-loopfund-emerald-900/30 transition-all duration-300 border border-loopfund-neutral-200 dark:border-loopfund-neutral-700"
               aria-label="Toggle theme"
             >
               {isDark ? (
-                <Sun size={20} className="text-yellow-500" />
+                <Sun size={20} className="text-loopfund-gold-500" />
               ) : (
-                <Moon size={20} className="text-slate-600" />
+                <Moon size={20} className="text-loopfund-midnight-600" />
               )}
             </motion.button>
 
-            <button
+            <motion.button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-lg text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-xl text-loopfund-neutral-700 dark:text-loopfund-neutral-300 hover:text-loopfund-coral-600 dark:hover:text-loopfund-coral-400 hover:bg-loopfund-neutral-100 dark:hover:bg-loopfund-neutral-800 transition-all duration-300"
+              whileTap={{ scale: 0.95 }}
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            </motion.button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Revolutionary Mobile Navigation */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -150,39 +169,49 @@ const Navigation = () => {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="lg:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700"
+            className="lg:hidden bg-loopfund-neutral-50 dark:bg-loopfund-dark-surface border-t border-loopfund-neutral-200 dark:border-loopfund-neutral-600"
           >
             <div className="px-4 py-6 space-y-4">
-              {navItems.map((item) => (
-                <Link
+              {navItems.map((item, index) => (
+                <motion.div
                   key={item.name}
-                  to={item.path}
-                  onClick={() => setIsOpen(false)}
-                  className={`block text-base font-medium transition-colors ${
-                    isActive(item.path)
-                      ? 'text-blue-600 dark:text-blue-400'
-                      : 'text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'
-                  }`}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
                 >
-                  {item.name}
-                </Link>
+                  <Link
+                    to={item.path}
+                    onClick={() => setIsOpen(false)}
+                    className={`block font-body text-body-md font-medium transition-all duration-300 ${
+                      isActive(item.path)
+                        ? 'text-loopfund-emerald-600 dark:text-loopfund-emerald-400'
+                        : 'text-loopfund-neutral-700 dark:text-loopfund-neutral-300 hover:text-loopfund-coral-600 dark:hover:text-loopfund-coral-400'
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                </motion.div>
               ))}
               
-              <div className="pt-4 border-t border-slate-200 dark:border-slate-700 space-y-3">
+              <div className="pt-4 border-t border-loopfund-neutral-200 dark:border-loopfund-neutral-600 space-y-3">
                 <Link
                   to="/signin"
                   onClick={() => setIsOpen(false)}
-                  className="block text-base font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  className="block font-body text-body-md font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 hover:text-loopfund-coral-600 dark:hover:text-loopfund-coral-400 transition-colors duration-300"
                 >
                   Sign In
                 </Link>
-                <Link
-                  to="/signup"
-                  onClick={() => setIsOpen(false)}
-                  className="block w-full text-center px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-lg"
+                <LoopFundButton
+                  variant="primary"
+                  size="md"
+                  onClick={() => {
+                    setIsOpen(false);
+                    window.location.href = '/signup';
+                  }}
+                  className="w-full"
                 >
                   Get Started
-                </Link>
+                </LoopFundButton>
               </div>
             </div>
           </motion.div>

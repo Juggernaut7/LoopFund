@@ -176,7 +176,8 @@ class InvitationService {
       }
 
       // Check if group is full
-      if (invitation.group.members.length >= invitation.group.maxMembers) {
+      const maxMembers = invitation.group.settings?.maxMembers || 50;
+      if (invitation.group.members.length >= maxMembers) {
         throw new Error('This group is full');
       }
 
@@ -336,18 +337,27 @@ class InvitationService {
   async sendJoinNotification(invitation) {
     try {
       const group = await Group.findById(invitation.group);
-      const notifications = group.admins.map(adminId => ({
-        user: adminId,
-        title: 'New Group Member',
-        message: `Someone joined your group using an invite link`,
-        type: 'group_join',
-        data: {
-          groupId: invitation.group,
-          newMemberId: invitation.invitee
-        }
-      }));
+      if (!group) return;
 
-      await Notification.insertMany(notifications);
+      // Get group admins/owners (members with admin or owner role)
+      const admins = group.members.filter(member => 
+        member.role === 'admin' || member.role === 'owner'
+      );
+
+      if (admins.length > 0) {
+        const notifications = admins.map(admin => ({
+          user: admin.user,
+          title: 'New Group Member',
+          message: `Someone joined your group using an invite link`,
+          type: 'group_join',
+          data: {
+            groupId: invitation.group,
+            newMemberId: invitation.invitee
+          }
+        }));
+
+        await Notification.insertMany(notifications);
+      }
     } catch (error) {
       console.error('Failed to send join notification:', error);
     }

@@ -9,6 +9,9 @@ import {
 } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
+import LoopFundCard from '../ui/LoopFundCard';
+import LoopFundButton from '../ui/LoopFundButton';
+import LoopFundInput from '../ui/LoopFundInput';
 
 const JoinGroupModal = ({ isOpen, onClose, inviteCode = '' }) => {
   const [code, setCode] = useState(inviteCode);
@@ -70,80 +73,83 @@ const JoinGroupModal = ({ isOpen, onClose, inviteCode = '' }) => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-md w-full"
+            className="max-w-md w-full"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                Join Group
-              </h2>
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5 text-slate-500" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-6">
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-                </div>
-                <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
-                  Enter Invite Code
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Use the invite code shared with you to join a group
-                </p>
+            <LoopFundCard variant="elevated" className="overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-loopfund-neutral-200 dark:border-loopfund-neutral-700">
+                <h2 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                  Join Group
+                </h2>
+                <button
+                  onClick={onClose}
+                  className="p-2 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-loopfund-neutral-500" />
+                </button>
               </div>
 
-              <form onSubmit={handleJoinGroup} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    Invite Code
-                  </label>
-                  <input
-                    type="text"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value.toUpperCase())}
-                    placeholder="Enter 8-character code"
-                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white text-center text-lg font-mono tracking-wider"
-                    maxLength={8}
-                    required
-                  />
+              {/* Content */}
+              <div className="p-6">
+                <div className="text-center mb-6">
+                  <motion.div 
+                    className="w-16 h-16 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-loopfund"
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <Users className="w-8 h-8 text-white" />
+                  </motion.div>
+                  <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
+                    Enter Invite Code
+                  </h3>
+                  <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                    Use the invite code shared with you to join a group
+                  </p>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isLoading || !code.trim()}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
-                >
-                  {isLoading ? (
-                    <RefreshCw className="w-4 h-4 animate-spin mr-2" />
-                  ) : (
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                  )}
-                  {isLoading ? 'Joining...' : 'Join Group'}
-                </button>
-              </form>
+                <form onSubmit={handleJoinGroup} className="space-y-6">
+                  <div>
+                    <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
+                      Invite Code
+                    </label>
+                    <LoopFundInput
+                      type="text"
+                      value={code}
+                      onChange={(e) => setCode(e.target.value.toUpperCase())}
+                      placeholder="Enter 8-character code"
+                      className="text-center text-lg font-mono tracking-wider"
+                      maxLength={8}
+                      required
+                    />
+                  </div>
 
-              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <div className="flex items-start space-x-3">
-                  <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-                  <div className="text-sm text-blue-800 dark:text-blue-200">
-                    <p className="font-medium mb-1">How to get an invite code?</p>
-                    <ul className="space-y-1 text-xs">
-                      <li>• Ask a group member to share their invite link</li>
-                      <li>• Use a public invite link from social media</li>
-                      <li>• Get invited directly by email</li>
-                    </ul>
+                  <LoopFundButton
+                    type="submit"
+                    disabled={isLoading || !code.trim()}
+                    variant="primary"
+                    size="lg"
+                    className="w-full"
+                    icon={isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                  >
+                    {isLoading ? 'Joining...' : 'Join Group'}
+                  </LoopFundButton>
+                </form>
+
+                <div className="mt-6 p-4 bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/20 rounded-lg">
+                  <div className="flex items-start space-x-3">
+                    <AlertCircle className="w-5 h-5 text-loopfund-emerald-600 dark:text-loopfund-emerald-400 mt-0.5" />
+                    <div className="font-body text-body-sm text-loopfund-emerald-800 dark:text-loopfund-emerald-200">
+                      <p className="font-medium mb-1">How to get an invite code?</p>
+                      <ul className="space-y-1 text-xs">
+                        <li>• Ask a group member to share their invite link</li>
+                        <li>• Use a public invite link from social media</li>
+                        <li>• Get invited directly by email</li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </LoopFundCard>
           </motion.div>
         </motion.div>
       )}

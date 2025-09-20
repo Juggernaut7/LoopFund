@@ -16,6 +16,9 @@ import { useToast } from '../context/ToastContext';
 import { useAuthStore } from '../store/useAuthStore';
 import GoogleOAuthButton from '../components/auth/GoogleOAuthButton';
 import EmailVerification from '../components/auth/EmailVerification';
+import LoopFundButton from '../components/ui/LoopFundButton';
+import LoopFundInput from '../components/ui/LoopFundInput';
+import LoopFundCard from '../components/ui/LoopFundCard';
 import logo from '../assets/logo.jpg';
 
 const SignUpPage = () => {
@@ -152,11 +155,46 @@ const SignUpPage = () => {
     }
   };
 
-  const handleEmailVerified = (verifiedUser, token) => {
+  const handleEmailVerified = async (verifiedUser, token) => {
     // Update the user in the store with verified status
     login(verifiedUser, token || localStorage.getItem('token'));
-    toast.success('Email verified successfully! Welcome to LoopFund!');
-    navigate('/dashboard');
+    
+    // Check if there's a pending invite code after email verification
+    const pendingInviteCode = localStorage.getItem('pendingInviteCode');
+    
+    if (pendingInviteCode) {
+      try {
+        // Auto-join the group after successful email verification
+        const joinResponse = await fetch('http://localhost:4000/api/invitations/join', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token || localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({ inviteCode: pendingInviteCode })
+        });
+
+        const joinData = await joinResponse.json();
+
+        if (joinResponse.ok && joinData.success) {
+          localStorage.removeItem('pendingInviteCode');
+          toast.success('Email verified and group joined successfully!');
+          navigate('/groups');
+        } else {
+          toast.error(joinData.error || 'Failed to join group automatically');
+          toast.success('Email verified successfully! Welcome to LoopFund!');
+          navigate('/dashboard');
+        }
+      } catch (joinError) {
+        console.error('❌ Auto-join error after email verification:', joinError);
+        toast.error('Failed to join group automatically');
+        toast.success('Email verified successfully! Welcome to LoopFund!');
+        navigate('/dashboard');
+      }
+    } else {
+      toast.success('Email verified successfully! Welcome to LoopFund!');
+      navigate('/dashboard');
+    }
   };
 
   const handleBackToSignup = () => {
@@ -178,19 +216,24 @@ const SignUpPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
-      {/* Go Back Button - Top Left (Standard UX) */}
+    <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-white to-loopfund-coral-50 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-coral-900/10 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Revolutionary Background Elements */}
+      <div className="absolute top-20 left-10 w-32 h-32 bg-loopfund-coral-500/10 rounded-full blur-xl animate-float" />
+      <div className="absolute top-40 right-20 w-24 h-24 bg-loopfund-gold-500/10 rounded-full blur-xl animate-float-delayed" />
+      <div className="absolute bottom-40 left-1/4 w-40 h-40 bg-loopfund-emerald-500/10 rounded-full blur-xl animate-float-slow" />
+      
+      {/* Revolutionary Go Back Button */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="absolute top-6 left-6"
+        className="absolute top-6 left-6 z-10"
       >
         <Link
           to="/"
-          className="inline-flex items-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors duration-200 group"
+          className="inline-flex items-center space-x-2 text-loopfund-neutral-600 dark:text-loopfund-neutral-400 transition-all duration-300 group"
         >
-          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-200" />
-          <span className="font-medium">Go Back</span>
+          <ArrowLeft className="w-5 h-5 transition-transform duration-200" />
+          <span className="font-body text-body-sm font-medium">Go Back</span>
         </Link>
       </motion.div>
 
@@ -202,33 +245,33 @@ const SignUpPage = () => {
         className="w-full max-w-4xl"
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-          {/* Left Side - Branding */}
+          {/* Revolutionary Left Side - Branding */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-center lg:text-left"
           >
-            {/* Logo */}
+            {/* Revolutionary Logo */}
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.5, delay: 0.2, type: "spring", stiffness: 200 }}
-              className="w-20 h-20 rounded-2xl overflow-hidden shadow-lg mx-auto lg:mx-0 mb-6"
+              className="w-20 h-20 rounded-2xl overflow-hidden shadow-lg mx-auto lg:mx-0 mb-6 bg-gradient-to-r from-loopfund-coral-500 to-loopfund-gold-500 p-1"
             >
               <img 
                 src={logo} 
                 alt="LoopFund Logo" 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover rounded-xl"
               />
             </motion.div>
             
-            {/* Welcome Text */}
+            {/* Revolutionary Welcome Text */}
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-4"
+              className="font-display text-display-xl text-loopfund-midnight-900 dark:text-loopfund-dark-text mb-4"
             >
               Welcome to LoopFund
             </motion.h1>
@@ -237,12 +280,12 @@ const SignUpPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="text-lg text-slate-600 dark:text-slate-400 mb-8 max-w-md mx-auto lg:mx-0"
+              className="font-body text-body-lg text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-8 max-w-md mx-auto lg:mx-0"
             >
               Start your journey to financial freedom with smart savings and goal tracking
             </motion.p>
             
-            {/* Feature Highlights */}
+            {/* Revolutionary Feature Highlights */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -259,10 +302,14 @@ const SignUpPage = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.4, delay: 0.6 + index * 0.1 }}
-                  className="flex items-center space-x-3"
+                  className="flex items-center space-x-3 group"
                 >
-                  <span className="text-2xl">{feature.icon}</span>
-                  <span className="text-slate-700 dark:text-slate-300 font-medium">
+                  <motion.span 
+                    className="text-2xl transition-transform duration-300"
+                  >
+                    {feature.icon}
+                  </motion.span>
+                  <span className="font-body text-body-md text-loopfund-neutral-700 dark:text-loopfund-neutral-300 font-medium">
                     {feature.text}
                   </span>
                 </motion.div>
@@ -270,30 +317,25 @@ const SignUpPage = () => {
             </motion.div>
           </motion.div>
 
-          {/* Right Side - Form */}
+          {/* Revolutionary Right Side - Form */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="w-full"
           >
-            {/* Form Header */}
+            {/* Revolutionary Form Header */}
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+              <h2 className="font-display text-display-lg text-loopfund-midnight-900 dark:text-loopfund-dark-text mb-2">
                 Create Account
               </h2>
-              <p className="text-slate-600 dark:text-slate-400">
+              <p className="font-body text-body-md text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
                 Join LoopFund and start your savings journey
               </p>
             </div>
 
-            {/* Form Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl border border-slate-200 dark:border-slate-700"
-            >
+            {/* Revolutionary Form Card */}
+            <LoopFundCard variant="glass" className="p-8">
               {/* Google OAuth Button */}
               <div className="mb-6">
                 <GoogleOAuthButton 
@@ -302,13 +344,13 @@ const SignUpPage = () => {
                   className="mb-4"
                 />
                 
-                {/* Divider */}
+                {/* Revolutionary Divider */}
                 <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-slate-300 dark:border-slate-600" />
+                    <div className="w-full border-t border-loopfund-neutral-300 dark:border-loopfund-neutral-600" />
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                    <span className="px-2 bg-loopfund-neutral-50 dark:bg-loopfund-dark-surface text-loopfund-neutral-500 dark:text-loopfund-neutral-400 font-body text-body-sm">
                       Or create account with email
                     </span>
                   </div>
@@ -316,160 +358,101 @@ const SignUpPage = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Name Fields */}
+                {/* Revolutionary Name Fields */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      First Name *
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input
-                        type="text"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                        placeholder="First Name"
-                        required
-                      />
-                    </div>
-                  </div>
+                  <LoopFundInput
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    placeholder="First Name"
+                    label="First Name"
+                    icon={<User className="w-5 h-5" />}
+                    required
+                  />
                   
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      Last Name *
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input
-                        type="text"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                        placeholder="Last Name"
-                        required
-                      />
-                    </div>
-                  </div>
+                  <LoopFundInput
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    placeholder="Last Name"
+                    label="Last Name"
+                    icon={<User className="w-5 h-5" />}
+                    required
+                  />
                 </div>
 
-                {/* Email */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    Email Address *
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      placeholder="Enter your email"
-                      required
-                    />
-                  </div>
-                </div>
+                {/* Revolutionary Email */}
+                <LoopFundInput
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="Enter your email"
+                  label="Email Address"
+                  icon={<Mail className="w-5 h-5" />}
+                  required
+                />
 
-                {/* Password Fields */}
+                {/* Revolutionary Password Fields */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      Password *
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        name="password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        className="w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                        placeholder="Create password"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
+                  <LoopFundInput
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="Create password"
+                    label="Password"
+                    icon={<Lock className="w-5 h-5" />}
+                    required
+                    rightIcon={showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    onRightIconClick={() => setShowPassword(!showPassword)}
+                  />
 
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      Confirm Password *
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleInputChange}
-                        className="w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                        placeholder="Confirm password"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                      >
-                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
+                  <LoopFundInput
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    placeholder="Confirm password"
+                    label="Confirm Password"
+                    icon={<Lock className="w-5 h-5" />}
+                    required
+                    rightIcon={showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    onRightIconClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  />
                 </div>
 
-                {/* Additional Fields */}
+                {/* Revolutionary Additional Fields */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      Phone Number
-                    </label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                        placeholder="Phone number"
-                      />
-                    </div>
-                  </div>
+                  <LoopFundInput
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="Phone number"
+                    label="Phone Number"
+                    icon={<Phone className="w-5 h-5" />}
+                  />
                   
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      Date of Birth
-                    </label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input
-                        type="date"
-                        name="dateOfBirth"
-                        value={formData.dateOfBirth}
-                        onChange={handleInputChange}
-                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      />
-                    </div>
-                  </div>
+                  <LoopFundInput
+                    type="date"
+                    name="dateOfBirth"
+                    value={formData.dateOfBirth}
+                    onChange={handleInputChange}
+                    label="Date of Birth"
+                    icon={<Calendar className="w-5 h-5" />}
+                  />
                 </div>
 
-                {/* Submit Button */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                {/* Revolutionary Submit Button */}
+                <LoopFundButton
                   type="submit"
+                  variant="primary"
+                  size="lg"
                   disabled={isLoading}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-3 px-4 rounded-xl font-medium transition-all duration-200 flex items-center justify-center"
+                  className="w-full group"
                 >
                   {isLoading ? (
                     <>
@@ -479,22 +462,22 @@ const SignUpPage = () => {
                   ) : (
                     'Create Account'
                   )}
-                </motion.button>
+                </LoopFundButton>
 
-                {/* Sign In Link */}
+                {/* Revolutionary Sign In Link */}
                 <div className="text-center">
-                  <p className="text-slate-600 dark:text-slate-400">
+                  <p className="font-body text-body-md text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
                     Already have an account?{' '}
                     <Link 
                       to="/signin" 
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
+                      className="text-loopfund-emerald-600 dark:text-loopfund-emerald-400 font-medium transition-colors duration-300"
                     >
                       Sign In
                     </Link>
                   </p>
                 </div>
               </form>
-            </motion.div>
+            </LoopFundCard>
           </motion.div>
         </div>
       </motion.div>
