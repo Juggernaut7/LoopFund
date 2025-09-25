@@ -51,12 +51,14 @@ import { formatCurrencySimple } from '../utils/currency';
 import { useWallet } from '../hooks/useWallet';
 import WalletCard from '../components/wallet/WalletCard';
 import AddMoneyModal from '../components/wallet/AddMoneyModal';
+import WithdrawModal from '../components/wallet/WithdrawModal';
 
 const DashboardPage = () => {
   const [selectedGoal, setSelectedGoal] = useState(null);
   const [dashboardData, setDashboardData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddMoneyModal, setShowAddMoneyModal] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [error, setError] = useState(null);
   const [realAchievements, setRealAchievements] = useState([]);
   const [achievementsLoading, setAchievementsLoading] = useState(true);
@@ -83,8 +85,18 @@ const DashboardPage = () => {
   };
 
   const handleViewTransactions = () => {
-    // TODO: Implement transaction history
-    toast.info('Coming Soon', 'Transaction history will be available soon');
+    // Navigate to transaction history page
+    window.location.href = '/transactions';
+  };
+
+  const handleWithdraw = () => {
+    setShowWithdrawModal(true);
+  };
+
+  const handleWithdrawSuccess = () => {
+    // Refresh wallet data after successful withdrawal request
+    fetchWallet();
+    setShowWithdrawModal(false);
   };
 
   // Fetch dashboard data on component mount
@@ -417,6 +429,7 @@ const DashboardPage = () => {
             wallet={wallet}
             onAddMoney={handleAddMoney}
             onViewTransactions={handleViewTransactions}
+            onWithdraw={handleWithdraw}
           />
         </div>
 
@@ -775,12 +788,20 @@ const DashboardPage = () => {
       {/* Floating Action Button */}
       <FloatingActionButton />
 
-      {/* Add Money Modal */}
-      <AddMoneyModal
-        isOpen={showAddMoneyModal}
-        onClose={() => setShowAddMoneyModal(false)}
-        onSuccess={handleAddMoneySuccess}
-      />
+        {/* Add Money Modal */}
+        <AddMoneyModal
+          isOpen={showAddMoneyModal}
+          onClose={() => setShowAddMoneyModal(false)}
+          onSuccess={handleAddMoneySuccess}
+        />
+
+        {/* Withdraw Modal */}
+        <WithdrawModal
+          isOpen={showWithdrawModal}
+          onClose={() => setShowWithdrawModal(false)}
+          onSuccess={handleWithdrawSuccess}
+          wallet={wallet}
+        />
     </div>
   );
 };

@@ -19,7 +19,7 @@ const walletSchema = new mongoose.Schema({
   transactions: [{
     type: {
       type: String,
-      enum: ['deposit', 'withdrawal', 'contribution', 'goal_release', 'refund'],
+      enum: ['deposit', 'withdrawal', 'contribution', 'goal_release', 'group_release', 'group_creation_fee', 'goal_creation_fee', 'refund'],
       required: true
     },
     amount: {
@@ -52,6 +52,10 @@ const walletSchema = new mongoose.Schema({
     timestamp: {
       type: Date,
       default: Date.now
+    },
+    metadata: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {}
     }
   }],
   isActive: {

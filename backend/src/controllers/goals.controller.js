@@ -7,15 +7,16 @@ const createGoalController = async (req, res, next) => {
     console.log('User from request:', req.user);
     
     const userId = req.user.userId;
-    const goalData = {
-      ...req.body,
+    const { feeData, ...goalData } = req.body;
+    const finalGoalData = {
+      ...goalData,
       user: userId
     };
 
-    console.log('Goal data to create:', goalData);
+    console.log('Goal data to create:', finalGoalData);
 
     // Validate required fields
-    if (!goalData.name || !goalData.targetAmount) {
+    if (!finalGoalData.name || !finalGoalData.targetAmount) {
       return res.status(400).json({
         success: false,
         error: 'Name and target amount are required'
@@ -23,14 +24,56 @@ const createGoalController = async (req, res, next) => {
     }
 
     // Validate target amount
-    if (goalData.targetAmount <= 0) {
+    if (finalGoalData.targetAmount <= 0) {
       return res.status(400).json({
         success: false,
         error: 'Target amount must be greater than 0'
       });
     }
 
-    const goal = await goalService.createGoal(goalData);
+    // Process wallet deduction if feeData is provided
+    if (feeData && feeData.totalFee > 0) {
+      const Wallet = require('../models/Wallet');
+      
+      // Find user's wallet
+      let wallet = await Wallet.findOne({ user: userId });
+      if (!wallet) {
+        return res.status(404).json({
+          success: false,
+          message: 'Wallet not found. Please create a wallet first.'
+        });
+      }
+      
+      // Check if user has sufficient balance
+      if (wallet.balance < feeData.totalFee) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient wallet balance. Required: ₦${feeData.totalFee.toLocaleString()}, Available: ₦${wallet.balance.toLocaleString()}`
+        });
+      }
+      
+      // Deduct fee from wallet
+      wallet.balance -= feeData.totalFee;
+      
+      // Add transaction record
+      wallet.transactions.push({
+        type: 'goal_creation_fee',
+        amount: -feeData.totalFee, // Negative for deduction
+        description: `Goal creation fee for "${finalGoalData.name}"`,
+        status: 'completed',
+        timestamp: new Date(),
+        metadata: {
+          goalName: finalGoalData.name,
+          targetAmount: finalGoalData.targetAmount,
+          feeBreakdown: feeData
+        }
+      });
+      
+      await wallet.save();
+      console.log(`✅ Goal creation fee of ₦${feeData.totalFee} deducted from wallet`);
+    }
+
+    const goal = await goalService.createGoal(finalGoalData);
 
     res.status(201).json({
       success: true,

@@ -124,10 +124,23 @@ const ContributionsPage = () => {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success('Success', 'Contribution added successfully!');
-        setShowForm(false);
-        fetchContributions();
-        fetchStats();
+        // Check if this is a direct Paystack payment
+        // Check for nested structure first (data.data.data.authorizationUrl)
+        if (data.data && data.data.data && data.data.data.authorizationUrl) {
+          // Open Paystack payment page
+          window.open(data.data.data.authorizationUrl, '_blank');
+          toast.success('Success', 'Payment page opened. Complete payment to add contribution.');
+        } else if (data.data && data.data.authorizationUrl) {
+          // Open Paystack payment page
+          window.open(data.data.authorizationUrl, '_blank');
+          toast.success('Success', 'Payment page opened. Complete payment to add contribution.');
+        } else {
+          // Wallet payment completed immediately
+          toast.success('Success', 'Contribution added successfully!');
+          setShowForm(false);
+          fetchContributions();
+          fetchStats();
+        }
       } else {
         toast.error('Error', data.error || 'Failed to add contribution');
       }

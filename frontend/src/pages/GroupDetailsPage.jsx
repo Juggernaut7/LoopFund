@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useAuthStore } from '../store/useAuthStore';
+import GroupContributionForm from '../components/contributions/GroupContributionForm';
 import { LoopFundButton, LoopFundCard, LoopFundInput } from '../components/ui';
 import GroupChat from '../components/chat/GroupChat';
 import { formatCurrency, formatCurrencySimple } from '../utils/currency';
@@ -139,6 +140,44 @@ const GroupDetailsPage = () => {
     }
   };
 
+  const handleAddContribution = async (contributionData) => {
+    try {
+      const response = await fetch('http://localhost:4000/api/contributions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...contributionData,
+          groupId: group?._id,
+          type: 'group'
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Check if this is a direct Paystack payment
+        if (data.data && data.data.authorizationUrl) {
+          // Open Paystack payment page
+          window.open(data.data.authorizationUrl, '_blank');
+          toast.success('Success', 'Payment page opened. Complete payment to add contribution.');
+        } else {
+          // Wallet payment completed immediately
+          toast.success('Success', 'Contribution added successfully!');
+          setShowContributeModal(false);
+          await fetchGroupDetails();
+        }
+      } else {
+        toast.error('Error', data.error || 'Failed to add contribution');
+      }
+    } catch (error) {
+      console.error('Error adding contribution:', error);
+      toast.error('Error', 'Failed to add contribution. Please try again.');
+    }
+  };
+
   const handleContribute = async (e) => {
     e.preventDefault();
     
@@ -183,8 +222,6 @@ const GroupDetailsPage = () => {
       setIsContributing(false);
     }
   };
-
-  // Remove the old formatCurrency function - now using the global utility
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -740,121 +777,11 @@ const GroupDetailsPage = () => {
           {/* Contribution Modal */}
           <AnimatePresence>
             {showContributeModal && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-              >
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.9, opacity: 0 }}
-                  className="w-full max-w-md"
-                >
-                  <LoopFundCard variant="elevated" className="relative">
-                    {/* Background Elements */}
-                    <div className="absolute inset-0 overflow-hidden">
-                      <div className="absolute -top-10 -right-10 w-20 h-20 bg-gradient-coral opacity-5 rounded-full blur-2xl animate-float" />
-                    </div>
-
-                    <div className="relative p-8">
-                      <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center space-x-4">
-                          <motion.div 
-                            className="w-12 h-12 bg-gradient-coral rounded-2xl flex items-center justify-center shadow-loopfund"
-                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                          >
-                            <Banknote className="w-6 h-6 text-white" />
-                          </motion.div>
-                          <div>
-                            <h3 className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
-                              Contribute to {group.name}
-                            </h3>
-                            <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
-                              Add your contribution to the group goal
-                            </p>
-                          </div>
-                        </div>
-                        <motion.button
-                          onClick={() => setShowContributeModal(false)}
-                          className="p-3 bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated hover:bg-loopfund-neutral-200 dark:hover:bg-loopfund-dark-surface rounded-xl transition-colors"
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          <X className="w-5 h-5 text-loopfund-neutral-600 dark:text-loopfund-neutral-400" />
-                        </motion.button>
-                      </div>
-
-                      <form onSubmit={handleContribute} className="space-y-6">
-                        <div>
-                          <LoopFundInput
-                            type="number"
-                            step="0.01"
-                            min="0.01"
-                            label="Amount"
-                            value={contributionData.amount}
-                            onChange={(e) => setContributionData({ ...contributionData, amount: e.target.value })}
-                            placeholder="1000.00"
-                            icon={<Banknote className="w-5 h-5" />}
-                            required
-                          />
-                        </div>
-
-                        <div className="p-4 bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/20 rounded-xl border border-loopfund-emerald-200 dark:border-loopfund-emerald-800">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-full flex items-center justify-center">
-                              <CreditCard className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                              <h4 className="font-body text-body font-medium text-loopfund-emerald-700 dark:text-loopfund-emerald-300">
-                                Secure Payment via Paystack
-                              </h4>
-                              <p className="font-body text-body-xs text-loopfund-emerald-600 dark:text-loopfund-emerald-400">
-                                Your contribution will be processed securely through Paystack
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block font-body text-body font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-3">
-                            Description (Optional)
-                          </label>
-                          <textarea
-                            value={contributionData.description}
-                            onChange={(e) => setContributionData({ ...contributionData, description: e.target.value })}
-                            placeholder="Add a note about this contribution..."
-                            rows={3}
-                            className="w-full px-4 py-3 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-xl bg-loopfund-neutral-50 dark:bg-loopfund-dark-surface text-loopfund-neutral-900 dark:text-loopfund-dark-text focus:ring-2 focus:ring-loopfund-emerald-500 focus:border-transparent resize-none font-body text-body"
-                          />
-                        </div>
-
-                        <div className="flex space-x-4 pt-6">
-                          <LoopFundButton
-                            type="button"
-                            onClick={() => setShowContributeModal(false)}
-                            variant="secondary"
-                            size="md"
-                            className="flex-1"
-                          >
-                            Cancel
-                          </LoopFundButton>
-                          <LoopFundButton
-                            type="submit"
-                            disabled={isContributing}
-                            variant="primary"
-                            size="lg"
-                            icon={isContributing ? <Loader2 className="w-5 h-5 animate-spin" /> : <CreditCard className="w-5 h-5" />}
-                            className="flex-1"
-                          >
-                            {isContributing ? 'Processing...' : 'Pay with Paystack'}
-                          </LoopFundButton>
-                        </div>
-                      </form>
-                    </div>
-                  </LoopFundCard>
-                </motion.div>
-              </motion.div>
+              <GroupContributionForm
+                group={group}
+                onSubmit={handleAddContribution}
+                onClose={() => setShowContributeModal(false)}
+              />
             )}
           </AnimatePresence>
 

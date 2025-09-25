@@ -4,7 +4,7 @@ import { Calculator, TrendingUp, Clock, DollarSign, Percent, Sparkles, Crown, Za
 import { LoopFundButton, LoopFundCard } from '../ui';
 import api from '../../services/api';
 
-const FeeCalculator = ({ targetAmount, durationMonths, onFeeCalculated }) => {
+const FeeCalculator = ({ targetAmount, durationMonths, maxMembers = 10, onFeeCalculated }) => {
   const [feeData, setFeeData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -193,6 +193,34 @@ const FeeCalculator = ({ targetAmount, durationMonths, onFeeCalculated }) => {
                     <span className="font-body text-body font-medium">Duration</span>
                   </div>
                   <span className="font-display text-h4">{durationMonths} months</span>
+                </div>
+
+                {/* Member Contribution Info */}
+                <div className="p-6 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="w-8 h-8 bg-gradient-electric rounded-xl flex items-center justify-center shadow-loopfund">
+                      <DollarSign className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="font-display text-h4 text-white">
+                      Member Contributions
+                    </span>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-body text-body text-white/90">Total Target:</span>
+                      <span className="font-display text-h4 text-white">₦{targetAmount.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-body text-body text-white/90">Max Members:</span>
+                      <span className="font-display text-h4 text-white">{maxMembers}</span>
+                    </div>
+                    <div className="flex items-center justify-between border-t border-white/20 pt-3">
+                      <span className="font-body text-body font-medium text-white">Per Member:</span>
+                      <span className="font-display text-h3 text-loopfund-gold-400">
+                        ₦{Math.ceil(targetAmount / maxMembers).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Savings Info */}

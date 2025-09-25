@@ -5,6 +5,39 @@ const Payment = require('../models/Payment');
 const { requireAuth } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 
+// Initialize wallet funding payment
+router.post('/initialize-wallet-funding', requireAuth, [
+  body('amount').isNumeric().withMessage('Amount must be a number'),
+  body('description').optional().isString()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false, 
+        errors: errors.array() 
+      });
+    }
+
+    const { amount, description } = req.body;
+    const userId = req.user.userId;
+
+    const result = await paymentService.initializeWalletFunding(
+      userId, 
+      parseFloat(amount), 
+      description || 'Wallet funding'
+    );
+
+    res.json(result);
+  } catch (error) {
+    console.error('Wallet funding initialization error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to initialize wallet funding'
+    });
+  }
+});
+
 // Initialize payment for goal creation
 router.post('/initialize-goal', requireAuth, [
   body('goalName').notEmpty().withMessage('Goal name is required'),
@@ -160,24 +193,38 @@ router.get('/verify/:reference', async (req, res) => {
   try {
     const { reference } = req.params;
     
-    console.log('Payment verification request for reference:', reference);
+    console.log('🔍 Payment verification request for reference:', reference);
+    console.log('🔍 Request headers:', req.headers);
     
     if (!reference) {
+      console.log('❌ No reference provided');
       return res.status(400).json({
         success: false,
         message: 'Payment reference is required'
       });
     }
 
+    // Debug: List recent payments to see what's in the database
+    console.log('🔍 Checking recent payments in database...');
+    const recentPayments = await Payment.find({})
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select('reference paystackData.paystackReference type status amount createdAt');
+    console.log('📊 Recent payments:', recentPayments);
+
+    console.log('🔍 Calling paymentService.verifyPayment...');
     const verificationResult = await paymentService.verifyPayment(reference);
+    console.log('📊 Verification result:', verificationResult);
 
     if (!verificationResult.success) {
+      console.log('❌ Verification failed:', verificationResult.error);
       return res.status(400).json({
         success: false,
         message: verificationResult.error
       });
     }
 
+    console.log('✅ Verification successful');
     res.json({
       success: true,
       message: 'Payment verified successfully',
@@ -185,7 +232,7 @@ router.get('/verify/:reference', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Payment verification error:', error);
+    console.error('❌ Payment verification error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error'

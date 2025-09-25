@@ -1,377 +1,235 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, Clock, AlertCircle, ArrowRight, Sparkles, Crown, Zap, Loader2 } from 'lucide-react';
-import { useAuthStore } from '../store/useAuthStore';
-import { LoopFundButton, LoopFundCard } from '../components/ui';
-import api from '../services/api';
+import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 const PaymentVerificationPage = () => {
-  const { reference } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
-  const [verificationStatus, setVerificationStatus] = useState('verifying'); // 'verifying', 'success', 'failed', 'pending'
+  const { toast } = useToast();
+  const [verificationStatus, setVerificationStatus] = useState('verifying');
   const [paymentData, setPaymentData] = useState(null);
-  const [error, setError] = useState('');
-  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
+    // Get reference from URL path (from useParams) or query parameters
+    const pathname = window.location.pathname;
+    const referenceFromPath = pathname.split('/payment/verify/')[1];
+    const referenceFromQuery = searchParams.get('reference') || searchParams.get('trxref');
+    const reference = referenceFromPath || referenceFromQuery;
+    
+    console.log('🔍 URL pathname:', pathname);
+    console.log('🔍 Reference from path:', referenceFromPath);
+    console.log('🔍 Reference from query:', referenceFromQuery);
+    console.log('🔍 Final reference:', reference);
+    console.log('🔍 All search params:', Object.fromEntries(searchParams.entries()));
+    
     if (reference) {
-      verifyPayment();
+      verifyPayment(reference);
+    } else {
+      console.error('❌ No reference found in URL');
+      setVerificationStatus('error');
     }
-  }, [reference]);
+  }, [searchParams]);
 
-  const verifyPayment = async () => {
+  const verifyPayment = async (reference) => {
     try {
-      setVerificationStatus('verifying');
-      setError('');
-
-      console.log('Verifying payment with reference:', reference);
-      const response = await api.get(`/payments/verify/${reference}`);
+      console.log('🔍 Verifying payment with reference:', reference);
+      console.log('🔍 Auth token:', localStorage.getItem('authToken') ? 'Present' : 'Missing');
+      console.log('🔍 API URL:', `http://localhost:4000/api/payments/verify/${reference}`);
       
-      console.log('Payment verification response:', response.data);
-      
-      if (response.data.success) {
-        const data = response.data.data;
-        setPaymentData(data);
-        console.log('Payment data:', data);
-        
-        if (data.status === 'success') {
-          setVerificationStatus('success');
-          
-          console.log('Payment successful, checking for created items:', {
-            groupId: data.groupId,
-            goalId: data.goalId,
-            fullData: data
-          });
-          
-          // If group was created, redirect after a delay
-          if (data.groupId) {
-            setTimeout(() => {
-              navigate(`/groups/${data.groupId}`);
-            }, 3000);
-          }
-          
-          // If goal was created, redirect to goals page
-          if (data.goalId) {
-            setTimeout(() => {
-              navigate('/goals');
-            }, 3000);
-          }
-        } else if (data.status === 'pending') {
-          setVerificationStatus('pending');
-        } else {
-          setVerificationStatus('failed');
-          setError('Payment was not successful');
+      // Call backend to verify payment
+      const response = await fetch(`http://localhost:4000/api/payments/verify/${reference}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
         }
-      } else {
-        setVerificationStatus('failed');
-        setError(response.data.message || 'Verification failed');
-      }
-    } catch (err) {
-      setVerificationStatus('failed');
-      setError(err.response?.data?.message || 'Verification failed');
-    }
-  };
+      });
 
-  const retryVerification = () => {
-    if (retryCount < 3) {
-      setRetryCount(prev => prev + 1);
-      setTimeout(verifyPayment, 2000); // Wait 2 seconds before retrying
+      console.log('📊 Response status:', response.status);
+      console.log('📊 Response ok:', response.ok);
+      console.log('📊 Response headers:', Object.fromEntries(response.headers.entries()));
+
+      const data = await response.json();
+      console.log('📊 Payment verification response:', data);
+      
+      // Check if the response has nested data structure
+      if (data.data) {
+        console.log('📊 Nested data structure found:', data.data);
+      }
+
+      if (response.ok && data.success) {
+        setVerificationStatus('success');
+        setPaymentData(data.data);
+        
+        // Show success toast
+        toast.success('Payment Successful', 'Your payment has been processed successfully!');
+      } else {
+        console.error('❌ Payment verification failed:', data);
+        setVerificationStatus('error');
+        toast.error('Payment Verification Failed', data.error || data.message || 'Failed to verify payment');
+      }
+    } catch (error) {
+      console.error('❌ Error verifying payment:', error);
+      setVerificationStatus('error');
+      toast.error('Error', `Failed to verify payment: ${error.message}`);
     }
   };
 
   const getStatusIcon = () => {
     switch (verificationStatus) {
+      case 'verifying':
+        return <Loader2 className="w-16 h-16 text-loopfund-emerald-600 animate-spin" />;
       case 'success':
-        return <CheckCircle className="w-16 h-16 text-loopfund-emerald-500" />;
-      case 'failed':
-        return <XCircle className="w-16 h-16 text-loopfund-coral-500" />;
-      case 'pending':
-        return <Clock className="w-16 h-16 text-loopfund-gold-500" />;
+        return <CheckCircle className="w-16 h-16 text-loopfund-emerald-600" />;
+      case 'error':
+        return <XCircle className="w-16 h-16 text-red-600" />;
       default:
-        return <AlertCircle className="w-16 h-16 text-loopfund-electric-500" />;
-    }
-  };
-
-  const getStatusTitle = () => {
-    switch (verificationStatus) {
-      case 'success':
-        return 'Payment Successful!';
-      case 'failed':
-        return 'Payment Failed';
-      case 'pending':
-        return 'Payment Pending';
-      default:
-        return 'Verifying Payment...';
+        return <Loader2 className="w-16 h-16 text-loopfund-emerald-600 animate-spin" />;
     }
   };
 
   const getStatusMessage = () => {
     switch (verificationStatus) {
+      case 'verifying':
+        return 'Verifying your payment...';
       case 'success':
-        if (paymentData?.groupId) {
-          return 'Your group has been created successfully! Redirecting...';
-        } else if (paymentData?.goalId) {
-          return 'Your goal has been created successfully! Redirecting...';
-        } else {
-          return 'Payment was successful but creation is pending. Please contact support.';
-        }
-      case 'failed':
-        return 'Your payment could not be processed. Please try again or contact support.';
-      case 'pending':
-        return 'Your payment is being processed. This may take a few minutes.';
+        return 'Payment Successful!';
+      case 'error':
+        return 'Payment Verification Failed';
       default:
-        return 'Please wait while we verify your payment...';
+        return 'Verifying your payment...';
     }
   };
 
-  const getStatusGradient = () => {
+  const getStatusDescription = () => {
     switch (verificationStatus) {
+      case 'verifying':
+        return 'Please wait while we verify your payment with our payment processor.';
       case 'success':
-        return 'bg-gradient-emerald';
-      case 'failed':
-        return 'bg-gradient-coral';
-      case 'pending':
-        return 'bg-gradient-gold';
+        return 'Your payment has been processed successfully. You will be redirected shortly.';
+      case 'error':
+        return 'There was an issue verifying your payment. Please contact support if the problem persists.';
       default:
-        return 'bg-gradient-electric';
+        return 'Please wait while we verify your payment.';
     }
   };
-
-  const getStatusColor = () => {
-    switch (verificationStatus) {
-      case 'success':
-        return 'bg-loopfund-emerald-50 border-loopfund-emerald-200 dark:bg-loopfund-emerald-900/20 dark:border-loopfund-emerald-800';
-      case 'failed':
-        return 'bg-loopfund-coral-50 border-loopfund-coral-200 dark:bg-loopfund-coral-900/20 dark:border-loopfund-coral-800';
-      case 'pending':
-        return 'bg-loopfund-gold-50 border-loopfund-gold-200 dark:bg-loopfund-gold-900/20 dark:border-loopfund-gold-800';
-      default:
-        return 'bg-loopfund-electric-50 border-loopfund-electric-200 dark:bg-loopfund-electric-900/20 dark:border-loopfund-electric-800';
-    }
-  };
-
-  if (!reference) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center">
-        <motion.div 
-          className="text-center"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <motion.div
-            className="w-20 h-20 bg-loopfund-coral-100 dark:bg-loopfund-coral-900/20 rounded-3xl flex items-center justify-center shadow-loopfund-lg mx-auto mb-6"
-            whileHover={{ scale: 1.1 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          >
-            <XCircle className="w-10 h-10 text-loopfund-coral-600" />
-          </motion.div>
-          <h1 className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-3">
-            Invalid Payment Reference
-          </h1>
-          <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-6">
-            No payment reference provided for verification.
-          </p>
-          <LoopFundButton
-            onClick={() => navigate('/dashboard')}
-            variant="primary"
-            size="lg"
-            icon={<ArrowRight className="w-5 h-5" />}
-          >
-            Go to Dashboard
-          </LoopFundButton>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center p-4">
+    <div className="min-h-screen bg-loopfund-neutral-50 dark:bg-loopfund-dark-background flex items-center justify-center p-4">
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
         className="max-w-md w-full"
       >
-        <LoopFundCard variant="elevated" className="relative">
-          {/* Background Elements */}
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute -top-10 -right-10 w-20 h-20 bg-gradient-loopfund opacity-5 rounded-full blur-2xl animate-float" />
-            <div className="absolute -bottom-10 -left-10 w-16 h-16 bg-gradient-coral opacity-5 rounded-full blur-xl animate-float-delayed" />
+        <div className="bg-white dark:bg-loopfund-dark-surface rounded-2xl shadow-xl p-8 text-center">
+          <div className="flex justify-center mb-6">
+            {getStatusIcon()}
           </div>
+          
+          <h1 className="text-2xl font-bold text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
+            {getStatusMessage()}
+          </h1>
+          
+          <p className="text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-6">
+            {getStatusDescription()}
+          </p>
 
-          <div className="relative p-8 text-center">
-            {/* Status Icon */}
-            <motion.div 
-              className="mb-8"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            >
-              <motion.div
-                className={`w-20 h-20 ${getStatusGradient()} rounded-3xl flex items-center justify-center shadow-loopfund-lg mx-auto`}
-                animate={verificationStatus === 'verifying' ? { rotate: 360 } : {}}
-                transition={verificationStatus === 'verifying' ? { duration: 2, repeat: Infinity, ease: "linear" } : {}}
-              >
-                {verificationStatus === 'verifying' ? (
-                  <Loader2 className="w-10 h-10 text-white" />
-                ) : (
-                  getStatusIcon()
+          {paymentData && verificationStatus === 'success' && (
+            <div className="bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/20 rounded-xl p-4 mb-6">
+              <div className="text-sm text-loopfund-emerald-800 dark:text-loopfund-emerald-200">
+                <div className="font-medium">Payment Reference: {paymentData.reference}</div>
+                <div>Amount: ₦{(paymentData.amount / 100).toLocaleString()}</div>
+                <div>Status: {paymentData.status}</div>
+              </div>
+            </div>
+          )}
+
+          {verificationStatus === 'success' && (
+            <div className="space-y-4">
+              <div className="text-sm text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
+                Payment completed successfully! Where would you like to go next?
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  onClick={() => {
+                    // Trigger a custom event to refresh data on the target page
+                    window.dispatchEvent(new CustomEvent('paymentCompleted', { 
+                      detail: { type: 'dashboard' } 
+                    }));
+                    navigate('/dashboard', { replace: true });
+                  }}
+                  className="px-4 py-3 bg-loopfund-emerald-600 hover:bg-loopfund-emerald-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Go to Dashboard
+                </button>
+                {paymentData?.metadata?.groupId && (
+                  <button
+                    onClick={() => {
+                      // Trigger a custom event to refresh data on the target page
+                      window.dispatchEvent(new CustomEvent('paymentCompleted', { 
+                        detail: { type: 'group', groupId: paymentData.metadata.groupId } 
+                      }));
+                      navigate(`/groups/${paymentData.metadata.groupId}`, { replace: true });
+                    }}
+                    className="px-4 py-3 bg-loopfund-blue-600 hover:bg-loopfund-blue-700 text-white rounded-lg font-medium transition-colors"
+                  >
+                    View Group
+                  </button>
                 )}
-              </motion.div>
-            </motion.div>
-
-            {/* Status Title */}
-            <motion.h1 
-              className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              {getStatusTitle()}
-            </motion.h1>
-
-            {/* Status Message */}
-            <motion.p 
-              className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              {getStatusMessage()}
-            </motion.p>
-
-            {/* Payment Details */}
-            {paymentData && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                <LoopFundCard variant="elevated" className="mb-8">
-                  <div className="p-6">
-                    <div className="flex items-center space-x-3 mb-6">
-                      <motion.div 
-                        className="w-10 h-10 bg-gradient-gold rounded-2xl flex items-center justify-center shadow-loopfund"
-                        whileHover={{ rotate: 15, scale: 1.1 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      >
-                        <Crown className="w-5 h-5 text-white" />
-                      </motion.div>
-                      <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
-                        Payment Details
-                      </h3>
-                    </div>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center py-3 px-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-xl">
-                        <span className="font-body text-body text-loopfund-neutral-700 dark:text-loopfund-neutral-300">Reference:</span>
-                        <span className="font-mono font-body text-body text-loopfund-neutral-900 dark:text-loopfund-dark-text">
-                          {paymentData.reference}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center py-3 px-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-xl">
-                        <span className="font-body text-body text-loopfund-neutral-700 dark:text-loopfund-neutral-300">Amount:</span>
-                        <span className="font-display text-h4 text-loopfund-emerald-600">
-                          ₦{(paymentData.amount / 100).toLocaleString()}
-                        </span>
-                      </div>
-                      {paymentData.groupName && (
-                        <div className="flex justify-between items-center py-3 px-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-xl">
-                          <span className="font-body text-body text-loopfund-neutral-700 dark:text-loopfund-neutral-300">Group:</span>
-                          <span className="font-body text-body font-medium text-loopfund-neutral-900 dark:text-loopfund-dark-text">
-                            {paymentData.groupName}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </LoopFundCard>
-              </motion.div>
-            )}
-
-            {/* Action Buttons */}
-            <motion.div 
-              className="space-y-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              {verificationStatus === 'success' && paymentData?.groupId && (
-                <LoopFundButton
-                  onClick={() => navigate(`/groups/${paymentData.groupId}`)}
-                  variant="primary"
-                  size="lg"
-                  icon={<ArrowRight className="w-5 h-5" />}
-                  className="w-full"
-                >
-                  View Your Group
-                </LoopFundButton>
-              )}
-
-              {verificationStatus === 'failed' && (
-                <div className="space-y-4">
-                  <LoopFundButton
-                    onClick={retryVerification}
-                    disabled={retryCount >= 3}
-                    variant="primary"
-                    size="lg"
-                    icon={<Zap className="w-5 h-5" />}
-                    className="w-full"
+                {paymentData?.metadata?.goalId && (
+                  <button
+                    onClick={() => {
+                      // Trigger a custom event to refresh data on the target page
+                      window.dispatchEvent(new CustomEvent('paymentCompleted', { 
+                        detail: { type: 'goals' } 
+                      }));
+                      navigate('/goals', { replace: true });
+                    }}
+                    className="px-4 py-3 bg-loopfund-purple-600 hover:bg-loopfund-purple-700 text-white rounded-lg font-medium transition-colors"
                   >
-                    {retryCount >= 3 ? 'Max Retries Reached' : `Retry Verification (${3 - retryCount} left)`}
-                  </LoopFundButton>
-                  <LoopFundButton
-                    onClick={() => navigate('/create-group')}
-                    variant="secondary"
-                    size="lg"
-                    className="w-full"
-                  >
-                    Try Again
-                  </LoopFundButton>
-                </div>
-              )}
-
-              {verificationStatus === 'pending' && (
-                <LoopFundButton
-                  onClick={retryVerification}
-                  variant="primary"
-                  size="lg"
-                  icon={<Clock className="w-5 h-5" />}
-                  className="w-full"
+                    View Goals
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    // Trigger a custom event to refresh data on the target page
+                    window.dispatchEvent(new CustomEvent('paymentCompleted', { 
+                      detail: { type: 'groups' } 
+                    }));
+                    navigate('/groups', { replace: true });
+                  }}
+                  className="px-4 py-3 bg-loopfund-neutral-600 hover:bg-loopfund-neutral-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  Check Again
-                </LoopFundButton>
-              )}
+                  View Groups
+                </button>
+              </div>
+            </div>
+          )}
 
-              <LoopFundButton
-                onClick={() => navigate('/dashboard')}
-                variant="secondary"
-                size="lg"
-                className="w-full"
-              >
-                Go to Dashboard
-              </LoopFundButton>
-            </motion.div>
-
-            {/* Error Display */}
-            <AnimatePresence>
-              {error && (
-                <motion.div 
-                  className="mt-6 p-4 bg-loopfund-coral-50 dark:bg-loopfund-coral-900/20 border border-loopfund-coral-200 dark:border-loopfund-coral-800 rounded-2xl"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
+          {verificationStatus === 'error' && (
+            <div className="space-y-3">
+              <div className="text-sm text-loopfund-neutral-500 dark:text-loopfund-neutral-400 mb-4">
+                There was an issue verifying your payment. You can try again or go back to the dashboard.
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-4 py-3 bg-loopfund-emerald-600 hover:bg-loopfund-emerald-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  <div className="flex items-center space-x-3">
-                    <AlertCircle className="w-5 h-5 text-loopfund-coral-600" />
-                    <p className="font-body text-body text-loopfund-coral-600 dark:text-loopfund-coral-400">{error}</p>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </LoopFundCard>
+                  Try Again
+                </button>
+                <button
+                  onClick={() => navigate('/dashboard', { replace: true })}
+                  className="px-4 py-3 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 text-loopfund-neutral-700 dark:text-loopfund-neutral-300 rounded-lg font-medium hover:bg-loopfund-neutral-50 dark:hover:bg-loopfund-dark-elevated transition-colors"
+                >
+                  Go to Dashboard
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </motion.div>
     </div>
   );

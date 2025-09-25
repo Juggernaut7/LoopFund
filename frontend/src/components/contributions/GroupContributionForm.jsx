@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, DollarSign, Target, CreditCard, Banknote, Wallet, Zap, AlertCircle } from 'lucide-react';
+import { X, DollarSign, CreditCard, Banknote, Wallet, Zap, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import api from '../../services/api';
 
-const ContributionForm = ({ goals, onSubmit, onClose }) => {
+const GroupContributionForm = ({ group, onSubmit, onClose }) => {
   const { user } = useAuthStore();
   const [formData, setFormData] = useState({
-    goalId: '',
     amount: '',
     method: 'wallet',
     description: ''
@@ -51,61 +50,53 @@ const ContributionForm = ({ goals, onSubmit, onClose }) => {
     loadWalletBalance();
   }, []);
 
-  // Check if wallet has sufficient balance
+  // Check for insufficient balance when amount or method changes
   useEffect(() => {
-    if (formData.method === 'wallet' && formData.amount) {
-      const amount = parseFloat(formData.amount);
-      setShowInsufficientBalance(amount > walletBalance);
+    if (formData.method === 'wallet' && formData.amount && parseFloat(formData.amount) > walletBalance) {
+      setShowInsufficientBalance(true);
     } else {
       setShowInsufficientBalance(false);
     }
-  }, [formData.method, formData.amount, walletBalance]);
+  }, [formData.amount, formData.method, walletBalance]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!formData.goalId || !formData.amount) {
-      return;
-    }
-
-    // Only wallet payments allowed
-    if (showInsufficientBalance) {
-      // This will be handled by the parent component
-      return;
-    }
-
     setIsSubmitting(true);
-    
-    // Force wallet method
-    const contributionData = {
-      ...formData,
-      method: 'wallet'
-    };
-    
-    console.log('🚀 ContributionForm submitting wallet payment:', contributionData);
-    
-    await onSubmit(contributionData);
-    setIsSubmitting(false);
+
+    try {
+      // Only wallet payments allowed
+      const contributionData = {
+        groupId: group._id,
+        amount: parseFloat(formData.amount),
+        method: 'wallet',
+        description: formData.description || `Contribution to ${group.name}`,
+        type: 'group'
+      };
+
+      console.log('🚀 GroupContributionForm submitting wallet payment:', contributionData);
+
+      await onSubmit(contributionData);
+    } catch (error) {
+      console.error('Error submitting contribution:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFundWallet = async () => {
     try {
-      // Initialize Paystack payment for wallet funding
       const response = await api.post('/payments/initialize-wallet-funding', {
-        amount: parseFloat(formData.amount),
-        description: `Fund wallet for contribution to ${selectedGoal?.name || 'goal'}`
+        amount: parseFloat(formData.amount) - walletBalance,
+        description: `Fund wallet for ${group.name} contribution`
       });
 
       if (response.data.success) {
-        // Open Paystack payment page
         window.open(response.data.data.authorizationUrl, '_blank');
       }
     } catch (error) {
       console.error('Error funding wallet:', error);
     }
   };
-
-  const selectedGoal = goals.find(goal => goal._id === formData.goalId);
 
   return (
     <motion.div
@@ -124,9 +115,14 @@ const ContributionForm = ({ goals, onSubmit, onClose }) => {
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-loopfund-neutral-900 dark:text-loopfund-dark-text">
-            Add New Contribution
-          </h2>
+          <div>
+            <h2 className="text-2xl font-bold text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+              Contribute to Group
+            </h2>
+            <p className="text-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mt-1">
+              {group?.name}
+            </p>
+          </div>
           <button
             onClick={onClose}
             className="p-2 hover:bg-loopfund-neutral-100 dark:hover:bg-loopfund-dark-elevated rounded-lg transition-colors"
@@ -136,48 +132,25 @@ const ContributionForm = ({ goals, onSubmit, onClose }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Goal Selection */}
-          <div>
-            <label className="block text-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
-              Goal *
-            </label>
-            <select
-              value={formData.goalId}
-              onChange={(e) => setFormData({ ...formData, goalId: e.target.value })}
-              className="w-full p-3 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-xl bg-loopfund-neutral-50 dark:bg-loopfund-dark-surface text-loopfund-neutral-900 dark:text-loopfund-dark-text focus:ring-2 focus:ring-loopfund-emerald-500 focus:border-transparent transition-colors"
-              required
-            >
-              <option value="">Select a goal</option>
-              {goals.map((goal) => (
-                <option key={goal._id} value={goal._id}>
-                  {goal.name} - ${goal.targetAmount}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Goal Progress Preview */}
-          {selectedGoal && (
+          {/* Group Info */}
+          {group && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="p-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-xl"
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300">
-                  Current Progress
-                </span>
-                <span className="text-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
-                  ${selectedGoal.currentAmount || 0} / ${selectedGoal.targetAmount}
-                </span>
-              </div>
-              <div className="w-full bg-loopfund-neutral-200 dark:bg-loopfund-neutral-600 rounded-full h-2">
-                <div
-                  className="bg-gradient-loopfund h-2 rounded-full transition-all duration-300"
-                  style={{ 
-                    width: `${Math.min(((selectedGoal.currentAmount || 0) / selectedGoal.targetAmount) * 100, 100)}%` 
-                  }}
-                />
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="w-10 h-10 bg-gradient-loopfund rounded-xl flex items-center justify-center">
+                  <Banknote className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                    {group.name}
+                  </h3>
+                  <p className="text-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                    Group Contribution
+                  </p>
+                </div>
               </div>
             </motion.div>
           )}
@@ -202,7 +175,7 @@ const ContributionForm = ({ goals, onSubmit, onClose }) => {
             </div>
           </div>
 
-          {/* Wallet Balance Display */}
+          {/* Payment Method */}
           <div>
             <label className="block text-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
               Payment Method
@@ -281,12 +254,12 @@ const ContributionForm = ({ goals, onSubmit, onClose }) => {
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !formData.goalId || !formData.amount || (formData.method === 'wallet' && showInsufficientBalance)}
+              disabled={isSubmitting || !formData.amount || (formData.method === 'wallet' && showInsufficientBalance)}
               className="flex-1 px-4 py-3 bg-gradient-loopfund text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Processing...' : 
                formData.method === 'wallet' && showInsufficientBalance ? 'Fund Wallet First' :
-               'Add Contribution'}
+               'Contribute to Group'}
             </button>
           </div>
         </form>
@@ -295,4 +268,4 @@ const ContributionForm = ({ goals, onSubmit, onClose }) => {
   );
 };
 
-export default ContributionForm; 
+export default GroupContributionForm;
