@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownLeft, ArrowUpLeft } from 'lucide-react';
 import { LoopFundCard } from '../ui';
 
-const WalletCard = ({ wallet, onAddMoney, onViewTransactions }) => {
+const WalletCard = ({ wallet, onAddMoney, onViewTransactions, onWithdraw }) => {
   console.log('💳 WalletCard received wallet:', wallet);
   console.log('💰 WalletCard balance:', wallet?.balance);
   
@@ -128,17 +128,24 @@ const WalletCard = ({ wallet, onAddMoney, onViewTransactions }) => {
           )}
 
           {/* Action Buttons */}
-          <div className="flex space-x-3">
+          <div className="grid grid-cols-3 gap-3">
             <button
               onClick={onAddMoney}
-              className="flex-1 px-4 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl font-body text-body-sm font-medium text-white transition-all duration-200 flex items-center justify-center space-x-2 border border-white/30"
+              className="px-4 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl font-body text-body-sm font-medium text-white transition-all duration-200 flex items-center justify-center space-x-2 border border-white/30"
             >
               <TrendingUp className="w-4 h-4" />
-              <span>Add Money</span>
+              <span>Add</span>
+            </button>
+            <button
+              onClick={onWithdraw}
+              className="px-4 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl font-body text-body-sm font-medium text-white transition-all duration-200 flex items-center justify-center space-x-2 border border-white/20"
+            >
+              <ArrowUpLeft className="w-4 h-4" />
+              <span>Withdraw</span>
             </button>
             <button
               onClick={onViewTransactions}
-              className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl font-body text-body-sm font-medium text-white transition-all duration-200 flex items-center justify-center space-x-2 border border-white/20"
+              className="px-4 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl font-body text-body-sm font-medium text-white transition-all duration-200 flex items-center justify-center space-x-2 border border-white/20"
             >
               <TrendingDown className="w-4 h-4" />
               <span>History</span>

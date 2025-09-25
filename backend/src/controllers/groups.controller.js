@@ -11,7 +11,51 @@ const formatCurrency = (amount) => {
 
 async function createGroupController(req, res, next) {
   try {
-    const { name, description, targetAmount, maxMembers, durationMonths, accountInfo } = req.body;
+    const { name, description, targetAmount, maxMembers, durationMonths, accountInfo, feeData } = req.body;
+    
+    // Process wallet deduction if feeData is provided
+    if (feeData && feeData.totalFee > 0) {
+      const Wallet = require('../models/Wallet');
+      
+      // Find user's wallet
+      let wallet = await Wallet.findOne({ user: req.user.userId });
+      if (!wallet) {
+        return res.status(404).json({
+          success: false,
+          message: 'Wallet not found. Please create a wallet first.'
+        });
+      }
+      
+      // Check if user has sufficient balance
+      if (wallet.balance < feeData.totalFee) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient wallet balance. Required: ₦${feeData.totalFee.toLocaleString()}, Available: ₦${wallet.balance.toLocaleString()}`
+        });
+      }
+      
+      // Deduct fee from wallet
+      wallet.balance -= feeData.totalFee;
+      
+      // Add transaction record
+      wallet.transactions.push({
+        type: 'group_creation_fee',
+        amount: -feeData.totalFee, // Negative for deduction
+        description: `Group creation fee for "${name}"`,
+        status: 'completed',
+        timestamp: new Date(),
+        metadata: {
+          groupName: name,
+          targetAmount: targetAmount,
+          durationMonths: durationMonths,
+          feeBreakdown: feeData
+        }
+      });
+      
+      await wallet.save();
+      console.log(`✅ Group creation fee of ₦${feeData.totalFee} deducted from wallet`);
+    }
+    
     const group = await createGroup({ 
       name, 
       description, 

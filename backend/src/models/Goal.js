@@ -36,7 +36,7 @@ const GoalSchema = new mongoose.Schema({
   },
   category: { 
     type: String, 
-    enum: ['personal', 'business', 'education', 'travel', 'emergency', 'other'], 
+    enum: ['personal', 'business', 'education', 'travel', 'emergency', 'family', 'other'], 
     default: 'personal' 
   },
   deadline: { 
@@ -45,6 +45,14 @@ const GoalSchema = new mongoose.Schema({
   isActive: { 
     type: Boolean, 
     default: true 
+  },
+  status: {
+    type: String,
+    enum: ['in_progress', 'completed', 'cancelled'],
+    default: 'in_progress'
+  },
+  completedAt: {
+    type: Date
   },
   lastContributionDate: { 
     type: Date 
@@ -56,7 +64,10 @@ const GoalSchema = new mongoose.Schema({
     paymentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment' },
     paidAt: { type: Date, default: Date.now },
     status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'completed' }
-  }]
+  }],
+  // Fund release tracking
+  fundsReleased: { type: Boolean, default: false },
+  fundsReleasedAt: { type: Date }
 }, { 
   timestamps: true 
 });

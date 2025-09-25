@@ -4,13 +4,13 @@ const Goal = require('../models/Goal');
 const addContributionController = async (req, res, next) => {
   try {
     const userId = req.user.userId;
-    const { goalId, amount, method, description, type } = req.body;
+    const { goalId, groupId, amount, method, description, type } = req.body;
 
-    // Validate required fields
-    if (!goalId || !amount) {
+    // Validate required fields - either goalId or groupId must be provided
+    if ((!goalId && !groupId) || !amount) {
       return res.status(400).json({
         success: false,
-        error: 'Goal ID and amount are required'
+        error: 'Goal ID or Group ID and amount are required'
       });
     }
 
@@ -22,31 +22,78 @@ const addContributionController = async (req, res, next) => {
       });
     }
 
-    // Check if goal exists
-    const goal = await Goal.findById(goalId);
-    if (!goal) {
-      return res.status(404).json({
-        success: false,
-        error: 'Goal not found'
-      });
+    let targetEntity = null;
+    let contributionType = type || 'individual';
+
+    // Check if it's a goal contribution
+    if (goalId) {
+      const goal = await Goal.findById(goalId);
+      if (!goal) {
+        return res.status(404).json({
+          success: false,
+          error: 'Goal not found'
+        });
+      }
+      targetEntity = goal;
+      contributionType = goal.type || 'individual';
+    }
+    // Check if it's a group contribution
+    else if (groupId) {
+      const Group = require('../models/Group');
+      const group = await Group.findById(groupId);
+      if (!group) {
+        return res.status(404).json({
+          success: false,
+          error: 'Group not found'
+        });
+      }
+      targetEntity = group;
+      contributionType = 'group';
     }
 
     const contributionData = {
       userId,
-      goalId,
+      goalId: goalId || null,
+      groupId: groupId || null,
       amount: parseFloat(amount),
-      method: method || 'bank_transfer',
+      method: method || 'wallet',
       description: description || 'Contribution',
-      type: type || goal.type || 'individual'
+      type: contributionType,
+      paymentMethod: method || 'wallet' // Use the method from request
     };
 
-    const contribution = await contributionService.addContribution(contributionData);
-
-    res.status(201).json({
-      success: true,
-      data: contribution,
-      message: 'Contribution added successfully'
-    });
+    // Handle different payment methods
+    if (method === 'paystack_direct') {
+      console.log('💳 Processing Paystack direct payment for:', { method, goalId, groupId, amount });
+      
+      // For direct Paystack payments, we need to initialize payment
+      const paymentService = require('../services/payment.service');
+      const paymentResult = await paymentService.initializeContributionPayment({
+        userId,
+        goalId: goalId || null,
+        groupId: groupId || null,
+        amount: parseFloat(amount),
+        description: description || 'Contribution',
+        targetName: targetEntity.name
+      });
+      
+      console.log('📊 Payment result:', paymentResult);
+      
+      return res.status(200).json({
+        success: true,
+        data: paymentResult,
+        message: 'Payment initialized. Please complete payment to add contribution.'
+      });
+    } else {
+      // For wallet payments, process immediately
+      const contribution = await contributionService.addContribution(contributionData);
+      
+      res.status(201).json({
+        success: true,
+        data: contribution,
+        message: 'Contribution added successfully'
+      });
+    }
   } catch (error) {
     console.error('Error in addContributionController:', error);
     

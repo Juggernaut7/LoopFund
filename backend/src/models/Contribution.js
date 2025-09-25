@@ -32,8 +32,8 @@ const ContributionSchema = new mongoose.Schema({
   },
   method: { 
     type: String, 
-    enum: ['bank_transfer', 'card_payment', 'cash', 'other'], 
-    default: 'bank_transfer' 
+    enum: ['bank_transfer', 'card_payment', 'cash', 'wallet', 'other'], 
+    default: 'wallet' 
   },
   status: { 
     type: String, 

@@ -28,6 +28,7 @@ import dashboardService from '../services/dashboardService';
 import { useAuthStore } from '../store/useAuthStore';
 import goalPaymentService from '../services/goalPaymentService';
 import { useWallet } from '../hooks/useWallet';
+import ContributionForm from '../components/contributions/ContributionForm';
 import WalletCard from '../components/wallet/WalletCard';
 import ContributionModal from '../components/wallet/ContributionModal';
 import AddMoneyModal from '../components/wallet/AddMoneyModal';
@@ -42,7 +43,7 @@ const GoalsPage = () => {
   const [error, setError] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  // Payment modal removed - now using wallet deduction
   const [userStats, setUserStats] = useState(null);
   const [showContributeModal, setShowContributeModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,7 +51,7 @@ const GoalsPage = () => {
   const [showAddMoneyModal, setShowAddMoneyModal] = useState(false);
   const [showContributionModal, setShowContributionModal] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState(null);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  // Payment processing removed - now using wallet deduction
   const [isProcessingContribution, setIsProcessingContribution] = useState(false);
   const [contributionData, setContributionData] = useState({
     goalId: '',
@@ -76,6 +77,43 @@ const GoalsPage = () => {
   useEffect(() => {
     fetchGoals();
     fetchUserStats();
+    
+    // Check if user is returning from a payment verification
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // User returned to the tab, refresh goals data
+        fetchGoals();
+        fetchUserStats();
+      }
+    };
+    
+    const handleFocus = () => {
+      // User focused the window, refresh goals data
+      fetchGoals();
+      fetchUserStats();
+    };
+    
+    // Listen for tab visibility changes and window focus
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    
+    // Listen for payment completion events
+    const handlePaymentCompleted = (event) => {
+      console.log('🔄 Payment completed event received:', event.detail);
+      if (event.detail.type === 'goals' || event.detail.type === 'dashboard') {
+        console.log('🔄 Refreshing goals data after payment completion...');
+        fetchGoals();
+        fetchUserStats();
+      }
+    };
+    
+    window.addEventListener('paymentCompleted', handlePaymentCompleted);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('paymentCompleted', handlePaymentCompleted);
+    };
   }, []);
 
   // Auto-calculate amount per period when target amount, end date, or frequency changes
@@ -219,19 +257,23 @@ const GoalsPage = () => {
     }));
   };
 
-  // Check if user can create goal for free
+  // Check if user can create goal for free (first 2 goals are free)
   const canCreateGoalForFree = () => {
     if (!userStats) return false;
     const individualGoals = goals.filter(goal => !goal.isGroupGoal);
-    return individualGoals.length === 0; // First individual goal is free
+    return individualGoals.length < 2; // First 2 individual goals are free
   };
 
-  // Calculate fee for additional goals
+  // Calculate fee for additional goals (minimal fee after first 2)
   const calculateGoalFee = (targetAmount) => {
-    const baseFee = targetAmount * 0.025; // 2.5% fee
-    const minFee = 500; // Minimum ₦500
-    const maxFee = 10000; // Maximum ₦10,000
-    return Math.max(minFee, Math.min(maxFee, baseFee));
+    const individualGoals = goals.filter(goal => !goal.isGroupGoal);
+    if (individualGoals.length < 2) return 0; // First 2 goals are free
+    
+    // Minimal fee for subsequent goals
+    const minFee = 100; // Minimum ₦100
+    const maxFee = 1000; // Maximum ₦1,000
+    const baseFee = Math.min(targetAmount * 0.01, maxFee); // 1% or max fee
+    return Math.max(minFee, baseFee);
   };
 
   // Calculate amount per period based on target amount, duration, and frequency
@@ -346,11 +388,10 @@ const GoalsPage = () => {
         toast.success('Goal Updated', 'Your goal has been successfully updated.');
       } else {
         // Check if user needs to pay for this goal
-        if (!canCreateGoalForFree()) {
           const fee = calculateGoalFee(parseFloat(formData.targetAmount));
-          // Show payment modal
-          setShowPaymentModal(true);
-          return;
+        if (fee > 0) {
+          // Create goal with fee deduction from wallet
+          await createGoalWithFee(goalData, fee);
         } else {
           // Create new goal for free
           await createGoal(goalData);
@@ -381,58 +422,7 @@ const GoalsPage = () => {
     }
   };
 
-  const handlePaymentSuccess = async () => {
-    setIsProcessingPayment(true);
-    try {
-      const goalData = {
-        ...formData,
-        targetAmount: parseFloat(formData.targetAmount),
-        amount: parseFloat(formData.amount),
-        endDate: new Date(formData.endDate).toISOString()
-      };
-      
-      console.log('Frontend goal data being sent:', goalData);
-      console.log('Target amount type:', typeof goalData.targetAmount, goalData.targetAmount);
-      
-      // Initialize payment with Paystack
-      const paymentResult = await goalPaymentService.initializeGoalPayment(goalData);
-      
-      if (paymentResult.success) {
-        // Open Paystack payment page
-        window.open(paymentResult.data.authorizationUrl, '_blank');
-        
-        // Show success message
-        toast.success('Payment Initiated', 'Redirecting to payment page...');
-        
-        // Reset form and close modals
-        setFormData({
-          name: '',
-          description: '',
-          targetAmount: '',
-          endDate: '',
-          category: 'personal',
-          frequency: 'monthly',
-          amount: '',
-          duration: '',
-          calculatedAmount: ''
-        });
-        setShowCreateForm(false);
-        setShowPaymentModal(false);
-        
-        // Refresh goals after a delay to allow for payment processing
-        setTimeout(() => {
-          fetchGoals();
-        }, 5000);
-      } else {
-        toast.error('Payment Error', paymentResult.error || 'Failed to initialize payment');
-      }
-    } catch (error) {
-      console.error('Error processing payment:', error);
-      toast.error('Error', 'Failed to process payment. Please try again.');
-    } finally {
-      setIsProcessingPayment(false);
-    }
-  };
+  // Payment success handler removed - now using wallet deduction
 
   const createGoal = async (goalData) => {
     try {
@@ -464,6 +454,46 @@ const GoalsPage = () => {
       return data.data;
     } catch (error) {
       console.error('Error creating goal:', error);
+      throw error;
+    }
+  };
+
+  const createGoalWithFee = async (goalData, fee) => {
+    try {
+      const response = await fetch('http://localhost:4000/api/goals', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: goalData.name,
+          description: goalData.description,
+          targetAmount: parseFloat(goalData.targetAmount),
+          endDate: goalData.endDate,
+          frequency: goalData.frequency || 'monthly',
+          amount: parseFloat(goalData.amount) || 0,
+          type: goalData.type || 'individual',
+          category: goalData.category || 'personal',
+          feeData: {
+            totalFee: fee,
+            type: 'goal_creation_fee'
+          }
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('Server response:', data);
+        throw new Error(data.message || 'Failed to create goal');
+      }
+
+      toast.success('Goal Created', `Your new goal has been created! Fee of ₦${fee.toLocaleString()} deducted from wallet.`);
+      return data.data;
+    } catch (error) {
+      console.error('Error creating goal with fee:', error);
+      toast.error('Goal Creation Failed', error.message || 'Failed to create goal');
       throw error;
     }
   };
@@ -528,6 +558,46 @@ const GoalsPage = () => {
       description: ''
     });
     setShowContributeModal(true);
+  };
+
+  const handleAddContribution = async (contributionData) => {
+    try {
+      const response = await fetch('http://localhost:4000/api/contributions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(contributionData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Check if this is a direct Paystack payment
+        // Check for nested structure first (data.data.data.authorizationUrl)
+        if (data.data && data.data.data && data.data.data.authorizationUrl) {
+          // Open Paystack payment page
+          window.open(data.data.data.authorizationUrl, '_blank');
+          toast.success('Success', 'Payment page opened. Complete payment to add contribution.');
+        } else if (data.data && data.data.authorizationUrl) {
+          // Open Paystack payment page
+          window.open(data.data.authorizationUrl, '_blank');
+          toast.success('Success', 'Payment page opened. Complete payment to add contribution.');
+        } else {
+          // Wallet payment completed immediately
+          toast.success('Success', 'Contribution added successfully!');
+          setShowContributeModal(false);
+          await fetchGoals();
+          await fetchUserStats();
+        }
+      } else {
+        toast.error('Error', data.error || 'Failed to add contribution');
+      }
+    } catch (error) {
+      console.error('Error adding contribution:', error);
+      toast.error('Error', 'Failed to add contribution. Please try again.');
+    }
   };
 
   const contributeToGoal = async () => {
@@ -616,6 +686,11 @@ const GoalsPage = () => {
     return Math.min((goal.currentAmount / goal.targetAmount) * 100, 100);
   };
 
+  const isGoalCompleted = (goal) => {
+    if (!goal) return false;
+    return (goal.currentAmount || 0) >= (goal.targetAmount || 0);
+  };
+
   const getCompletedGoals = () => {
     return goals.filter(goal => getProgressPercentage(goal) >= 100);
   };
@@ -679,7 +754,7 @@ const GoalsPage = () => {
   // Show loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center">
           <motion.div 
             className="text-center"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -707,7 +782,7 @@ const GoalsPage = () => {
   // Show error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center">
           <motion.div 
             className="text-center"
             initial={{ opacity: 0, y: 20 }}
@@ -1044,42 +1119,43 @@ const GoalsPage = () => {
                       Basic Information
                     </h3>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Goal Name */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Goal Name */}
                       <div>
                         <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
                           Goal Name *
                         </label>
                         <input
-                          type="text"
-                          name="name"
-                          value={formData.name}
-                          onChange={handleInputChange}
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
                           placeholder="e.g., Wedding Fund, Emergency Savings"
-                          required
+                      required
                           className="w-full px-4 py-3 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-lg focus:ring-2 focus:ring-loopfund-emerald-500 focus:border-transparent dark:bg-loopfund-dark-surface dark:text-loopfund-dark-text font-body text-body transition-all duration-200"
-                        />
+                    />
                       </div>
 
-                      {/* Category */}
+                  {/* Category */}
                       <div>
                         <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
                           Category *
-                        </label>
-                        <select
-                          name="category"
-                          value={formData.category}
-                          onChange={handleInputChange}
+                    </label>
+                      <select
+                        name="category"
+                        value={formData.category}
+                        onChange={handleInputChange}
                           className="w-full px-4 py-3 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-lg focus:ring-2 focus:ring-loopfund-emerald-500 focus:border-transparent dark:bg-loopfund-dark-surface dark:text-loopfund-dark-text font-body text-body transition-all duration-200"
-                        >
-                          <option value="personal">Personal</option>
-                          <option value="family">Family</option>
-                          <option value="education">Education</option>
-                          <option value="business">Business</option>
-                          <option value="emergency">Emergency</option>
-                          <option value="other">Other</option>
-                        </select>
-                      </div>
+                      >
+                        <option value="personal">Personal</option>
+                        <option value="family">Family</option>
+                        <option value="education">Education</option>
+                        <option value="business">Business</option>
+                        <option value="travel">Travel</option>
+                        <option value="emergency">Emergency</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
                     </div>
 
                     {/* Description */}
@@ -1105,7 +1181,7 @@ const GoalsPage = () => {
                     </h3>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Target Amount */}
+                  {/* Target Amount */}
                       <div>
                         <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
                           Target Amount *
@@ -1115,14 +1191,14 @@ const GoalsPage = () => {
                             ₦
                           </span>
                           <input
-                            type="number"
-                            name="targetAmount"
-                            value={formData.targetAmount}
-                            onChange={handleInputChange}
-                            placeholder="100000"
-                            min="0"
-                            step="0.01"
-                            required
+                      type="number"
+                      name="targetAmount"
+                      value={formData.targetAmount}
+                      onChange={handleInputChange}
+                      placeholder="100000"
+                      min="0"
+                      step="0.01"
+                      required
                             className="w-full px-4 py-3 pl-8 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-lg focus:ring-2 focus:ring-loopfund-emerald-500 focus:border-transparent dark:bg-loopfund-dark-surface dark:text-loopfund-dark-text font-body text-body transition-all duration-200"
                           />
                         </div>
@@ -1134,36 +1210,36 @@ const GoalsPage = () => {
                           Target Date *
                         </label>
                         <input
-                          type="date"
-                          name="endDate"
-                          value={formData.endDate}
-                          onChange={handleInputChange}
-                          required
+                      type="date"
+                      name="endDate"
+                      value={formData.endDate}
+                      onChange={handleInputChange}
+                      required
                           className="w-full px-4 py-3 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-lg focus:ring-2 focus:ring-loopfund-emerald-500 focus:border-transparent dark:bg-loopfund-dark-surface dark:text-loopfund-dark-text font-body text-body transition-all duration-200"
-                        />
+                    />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Contribution Frequency */}
+                  {/* Contribution Frequency */}
                       <div>
                         <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
-                          Contribution Frequency
-                        </label>
-                        <select
-                          name="frequency"
-                          value={formData.frequency}
-                          onChange={handleInputChange}
+                      Contribution Frequency
+                    </label>
+                      <select
+                        name="frequency"
+                        value={formData.frequency}
+                        onChange={handleInputChange}
                           className="w-full px-4 py-3 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-lg focus:ring-2 focus:ring-loopfund-emerald-500 focus:border-transparent dark:bg-loopfund-dark-surface dark:text-loopfund-dark-text font-body text-body transition-all duration-200"
-                        >
-                          <option value="daily">Daily</option>
-                          <option value="weekly">Weekly</option>
-                          <option value="monthly">Monthly</option>
-                          <option value="custom">Custom</option>
-                        </select>
-                      </div>
+                      >
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="custom">Custom</option>
+                      </select>
+                    </div>
 
-                      {/* Contribution Amount */}
+                  {/* Contribution Amount */}
                       <div>
                         <label className="block font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-2">
                           Suggested Contribution Amount
@@ -1173,13 +1249,13 @@ const GoalsPage = () => {
                             ₦
                           </span>
                           <input
-                            type="number"
-                            name="amount"
-                            value={formData.amount}
-                            onChange={handleInputChange}
-                            placeholder="10000"
-                            min="0"
-                            step="0.01"
+                      type="number"
+                      name="amount"
+                      value={formData.amount}
+                      onChange={handleInputChange}
+                      placeholder="10000"
+                      min="0"
+                      step="0.01"
                             className="w-full px-4 py-3 pl-8 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-lg focus:ring-2 focus:ring-loopfund-emerald-500 focus:border-transparent dark:bg-loopfund-dark-surface dark:text-loopfund-dark-text font-body text-body transition-all duration-200"
                           />
                         </div>
@@ -1188,7 +1264,7 @@ const GoalsPage = () => {
                         </p>
                       </div>
                     </div>
-                  </div>
+                </div>
 
                   {/* Smart Calculation Preview */}
                   {formData.targetAmount && formData.endDate && formData.frequency && (
@@ -1242,15 +1318,15 @@ const GoalsPage = () => {
                   {/* Form Actions */}
                   <div className="flex justify-end space-x-4 pt-6 border-t border-loopfund-neutral-200 dark:border-loopfund-neutral-700">
                     <button
-                      type="button"
-                      onClick={cancelEdit}
+                    type="button"
+                    onClick={cancelEdit}
                       className="px-6 py-3 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-lg font-body text-body font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 hover:bg-loopfund-neutral-50 dark:hover:bg-loopfund-dark-elevated transition-colors duration-200"
-                    >
-                      Cancel
+                  >
+                    Cancel
                     </button>
                     <button
-                      type="submit"
-                      disabled={isSubmitting}
+                    type="submit"
+                    disabled={isSubmitting}
                       className="px-6 py-3 bg-loopfund-emerald-600 hover:bg-loopfund-emerald-700 disabled:bg-loopfund-neutral-400 rounded-lg font-body text-body font-medium text-white transition-colors duration-200 flex items-center space-x-2"
                     >
                       {isSubmitting ? (
@@ -1266,7 +1342,7 @@ const GoalsPage = () => {
                       )}
                     </button>
                   </div>
-                </form>
+                    </form>
                   </div>
                 </LoopFundCard>
               </motion.div>
@@ -1285,7 +1361,7 @@ const GoalsPage = () => {
                     {getIncompleteGoals().length} active goals in progress
                   </p>
                 </div>
-              </div>
+                      </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {getIncompleteGoals().map((goal, index) => (
                   <div key={goal._id} className="group">
@@ -1293,13 +1369,13 @@ const GoalsPage = () => {
                       <div className="p-6">
                         {/* Goal Header */}
                         <div className="flex items-start justify-between mb-6">
-                          <div className="flex-1 min-w-0">
+                            <div className="flex-1 min-w-0">
                             <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2 truncate">
-                              {goal.name}
-                            </h3>
+                                {goal.name}
+                              </h3>
                             <span className="inline-block px-3 py-1 rounded-full text-xs font-body font-medium bg-loopfund-emerald-100 text-loopfund-emerald-700 dark:bg-loopfund-emerald-900/30 dark:text-loopfund-emerald-300">
                               {goal.category}
-                            </span>
+                              </span>
                           </div>
                           
                           {/* Actions Menu */}
@@ -1370,47 +1446,70 @@ const GoalsPage = () => {
                         <div className="pt-4 border-t border-loopfund-neutral-200 dark:border-loopfund-neutral-700">
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center space-x-2">
+                              {isGoalCompleted(goal) ? (
+                                <>
+                                  <div className="w-2 h-2 bg-loopfund-gold-500 rounded-full"></div>
+                                  <span className="font-body text-body-sm text-loopfund-gold-600">
+                                    Completed
+                                  </span>
+                                </>
+                              ) : (
+                                <>
                               <div className="w-2 h-2 bg-loopfund-emerald-500 rounded-full"></div>
                               <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
                                 In Progress
                               </span>
-                            </div>
+                                </>
+                              )}
+                          </div>
                             <div className="text-right">
                               <span className="font-body text-body-sm text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
-                                Due: {new Date(goal.endDate).toLocaleDateString()}
-                              </span>
-                            </div>
+                              Due: {new Date(goal.endDate).toLocaleDateString()}
+                            </span>
+                          </div>
                           </div>
                           
                           {/* Contribute Button */}
                           <button
-                            onClick={() => handleContributeToGoal(goal)}
-                            disabled={!wallet}
-                            className="w-full px-4 py-2 bg-loopfund-emerald-600 hover:bg-loopfund-emerald-700 disabled:bg-loopfund-neutral-400 rounded-lg font-body text-body-sm font-medium text-white transition-colors duration-200 flex items-center justify-center space-x-2"
+                            onClick={() => {
+                              if (isGoalCompleted(goal)) return;
+                              setContributionData({
+                                goalId: goal._id,
+                                amount: '',
+                                description: ''
+                              });
+                              setShowContributeModal(true);
+                            }}
+                            disabled={isGoalCompleted(goal)}
+                            className={`w-full px-4 py-2 rounded-lg font-body text-body-sm font-medium transition-colors duration-200 flex items-center justify-center space-x-2 ${
+                              isGoalCompleted(goal)
+                                ? 'bg-loopfund-neutral-300 dark:bg-loopfund-neutral-700 text-loopfund-neutral-600 dark:text-loopfund-neutral-400 cursor-not-allowed'
+                                : 'bg-loopfund-emerald-600 hover:bg-loopfund-emerald-700 text-white'
+                            }`}
                           >
                             <Target className="w-4 h-4" />
-                            <span>{wallet ? 'Contribute from Wallet' : 'Loading Wallet...'}</span>
+                            <span>{isGoalCompleted(goal) ? 'Completed' : 'Contribute'}</span>
                           </button>
                         </div>
                       </div>
                     </LoopFundCard>
                   </div>
-                ))}
-              </div>
+              ))}
             </div>
-          )}
+            </div>
+        )}
 
           {/* Completed Goals */}
           {getCompletedGoals().length > 0 && (
             <div className="space-y-8">
-              <div>
+                <div>
                 <h2 className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
-                  Completed Goals
-                </h2>
-                <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
-                  {getCompletedGoals().length} goals successfully achieved
-                </p>
-              </div>
+                    Completed Goals
+                  </h2>
+                  <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                    {getCompletedGoals().length} goals successfully achieved
+                  </p>
+                </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {getCompletedGoals().map((goal, index) => (
                   <div key={goal._id} className="group">
@@ -1418,13 +1517,13 @@ const GoalsPage = () => {
                       <div className="p-6">
                         {/* Goal Header */}
                         <div className="flex items-start justify-between mb-6">
-                          <div className="flex-1 min-w-0">
+                            <div className="flex-1 min-w-0">
                             <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2 truncate">
-                              {goal.name}
-                            </h3>
+                                {goal.name}
+                              </h3>
                             <span className="inline-block px-3 py-1 rounded-full text-xs font-body font-medium bg-loopfund-gold-100 text-loopfund-gold-700 dark:bg-loopfund-gold-900/30 dark:text-loopfund-gold-300">
                               Completed
-                            </span>
+                              </span>
                           </div>
                           
                           {/* Actions Menu */}
@@ -1493,10 +1592,10 @@ const GoalsPage = () => {
                       </div>
                     </LoopFundCard>
                   </div>
-                ))}
-              </div>
+              ))}
             </div>
-          )}
+            </div>
+        )}
 
           {/* Empty State */}
           {goals.length === 0 && !isLoading && (
@@ -1511,7 +1610,7 @@ const GoalsPage = () => {
                 Start your financial journey by creating your first savings goal
               </p>
               <button
-                onClick={() => setShowCreateForm(true)}
+                  onClick={() => setShowCreateForm(true)}
                 className="px-6 py-3 bg-loopfund-emerald-600 hover:bg-loopfund-emerald-700 rounded-lg font-body text-body font-medium text-white transition-colors duration-200 flex items-center space-x-2 mx-auto"
               >
                 <Plus className="w-4 h-4" />
@@ -1520,106 +1619,18 @@ const GoalsPage = () => {
             </div>
           )}
 
-          {/* Revolutionary Payment Modal */}
-          <AnimatePresence>
-            {showPaymentModal && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-loopfund-neutral-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-                onClick={() => setShowPaymentModal(false)}
-              >
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                  animate={{ scale: 1, opacity: 1, y: 0 }}
-                  exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="relative"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <LoopFundCard variant="elevated" className="w-full max-w-lg overflow-hidden">
-                    {/* Background Elements */}
-                    <div className="absolute inset-0 overflow-hidden">
-                      <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-loopfund opacity-10 rounded-full blur-3xl animate-float" />
-                    </div>
-                    
-                    <div className="relative text-center">
-                      <motion.div 
-                        className="w-20 h-20 bg-gradient-loopfund rounded-full flex items-center justify-center mx-auto mb-6 shadow-loopfund-lg"
-                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      >
-                        <CreditCard className="w-10 h-10 text-white" />
-                      </motion.div>
-                      <motion.h2 
-                        className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-3"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                      >
-                        Create Additional Goal
-                      </motion.h2>
-                      <motion.p 
-                        className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-6"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                      >
-                        You've used your free goal. Create additional goals with a small fee.
-                      </motion.p>
-                      
-                      <motion.div 
-                        className="bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/20 rounded-2xl p-6 mb-8 border border-loopfund-emerald-200 dark:border-loopfund-emerald-800"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                      >
-                        <div className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-3">Goal Details:</div>
-                        <div className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">{formData.name}</div>
-                        <div className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400 break-words mb-1">
-                          Target: ₦{parseFloat(formData.targetAmount || 0).toLocaleString()}
-                        </div>
-                        <div className="font-body text-body-sm text-loopfund-emerald-600 break-words">
-                          Fee: ₦{calculateGoalFee(parseFloat(formData.targetAmount || 0)).toLocaleString()}
-                        </div>
-                      </motion.div>
-
-                      <motion.div 
-                        className="flex space-x-4"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                      >
-                        <LoopFundButton
-                          onClick={() => setShowPaymentModal(false)}
-                          variant="secondary"
-                          size="lg"
-                          className="flex-1"
-                        >
-                          Cancel
-                        </LoopFundButton>
-                        <LoopFundButton
-                          onClick={handlePaymentSuccess}
-                          variant="primary"
-                          size="lg"
-                          icon={<CreditCard className="w-5 h-5" />}
-                          className="flex-1"
-                        >
-                          <span className="break-words">
-                            Pay ₦{calculateGoalFee(parseFloat(formData.targetAmount || 0)).toLocaleString()} & Create Goal
-                          </span>
-                        </LoopFundButton>
-                      </motion.div>
-                    </div>
-                  </LoopFundCard>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Payment Modal removed - now using wallet deduction */}
 
           {/* Revolutionary Contribution Modal */}
           <AnimatePresence>
             {showContributeModal && (
+              <ContributionForm
+                goals={goals}
+                onSubmit={handleAddContribution}
+                onClose={() => setShowContributeModal(false)}
+              />
+            )}
+            {false && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

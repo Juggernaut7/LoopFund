@@ -1,48 +1,79 @@
 const Contribution = require('../models/Contribution');
 const Goal = require('../models/Goal');
 const Group = require('../models/Group');
+const Wallet = require('../models/Wallet');
 
 const addContribution = async (contributionData) => {
   try {
-    const { userId, goalId, amount, method, description, type = 'individual' } = contributionData;
+    const { userId, goalId, groupId, amount, method, description, type = 'individual', paymentMethod = 'wallet' } = contributionData;
 
     console.log('Contribution Data:', contributionData);
     console.log('User ID:', userId);
 
-    // First, get the goal to check if it exists and get its type
-    const goal = await Goal.findById(goalId);
-    console.log('Goal found:', goal);
-    
-    if (!goal) {
-      throw new Error('Goal not found');
+    let targetEntity = null;
+    let contributionType = type;
+
+    // Check if it's a goal contribution
+    if (goalId) {
+      const goal = await Goal.findById(goalId);
+      console.log('Goal found:', goal);
+      
+      if (!goal) {
+        throw new Error('Goal not found');
+      }
+      targetEntity = goal;
+      contributionType = goal.type || 'individual';
+    }
+    // Check if it's a group contribution
+    else if (groupId) {
+      const group = await Group.findById(groupId);
+      console.log('Group found:', group);
+      
+      if (!group) {
+        throw new Error('Group not found');
+      }
+      targetEntity = group;
+      contributionType = 'group';
+    }
+    else {
+      throw new Error('Either goalId or groupId must be provided');
     }
 
-    // Check if user can contribute to this goal
+    // Check if user can contribute
     let canContribute = false;
 
-    console.log('Goal user:', goal.user);
-    console.log('Goal type:', goal.type);
+    if (goalId) {
+      // For goal contributions
+      console.log('Goal user:', targetEntity.user);
+      console.log('Goal type:', targetEntity.type);
 
-    if (type === 'individual' || goal.type === 'individual') {
-      // For individual goals, only the goal owner can contribute
-      if (goal.user) {
-        canContribute = goal.user.toString() === userId;
-        console.log('Individual goal check:', canContribute);
-      } else {
-        console.log('No user field in goal, allowing contribution');
-        canContribute = true;
-      }
-    } else if (type === 'group' || goal.type === 'group') {
-      // For group goals, check if user is a member of the group
-      if (goal.group) {
-        const group = await Group.findById(goal.group);
-        if (group) {
-          canContribute = group.members.some(member => 
-            member.user.toString() === userId || group.owner.toString() === userId
-          );
-          console.log('Group goal check:', canContribute);
+      if (contributionType === 'individual') {
+        // For individual goals, only the goal owner can contribute
+        if (targetEntity.user) {
+          canContribute = targetEntity.user.toString() === userId;
+          console.log('Individual goal check:', canContribute);
+        } else {
+          console.log('No user field in goal, allowing contribution');
+          canContribute = true;
+        }
+      } else if (contributionType === 'group') {
+        // For group goals, check if user is a member of the group
+        if (targetEntity.group) {
+          const group = await Group.findById(targetEntity.group);
+          if (group) {
+            canContribute = group.members.some(member => 
+              member.user.toString() === userId || group.owner.toString() === userId
+            );
+            console.log('Group goal check:', canContribute);
+          }
         }
       }
+    } else if (groupId) {
+      // For group contributions, check if user is a member of the group
+      canContribute = targetEntity.members.some(member => 
+        member.user.toString() === userId || targetEntity.owner.toString() === userId
+      );
+      console.log('Group contribution check:', canContribute);
     }
 
     console.log('Can contribute:', canContribute);
@@ -51,37 +82,128 @@ const addContribution = async (contributionData) => {
       throw new Error('You are not authorized to contribute to this goal');
     }
 
+    // Handle payment method
+    if (paymentMethod === 'wallet') {
+      // Get user's wallet
+      let wallet = await Wallet.findOne({ user: userId });
+      if (!wallet) {
+        throw new Error('Wallet not found. Please add money to your wallet first.');
+      }
+
+      // Check if user has sufficient balance
+      if (wallet.balance < amount) {
+        throw new Error(`Insufficient wallet balance. Available: ₦${wallet.balance.toLocaleString()}, Required: ₦${amount.toLocaleString()}`);
+      }
+
+      // Deduct from wallet
+      wallet.balance -= amount;
+      
+      // Add transaction record
+      wallet.transactions.push({
+        type: 'contribution',
+        amount: -amount, // Negative for deduction
+        description: description || `Contribution to ${targetEntity.name}`,
+        goalId: goalId || null,
+        groupId: groupId || null,
+        contributorId: userId,
+        status: 'completed'
+      });
+
+      await wallet.save();
+      console.log('💰 Wallet updated after contribution:', wallet.balance);
+    } else if (paymentMethod === 'paystack_direct') {
+      // For direct Paystack payments, we'll handle this in the controller
+      // This service will just create the contribution record
+      console.log('💳 Direct Paystack payment - contribution will be processed via payment service');
+    }
+
     // Create the contribution
     const contribution = new Contribution({
       user: userId,
-      goal: goalId,
-      group: goal.group || null,
+      goal: goalId || null,
+      group: groupId || (targetEntity.group || null),
       amount: amount,
-      type: type,
-      method: method || 'bank_transfer',
+      type: contributionType,
+      method: paymentMethod === 'wallet' ? 'wallet' : (method || 'bank_transfer'),
       description: description || 'Contribution',
       status: 'completed',
       metadata: {
-        goalName: goal.name,
-        goalType: goal.type,
-        groupName: goal.group ? (await Group.findById(goal.group))?.name : null
+        targetName: targetEntity.name,
+        targetType: contributionType,
+        groupName: groupId ? targetEntity.name : (targetEntity.group ? (await Group.findById(targetEntity.group))?.name : null),
+        paymentMethod: paymentMethod
       }
     });
 
     await contribution.save();
 
-    // Update goal progress
-    goal.currentAmount = (goal.currentAmount || 0) + amount;
-    goal.lastContributionDate = new Date();
-    await goal.save();
-
-    // If it's a group goal, update group total
-    if (goal.group) {
-      const group = await Group.findById(goal.group);
-      if (group) {
-        group.totalSavings = (group.totalSavings || 0) + amount;
-        await group.save();
+    // Update target progress
+    if (goalId) {
+      // Update goal progress
+      targetEntity.currentAmount = (targetEntity.currentAmount || 0) + amount;
+      targetEntity.lastContributionDate = new Date();
+      
+      // Check if goal is completed
+      if (targetEntity.currentAmount >= targetEntity.targetAmount && targetEntity.status !== 'completed') {
+        targetEntity.status = 'completed';
+        targetEntity.completedAt = new Date();
+        
+        // Trigger fund release check for completed goal
+        const fundReleaseService = require('./fundRelease.service');
+        setTimeout(async () => {
+          try {
+            await fundReleaseService.checkAndReleaseGoalFunds(targetEntity._id);
+          } catch (error) {
+            console.error('Error auto-releasing goal funds:', error);
+          }
+        }, 1000); // Small delay to ensure goal is saved
       }
+      
+      await targetEntity.save();
+
+      // If it's a group goal, update group total
+      if (targetEntity.group) {
+        const group = await Group.findById(targetEntity.group);
+        if (group) {
+          group.currentAmount = (group.currentAmount || 0) + amount;
+          group.progress.totalContributions = (group.progress.totalContributions || 0) + 1;
+          await group.save();
+          console.log('📊 Group goal updated:', {
+            groupId: group._id,
+            newAmount: group.currentAmount
+          });
+        }
+      }
+    } else if (groupId) {
+      // Update group total for direct group contributions
+      targetEntity.currentAmount = (targetEntity.currentAmount || 0) + amount;
+      targetEntity.lastContributionDate = new Date();
+      
+      // Update progress
+      targetEntity.progress.totalContributions = (targetEntity.progress.totalContributions || 0) + 1;
+      
+      // Check if group target is reached
+      if (targetEntity.targetAmount && targetEntity.currentAmount >= targetEntity.targetAmount && targetEntity.status !== 'completed') {
+        targetEntity.status = 'completed';
+        targetEntity.completedAt = new Date();
+
+        // Trigger fund release to group creator's wallet upon completion
+        const fundReleaseService = require('./fundRelease.service');
+        setTimeout(async () => {
+          try {
+            await fundReleaseService.checkAndReleaseGroupFunds(targetEntity._id);
+          } catch (error) {
+            console.error('Error auto-releasing group funds:', error);
+          }
+        }, 1000); // Small delay to ensure group is saved
+      }
+      
+      await targetEntity.save();
+      console.log('📊 Group updated after contribution:', {
+        groupId: targetEntity._id,
+        newAmount: targetEntity.currentAmount,
+        targetAmount: targetEntity.targetAmount
+      });
     }
 
     return contribution;

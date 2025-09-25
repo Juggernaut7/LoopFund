@@ -2,6 +2,7 @@ const Wallet = require('../models/Wallet');
 const User = require('../models/User');
 const Goal = require('../models/Goal');
 const Group = require('../models/Group');
+const { validationResult } = require('express-validator');
 
 // Get user wallet
 const getUserWallet = async (req, res, next) => {
@@ -63,13 +64,39 @@ const addToWallet = async (req, res, next) => {
       amount: amount,
       description: description || 'Wallet deposit',
       reference: reference,
-      status: 'completed'
+      status: 'completed',
+      createdAt: new Date(),
+      metadata: {
+        source: 'paystack',
+        paymentMethod: 'card',
+        transactionType: 'wallet_deposit'
+      }
     });
     
     // Update balance
     wallet.balance += amount;
     
     await wallet.save();
+    
+    // Create notification for successful deposit
+    try {
+      const notificationService = require('../services/notification.service');
+      await notificationService.createNotification({
+        user: userId,
+        title: 'Deposit Successful',
+        message: `₦${amount.toLocaleString()} has been added to your wallet`,
+        type: 'success',
+        category: 'wallet',
+        priority: 'medium',
+        metadata: {
+          amount: amount,
+          reference: reference,
+          transactionType: 'deposit'
+        }
+      });
+    } catch (notificationError) {
+      console.error('Error creating deposit notification:', notificationError);
+    }
     
     res.json({
       success: true,
@@ -138,7 +165,14 @@ const contributeToGoal = async (req, res, next) => {
       amount: -amount, // Negative for deduction
       description: description || `Contribution to goal: ${goal.name}`,
       goalId: goalId,
-      status: 'completed'
+      status: 'completed',
+      createdAt: new Date(),
+      metadata: {
+        goalName: goal.name,
+        goalType: goal.type,
+        transactionType: 'goal_contribution',
+        paymentMethod: 'wallet'
+      }
     });
     
     await wallet.save();
@@ -216,7 +250,14 @@ const contributeToGroup = async (req, res, next) => {
       amount: -amount, // Negative for deduction
       description: description || `Contribution to group: ${group.name}`,
       groupId: groupId,
-      status: 'completed'
+      status: 'completed',
+      createdAt: new Date(),
+      metadata: {
+        groupName: group.name,
+        groupType: group.category,
+        transactionType: 'group_contribution',
+        paymentMethod: 'wallet'
+      }
     });
     
     await wallet.save();
@@ -225,9 +266,19 @@ const contributeToGroup = async (req, res, next) => {
     group.currentAmount = (group.currentAmount || 0) + amount;
     
     // Check if group goal is completed
-    if (group.currentAmount >= group.targetAmount) {
+    if (group.currentAmount >= group.targetAmount && group.status !== 'completed') {
       group.status = 'completed';
       group.completedAt = new Date();
+      
+      // Trigger fund release check for completed group
+      const fundReleaseService = require('../services/fundRelease.service');
+      setTimeout(async () => {
+        try {
+          await fundReleaseService.checkAndReleaseGroupFunds(group._id);
+        } catch (error) {
+          console.error('Error auto-releasing group funds:', error);
+        }
+      }, 1000); // Small delay to ensure group is saved
     }
     
     await group.save();
@@ -250,51 +301,101 @@ const contributeToGroup = async (req, res, next) => {
 const getWalletTransactions = async (req, res, next) => {
   try {
     const userId = req.user.userId;
-    const { page = 1, limit = 20, type } = req.query;
-    
-    let wallet = await Wallet.findOne({ user: userId });
-    
+    const { 
+      page = 1, 
+      limit = 20, 
+      type, 
+      status, 
+      startDate, 
+      endDate,
+      search 
+    } = req.query;
+
+    console.log('🔍 Getting transactions for user:', userId);
+    const wallet = await Wallet.findOne({ user: userId });
+    console.log('🔍 Wallet found:', !!wallet);
+
     if (!wallet) {
-      return res.json({
-        success: true,
-        data: {
-          transactions: [],
-          total: 0,
-          page: parseInt(page),
-          limit: parseInt(limit)
-        }
+      console.log('❌ Wallet not found for user:', userId);
+      return res.status(404).json({
+        success: false,
+        message: 'Wallet not found'
       });
     }
-    
+
     let transactions = wallet.transactions;
-    
-    // Filter by type if provided
+    console.log('🔍 All wallet transactions:', transactions);
+    console.log('🔍 Wallet ID:', wallet._id);
+    console.log('🔍 User ID:', userId);
+    console.log('🔍 Transaction count:', transactions.length);
+
+    // Filter by type
     if (type) {
       transactions = transactions.filter(t => t.type === type);
+      console.log(`🔍 Filtered by type ${type}:`, transactions);
     }
-    
-    // Sort by timestamp (newest first)
-    transactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    
+
+    // Filter by status
+    if (status) {
+      transactions = transactions.filter(t => t.status === status);
+    }
+
+    // Filter by date range
+    if (startDate || endDate) {
+      transactions = transactions.filter(t => {
+        const transactionDate = new Date(t.createdAt);
+        if (startDate && transactionDate < new Date(startDate)) return false;
+        if (endDate && transactionDate > new Date(endDate)) return false;
+        return true;
+      });
+    }
+
+    // Search in description
+    if (search) {
+      transactions = transactions.filter(t => 
+        t.description.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    // Sort by date descending
+    transactions = transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
     // Pagination
+    const total = transactions.length;
     const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
+    const endIndex = startIndex + parseInt(limit);
     const paginatedTransactions = transactions.slice(startIndex, endIndex);
-    
-    res.json({
-      success: true,
-      data: {
-        transactions: paginatedTransactions,
-        total: transactions.length,
-        page: parseInt(page),
-        limit: parseInt(limit)
+
+    // Calculate summary
+    const summary = {
+      totalTransactions: total,
+      totalDeposits: transactions.filter(t => t.type === 'deposit').reduce((sum, t) => sum + t.amount, 0),
+      totalWithdrawals: Math.abs(transactions.filter(t => t.type === 'withdrawal').reduce((sum, t) => sum + t.amount, 0)),
+      totalContributions: Math.abs(transactions.filter(t => t.type === 'contribution').reduce((sum, t) => sum + t.amount, 0)),
+      pendingWithdrawals: transactions.filter(t => t.type === 'withdrawal' && t.status === 'pending').length
+    };
+
+        const response = {
+          success: true,
+          data: {
+            transactions: paginatedTransactions,
+            pagination: {
+              currentPage: parseInt(page),
+              totalPages: Math.ceil(total / limit),
+              totalItems: total,
+              itemsPerPage: parseInt(limit)
+            },
+            summary
+          }
+        };
+        
+        console.log('📤 Sending transaction response:', JSON.stringify(response, null, 2));
+        res.json(response);
+      } catch (error) {
+        console.error('Get wallet transactions error:', error);
+        next(error);
       }
-    });
-  } catch (error) {
-    console.error('Get wallet transactions error:', error);
-    next(error);
-  }
-};
+    };
 
 // Release goal funds to goal owner
 const releaseGoalFunds = async (req, res, next) => {
@@ -454,6 +555,197 @@ const releaseGroupFunds = async (req, res, next) => {
   }
 };
 
+// Withdraw money from wallet
+const withdrawFromWallet = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      console.log('❌ Validation errors:', errors.array());
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const userId = req.user.userId;
+    const { amount, description, bankAccount } = req.body;
+    
+    console.log('🔄 Withdrawal request:', { userId, amount, description, bankAccount });
+    console.log('🏦 Bank account details:', bankAccount);
+    console.log('📊 Request body:', req.body);
+
+    const wallet = await Wallet.findOne({ user: userId });
+    if (!wallet || wallet.balance < amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'Insufficient funds in wallet'
+      });
+    }
+
+    // Deduct amount immediately but mark as pending withdrawal
+    console.log('💰 Wallet balance before withdrawal:', wallet.balance);
+    wallet.balance -= amount;
+    console.log('💰 Wallet balance after withdrawal:', wallet.balance);
+    
+    wallet.transactions.push({
+      type: 'withdrawal',
+      amount: -amount, // Negative for deduction
+      description: description || 'Wallet withdrawal',
+      status: 'pending', // Withdrawal needs approval
+      createdAt: new Date(),
+      metadata: {
+        bankAccount: bankAccount,
+        withdrawalRequestedAt: new Date(),
+        transactionType: 'wallet_withdrawal',
+        paymentMethod: 'bank_transfer'
+      }
+    });
+
+    await wallet.save();
+    console.log('✅ Withdrawal processed successfully');
+
+    // Create notification for withdrawal request
+    try {
+      const notificationService = require('../services/notification.service');
+      await notificationService.createNotification({
+        user: userId,
+        title: 'Withdrawal Requested',
+        message: `Withdrawal request of ₦${amount.toLocaleString()} has been submitted for review`,
+        type: 'info',
+        category: 'wallet',
+        priority: 'high',
+        metadata: {
+          amount: amount,
+          bankAccount: bankAccount,
+          transactionType: 'withdrawal'
+        }
+      });
+    } catch (notificationError) {
+      console.error('Error creating withdrawal notification:', notificationError);
+    }
+
+    res.json({
+      success: true,
+      data: wallet,
+      message: 'Withdrawal request submitted successfully'
+    });
+  } catch (error) {
+    console.error('Withdraw from wallet error:', error);
+    next(error);
+  }
+};
+
+// Get withdrawal requests (admin only)
+const getWithdrawalRequests = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    const wallet = await Wallet.findOne({ user: userId });
+
+    if (!wallet) {
+      return res.status(404).json({
+        success: false,
+        message: 'Wallet not found'
+      });
+    }
+
+    // Get pending withdrawals
+    const withdrawals = wallet.transactions.filter(t => t.type === 'withdrawal' && t.status === 'pending');
+
+    res.json({
+      success: true,
+      data: withdrawals
+    });
+  } catch (error) {
+    console.error('Get withdrawal requests error:', error);
+    next(error);
+  }
+};
+
+// Approve withdrawal (admin only)
+const approveWithdrawal = async (req, res, next) => {
+  try {
+    const { transactionId } = req.body;
+    
+    // This would typically be an admin function
+    // For now, we'll just mark as completed
+    const wallet = await Wallet.findOne({ 'transactions._id': transactionId });
+    
+    if (!wallet) {
+      return res.status(404).json({
+        success: false,
+        message: 'Transaction not found'
+      });
+    }
+
+    const transaction = wallet.transactions.id(transactionId);
+    if (transaction.status === 'pending') {
+      // Amount was already deducted, just mark as completed
+      transaction.status = 'completed';
+      await wallet.save();
+    }
+
+    res.json({
+      success: true,
+      data: wallet,
+      message: 'Withdrawal approved successfully'
+    });
+  } catch (error) {
+    console.error('Approve withdrawal error:', error);
+    next(error);
+  }
+};
+
+// Deduct money from wallet (for fees, etc.)
+const deductFromWallet = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    const { amount, description, type, metadata } = req.body;
+    
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid amount'
+      });
+    }
+    
+    let wallet = await Wallet.findOne({ user: userId });
+    if (!wallet) {
+      return res.status(404).json({
+        success: false,
+        message: 'Wallet not found'
+      });
+    }
+    
+    if (wallet.balance < amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'Insufficient wallet balance'
+      });
+    }
+    
+    // Deduct amount
+    wallet.balance -= amount;
+    
+    // Add transaction
+    wallet.transactions.push({
+      type: type || 'fee',
+      amount: -amount, // Negative for deduction
+      description: description || 'Wallet deduction',
+      status: 'completed',
+      createdAt: new Date(),
+      metadata: metadata || {}
+    });
+    
+    await wallet.save();
+    
+    res.json({
+      success: true,
+      data: wallet,
+      message: 'Amount deducted successfully'
+    });
+  } catch (error) {
+    console.error('Deduct from wallet error:', error);
+    next(error);
+  }
+};
+
 module.exports = {
   getUserWallet,
   addToWallet,
@@ -461,5 +753,9 @@ module.exports = {
   contributeToGroup,
   getWalletTransactions,
   releaseGoalFunds,
-  releaseGroupFunds
+  releaseGroupFunds,
+  withdrawFromWallet,
+  getWithdrawalRequests,
+  approveWithdrawal,
+  deductFromWallet
 };

@@ -36,24 +36,51 @@ const walletService = {
     });
   },
 
-  // Get wallet transactions
-  getTransactions: async (page = 1, limit = 20, type = null) => {
+  // Get wallet transactions with enhanced filtering
+  getTransactions: async (page = 1, limit = 20, filters = {}) => {
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString()
     });
     
-    if (type) {
-      params.append('type', type);
-    }
+    // Add filter parameters
+    if (filters.type) params.append('type', filters.type);
+    if (filters.status) params.append('status', filters.status);
+    if (filters.startDate) params.append('startDate', filters.startDate);
+    if (filters.endDate) params.append('endDate', filters.endDate);
+    if (filters.search) params.append('search', filters.search);
     
-    return apiService.get(`/wallet/transactions?${params}`);
+    console.log('🔄 Calling wallet transactions API with params:', params.toString());
+    const response = await apiService.get(`/wallet/transactions?${params}`);
+    console.log('📊 Wallet transactions API response:', response);
+    return response;
   },
 
   // Release goal funds to goal owner
   releaseGoalFunds: async (goalId) => {
     return apiService.post('/wallet/release-goal-funds', {
       goalId
+    });
+  },
+
+  // Withdraw money from wallet
+  withdrawFromWallet: async (amount, description, bankAccount) => {
+    return apiService.post('/wallet/withdraw', {
+      amount,
+      description,
+      bankAccount
+    });
+  },
+
+  // Get withdrawal requests
+  getWithdrawalRequests: async () => {
+    return apiService.get('/wallet/withdrawals');
+  },
+
+  // Approve withdrawal (admin only)
+  approveWithdrawal: async (transactionId) => {
+    return apiService.post('/wallet/approve-withdrawal', {
+      transactionId
     });
   }
 };

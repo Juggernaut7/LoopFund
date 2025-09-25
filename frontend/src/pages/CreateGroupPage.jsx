@@ -5,21 +5,14 @@ import {
   Users, 
   Target, 
   FileText, 
-  CreditCard, 
   CheckCircle, 
   Calendar, 
   TrendingUp, 
   AlertCircle, 
   ArrowLeft,
-  Sparkles,
-  Crown,
-  Zap,
-  DollarSign,
-  Clock,
   Shield,
-  Loader2
+  Zap
 } from 'lucide-react';
-import PaymentModal from '../components/payment/PaymentModal';
 import FeeCalculator from '../components/payment/FeeCalculator';
 import { useAuthStore } from '../store/useAuthStore';
 import { LoopFundButton, LoopFundCard, LoopFundInput } from '../components/ui';
@@ -34,20 +27,10 @@ const CreateGroupPage = () => {
     description: '',
     maxMembers: 10,
     durationType: 'weekly',
-    durationValue: 1,
-    accountInfo: {
-      bankName: '',
-      accountName: '',
-      accountNumber: '',
-      routingNumber: '',
-      swiftCode: '',
-      paymentMethod: 'bank_transfer',
-      additionalInfo: ''
-    }
+    durationValue: 1
   });
   const [feeData, setFeeData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -115,64 +98,35 @@ const CreateGroupPage = () => {
       return;
     }
 
-    if (!feeData) {
-      setError('Please wait for fee calculation to complete');
-      return;
-    }
-
     setError('');
     setIsLoading(true);
-    setShowPaymentModal(true);
-  };
-
-  const handleFeeCalculated = (fee) => {
-    setFeeData(fee);
-  };
-
-  const handlePaymentSuccess = async () => {
     try {
-      setIsLoading(true);
-      
-      // The group should already be created by the backend after successful payment
-      // We just need to redirect to the groups page or show success message
-      setSuccess('Payment successful! Your group is being created...');
-      
-      // Clear form data
-      setFormData({ 
-        name: '', 
-        targetAmount: '', 
-        description: '', 
-        maxMembers: 10, 
-        durationType: 'weekly', 
-        durationValue: 1,
-        accountInfo: {
-          bankName: '',
-          accountName: '',
-          accountNumber: '',
-          routingNumber: '',
-          swiftCode: '',
-          paymentMethod: 'bank_transfer',
-          additionalInfo: ''
-        }
-      });
-      setFeeData(null);
-      
-      // Redirect to groups page after a delay
-      setTimeout(() => {
-        window.location.href = '/groups';
-      }, 3000);
-      
+      const payload = {
+        name: formData.name,
+        description: formData.description,
+        targetAmount: parseFloat(formData.targetAmount),
+        maxMembers: parseInt(formData.maxMembers, 10),
+        durationMonths: calculateTotalDurationInMonths(),
+        feeData: feeData // Include fee calculation
+      };
+
+      const response = await api.post('/groups', payload);
+      if (response?.data?.success) {
+        setSuccess('Group created successfully');
+        setTimeout(() => navigate('/groups'), 800);
+      } else {
+        setError(response?.data?.message || 'Failed to create group');
+      }
     } catch (err) {
-      console.error('Payment success handling error:', err);
-      setError('Payment was successful but there was an issue. Please check your groups.');
+      console.error('Create group error:', err);
+      setError(err?.response?.data?.message || 'Failed to create group');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleClosePaymentModal = () => {
-    setShowPaymentModal(false);
-    setIsLoading(false);
+  const handleFeeCalculated = (fee) => {
+    setFeeData(fee);
   };
 
   return (
@@ -220,8 +174,7 @@ const CreateGroupPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              Start a new savings challenge with friends and family. 
-              <span className="text-loopfund-emerald-600 dark:text-loopfund-emerald-400 font-medium"> Dynamic fees based on amount and duration</span> - fair and transparent pricing.
+              Start a new savings challenge with friends and family.
             </motion.p>
           </div>
         </motion.div>
@@ -407,156 +360,7 @@ const CreateGroupPage = () => {
                     </select>
                   </div>
 
-                  {/* Account Information */}
-                  <LoopFundCard variant="gradient" className="relative">
-                    {/* Background Elements */}
-                    <div className="absolute inset-0 overflow-hidden">
-                      <div className="absolute -top-10 -right-10 w-20 h-20 bg-gradient-gold opacity-5 rounded-full blur-2xl animate-float" />
-                    </div>
-
-                    <div className="relative p-8">
-                      <div className="flex items-center space-x-4 mb-8">
-                        <motion.div 
-                          className="w-12 h-12 bg-gradient-to-r from-loopfund-gold-500 to-loopfund-orange-500 rounded-2xl flex items-center justify-center shadow-loopfund"
-                          whileHover={{ rotate: 15, scale: 1.1 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                        >
-                          <CreditCard className="w-6 h-6 text-white" />
-                        </motion.div>
-                        <h3 className="font-display text-h2 text-white">
-                          Payment Account Information
-                        </h3>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {/* Bank Name */}
-                        <div>
-                          <label className="block font-body text-body font-medium text-white/90 mb-3">
-                            Bank Name
-                          </label>
-                          <input
-                            type="text"
-                            value={formData.accountInfo.bankName}
-                            onChange={(e) => setFormData(prev => ({
-                              ...prev,
-                              accountInfo: { ...prev.accountInfo, bankName: e.target.value }
-                            }))}
-                            placeholder="e.g., First Bank, GTBank"
-                            className="w-full px-4 py-3 border border-white/20 rounded-xl bg-white/10 backdrop-blur-sm text-white placeholder-white/60 focus:ring-2 focus:ring-loopfund-gold-500 focus:border-transparent transition-colors font-body text-body"
-                          />
-                        </div>
-
-                        {/* Account Name */}
-                        <div>
-                          <label className="block font-body text-body font-medium text-white/90 mb-3">
-                            Account Name
-                          </label>
-                          <input
-                            type="text"
-                            value={formData.accountInfo.accountName}
-                            onChange={(e) => setFormData(prev => ({
-                              ...prev,
-                              accountInfo: { ...prev.accountInfo, accountName: e.target.value }
-                            }))}
-                            placeholder="Account holder name"
-                            className="w-full px-4 py-3 border border-white/20 rounded-xl bg-white/10 backdrop-blur-sm text-white placeholder-white/60 focus:ring-2 focus:ring-loopfund-gold-500 focus:border-transparent transition-colors font-body text-body"
-                          />
-                        </div>
-
-                        {/* Account Number */}
-                        <div>
-                          <label className="block font-body text-body font-medium text-white/90 mb-3">
-                            Account Number
-                          </label>
-                          <input
-                            type="text"
-                            value={formData.accountInfo.accountNumber}
-                            onChange={(e) => setFormData(prev => ({
-                              ...prev,
-                              accountInfo: { ...prev.accountInfo, accountNumber: e.target.value }
-                            }))}
-                            placeholder="10-digit account number"
-                            className="w-full px-4 py-3 border border-white/20 rounded-xl bg-white/10 backdrop-blur-sm text-white placeholder-white/60 focus:ring-2 focus:ring-loopfund-gold-500 focus:border-transparent transition-colors font-body text-body"
-                          />
-                        </div>
-
-                        {/* Routing Number */}
-                        <div>
-                          <label className="block font-body text-body font-medium text-white/90 mb-3">
-                            Routing Number (Optional)
-                          </label>
-                          <input
-                            type="text"
-                            value={formData.accountInfo.routingNumber}
-                            onChange={(e) => setFormData(prev => ({
-                              ...prev,
-                              accountInfo: { ...prev.accountInfo, routingNumber: e.target.value }
-                            }))}
-                            placeholder="Bank routing number"
-                            className="w-full px-4 py-3 border border-white/20 rounded-xl bg-white/10 backdrop-blur-sm text-white placeholder-white/60 focus:ring-2 focus:ring-loopfund-gold-500 focus:border-transparent transition-colors font-body text-body"
-                          />
-                        </div>
-
-                        {/* Payment Method */}
-                        <div>
-                          <label className="block font-body text-body font-medium text-white/90 mb-3">
-                            Preferred Payment Method
-                          </label>
-                          <select
-                            value={formData.accountInfo.paymentMethod}
-                            onChange={(e) => setFormData(prev => ({
-                              ...prev,
-                              accountInfo: { ...prev.accountInfo, paymentMethod: e.target.value }
-                            }))}
-                            className="w-full px-4 py-3 border border-white/20 rounded-xl bg-white/10 backdrop-blur-sm text-white focus:ring-2 focus:ring-loopfund-gold-500 focus:border-transparent transition-colors font-body text-body"
-                          >
-                            <option value="bank_transfer">Bank Transfer</option>
-                            <option value="mobile_money">Mobile Money</option>
-                            <option value="crypto">Cryptocurrency</option>
-                            <option value="other">Other</option>
-                          </select>
-                        </div>
-
-                        {/* Additional Info */}
-                        <div className="md:col-span-2 lg:col-span-4">
-                          <label className="block font-body text-body font-medium text-white/90 mb-3">
-                            Additional Payment Information (Optional)
-                          </label>
-                          <textarea
-                            value={formData.accountInfo.additionalInfo}
-                            onChange={(e) => setFormData(prev => ({
-                              ...prev,
-                              accountInfo: { ...prev.accountInfo, additionalInfo: e.target.value }
-                            }))}
-                            placeholder="Any additional payment instructions or information..."
-                            rows={3}
-                            className="w-full px-4 py-3 border border-white/20 rounded-xl bg-white/10 backdrop-blur-sm text-white placeholder-white/60 focus:ring-2 focus:ring-loopfund-gold-500 focus:border-transparent transition-colors resize-none font-body text-body"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="mt-8 p-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
-                        <div className="flex items-start space-x-4">
-                          <motion.div 
-                            className="w-8 h-8 bg-gradient-to-r from-loopfund-gold-500 to-loopfund-orange-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1"
-                            whileHover={{ scale: 1.1 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                          >
-                            <span className="text-white text-sm font-bold">i</span>
-                          </motion.div>
-                          <div>
-                            <p className="text-white font-body text-body font-medium mb-2">
-                              Payment Information
-                            </p>
-                            <p className="text-white/80 font-body text-body-sm">
-                              This information will be shared with group members so they know where to send their contributions. 
-                              Make sure the details are accurate and up-to-date.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </LoopFundCard>
+                  {/* Account Information removed - using escrow + wallet flow */}
 
                   {/* Error Display */}
                   <AnimatePresence>
@@ -601,17 +405,12 @@ const CreateGroupPage = () => {
                   <div className="flex justify-center pt-6">
                     <LoopFundButton 
                       type="submit"
-                      disabled={isLoading || !feeData}
+                      disabled={isLoading}
                       variant="primary"
                       size="lg"
-                      icon={isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : <CreditCard className="w-6 h-6" />}
                       className="w-full max-w-md"
                     >
-                      {isLoading ? 'Processing...' : (
-                        feeData 
-                          ? `Pay ₦${feeData.totalFee.toLocaleString()} & Create Group`
-                          : 'Calculating Fee...'
-                      )}
+                      {isLoading ? 'Creating Group...' : 'Create Group'}
                     </LoopFundButton>
                   </div>
                 </form>
@@ -626,10 +425,11 @@ const CreateGroupPage = () => {
             transition={{ delay: 0.5 }}
             className="space-y-6"
           >
-            {/* Dynamic Fee Calculator */}
+            {/* Fee Calculator */}
             <FeeCalculator
               targetAmount={formData.targetAmount}
               durationMonths={calculateTotalDurationInMonths()}
+              maxMembers={formData.maxMembers}
               onFeeCalculated={handleFeeCalculated}
             />
 
@@ -655,7 +455,7 @@ const CreateGroupPage = () => {
                 </div>
                 <div className="space-y-4">
                   {[
-                    { icon: CheckCircle, text: 'Dynamic fee calculation', color: 'emerald' },
+                    { icon: CheckCircle, text: 'Free group creation', color: 'emerald' },
                     { icon: Zap, text: 'AI-powered insights', color: 'electric' },
                     { icon: Target, text: 'Progress tracking', color: 'coral' },
                     { icon: Users, text: 'Group collaboration', color: 'gold' }
@@ -698,7 +498,7 @@ const CreateGroupPage = () => {
                   </h3>
                 </div>
                 <p className="font-body text-body text-white/90">
-                  Your payment is processed securely through Paystack, a trusted payment gateway used by thousands of businesses across Africa.
+                  Contributions are held in escrow and released to the creator when the group completes.
                 </p>
               </div>
             </LoopFundCard>
@@ -706,16 +506,7 @@ const CreateGroupPage = () => {
         </div>
       </div>
 
-      {/* Payment Modal */}
-      <PaymentModal
-        isOpen={showPaymentModal}
-        onClose={handleClosePaymentModal}
-        groupData={{
-          ...formData,
-          durationMonths: calculateTotalDurationInMonths()
-        }}
-        onSuccess={handlePaymentSuccess}
-      />
+      {/* No payment modal */}
     </div>
   );
 };

@@ -22,7 +22,7 @@ import ProtectedLayout from './components/layout/ProtectedLayout';
 import './App.css';
 import AchievementsPage from './pages/AchievementsPage'; // Added missing import
 import AnalyticsPage from './pages/AnalyticsPage'; // Analytics page
-import TransactionsPage from './pages/TransactionsPage'; // Transactions page
+import TransactionHistoryPage from './pages/TransactionHistoryPage'; // Transaction History page
 import HelpPage from './pages/HelpPage'; // Help page
 import CalendarPage from './pages/CalendarPage'; // Calendar page
 import AIAdvisorPage from './pages/AIAdvisorPage'; // AI Financial Advisor page
@@ -32,8 +32,10 @@ import FinancialTherapyGamesPage from './pages/FinancialTherapyGamesPage'; // Fi
 import RevenueDashboard from './pages/RevenueDashboard'; // Revenue Dashboard page
 import AdminPage from './pages/AdminPage'; // Admin Dashboard page
 import AdminUsersPage from './pages/admin/AdminUsersPage'; // Admin Users Management page
+import AdminWithdrawalsPage from './pages/admin/AdminWithdrawalsPage'; // Admin Withdrawals Management page
 import AdminRevenuePage from './pages/admin/AdminRevenuePage'; // Admin Revenue Analytics page
 import PaymentVerificationPage from './pages/PaymentVerificationPage'; // Payment verification page
+import ContributionsPage from './pages/ContributionsPage'; // Contributions page
 import CreateGroupPage from './pages/CreateGroupPage'; // Create Group page
 import JoinGroupPage from './pages/JoinGroupPage'; // Join Group page
 import JoinGroupLandingPage from './pages/JoinGroupLandingPage'; // Join Group Landing page
@@ -76,7 +78,7 @@ function App() {
               <Route path="/transactions" element={
                 <ProtectedLayout>
                   <PageTransition>
-                    <TransactionsPage />
+                    <TransactionHistoryPage />
                   </PageTransition>
                 </ProtectedLayout>
               } />
@@ -237,6 +239,7 @@ function App() {
                   <PaymentVerificationPage />
                 </PageTransition>
               } />
+              
 
               {/* Admin Dashboard route - Public for now */}
               <Route path="/admin" element={
@@ -256,6 +259,13 @@ function App() {
               <Route path="/admin/revenue" element={
                 <PageTransition>
                   <AdminRevenuePage />
+                </PageTransition>
+              } />
+
+              {/* Admin Withdrawals Management route */}
+              <Route path="/admin/withdrawals" element={
+                <PageTransition>
+                  <AdminWithdrawalsPage />
                 </PageTransition>
               } />
 

@@ -8,7 +8,11 @@ const {
   contributeToGroup,
   getWalletTransactions,
   releaseGoalFunds,
-  releaseGroupFunds
+  releaseGroupFunds,
+  withdrawFromWallet,
+  getWithdrawalRequests,
+  approveWithdrawal,
+  deductFromWallet
 } = require('../controllers/wallet.controller');
 
 const router = express.Router();
@@ -55,5 +59,32 @@ router.post('/release-goal-funds', [
 router.post('/release-group-funds', [
   body('groupId').notEmpty().withMessage('Group ID is required')
 ], releaseGroupFunds);
+
+// Withdraw money from wallet
+router.post('/withdraw', [
+  body('amount').isFloat({ gt: 0 }).withMessage('Amount must be a positive number'),
+  body('description').optional().isString(),
+  body('bankAccount').isObject().withMessage('Bank account details must be an object'),
+  body('bankAccount.bankName').notEmpty().withMessage('Bank name is required'),
+  body('bankAccount.accountName').notEmpty().withMessage('Account name is required'),
+  body('bankAccount.accountNumber').notEmpty().withMessage('Account number is required')
+], withdrawFromWallet);
+
+// Get withdrawal requests
+router.get('/withdrawals', getWithdrawalRequests);
+
+// Approve withdrawal (admin only)
+router.post('/approve-withdrawal', [
+  body('transactionId').notEmpty().withMessage('Transaction ID is required')
+], approveWithdrawal);
+
+// Deduct from wallet (for fees, etc.)
+router.post('/deduct', [
+  body('amount').isNumeric().withMessage('Amount must be a number'),
+  body('amount').isFloat({ min: 0.01 }).withMessage('Amount must be greater than 0'),
+  body('description').optional().isString(),
+  body('type').optional().isString(),
+  body('metadata').optional().isObject()
+], deductFromWallet);
 
 module.exports = router;

@@ -63,7 +63,10 @@ const GroupSchema = new mongoose.Schema({
     paymentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment' },
     paidAt: { type: Date, default: Date.now },
     status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'completed' }
-  }]
+  }],
+  // Fund release tracking
+  fundsReleased: { type: Boolean, default: false },
+  fundsReleasedAt: { type: Date }
 }, { 
   timestamps: true,
   toJSON: { virtuals: true },

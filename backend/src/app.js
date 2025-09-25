@@ -108,5 +108,9 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(notFound);
 app.use(errorHandler);
 
+// Start fund release cron job
+const fundReleaseCronService = require('./services/fundReleaseCron.service');
+fundReleaseCronService.startFundReleaseCron();
+
 // Export both app and server
 module.exports = { app, server };

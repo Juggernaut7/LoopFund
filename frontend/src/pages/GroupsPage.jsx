@@ -7,7 +7,7 @@ import {
   Search, 
   Filter,
   Calendar,
-  DollarSign, 
+  DollarSign,
   Banknote,
   Target,
   MoreVertical,
@@ -28,7 +28,6 @@ import {
   Copy, 
   Link as LinkIcon,
   RefreshCw,
-  MessageCircle,
   Loader2,
   CreditCard,
   Wallet,
@@ -39,8 +38,9 @@ import {
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import InviteModal from '../components/invitations/InviteModal';
+import GroupContributionForm from '../components/contributions/GroupContributionForm';
 import { LoopFundButton, LoopFundCard, LoopFundInput } from '../components/ui';
-import { formatCurrency, formatCurrencySimple } from '../utils/currency';
+import { formatCurrency, formatCurrencySimple, formatCompactCurrency } from '../utils/currency';
 
 const GroupsPage = () => {
   const [groups, setGroups] = useState([]);
@@ -49,6 +49,7 @@ const GroupsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [showContributeModal, setShowContributeModal] = useState(false);
@@ -57,134 +58,71 @@ const GroupsPage = () => {
     amount: '',
     description: ''
   });
-  const navigate = useNavigate();
 
-  // Fetch groups from backend
   useEffect(() => {
     fetchGroups();
-  }, []);
-
-  // Handle payment verification when returning from Paystack
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const paymentStatus = urlParams.get('payment');
-    const reference = urlParams.get('reference');
     
-    if (paymentStatus === 'success' && reference) {
-      verifyPayment(reference);
-    }
-  }, []);
-
-  const verifyPayment = async (reference) => {
-    try {
-      const response = await fetch(`http://localhost:4000/api/payments/verify-contribution/${reference}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          const contributionAmount = data.data?.contributionAmount || data.data?.amount || 0;
-          toast.success(`Contribution of ₦${contributionAmount.toLocaleString()} added successfully!`);
-          // Refresh groups list
-          await fetchGroups();
-          // Clean up URL
-          window.history.replaceState({}, document.title, window.location.pathname);
-        } else {
-          toast.error(data.error || 'Payment verification failed');
-        }
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        toast.error(errorData.error || 'Failed to verify payment');
+    // Check if user is returning from a payment verification
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // User returned to the tab, refresh groups data
+        fetchGroups();
       }
-    } catch (error) {
-      console.error('Error verifying payment:', error);
-      toast.error('Failed to verify payment');
-    }
-  };
+    };
+    
+    const handleFocus = () => {
+      // User focused the window, refresh groups data
+      fetchGroups();
+    };
+    
+    // Listen for tab visibility changes and window focus
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    
+    // Listen for payment completion events
+    const handlePaymentCompleted = (event) => {
+      console.log('🔄 Payment completed event received:', event.detail);
+      if (event.detail.type === 'groups' || event.detail.type === 'group') {
+        console.log('🔄 Refreshing groups data after payment completion...');
+        fetchGroups();
+      }
+    };
+    
+    window.addEventListener('paymentCompleted', handlePaymentCompleted);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('paymentCompleted', handlePaymentCompleted);
+    };
+  }, []);
 
   const fetchGroups = async () => {
     try {
       setIsLoading(true);
-      setError(null);
-      
       const response = await fetch('http://localhost:4000/api/groups', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-          'Content-Type': 'application/json'
         }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch groups');
-      }
-
+      if (response.ok) {
       const data = await response.json();
       setGroups(data.data || []);
-      
-      console.log('Groups fetched:', data);
+      } else {
+        setError('Failed to load groups');
+      }
     } catch (error) {
       console.error('Error fetching groups:', error);
-      setError(error.message);
-      toast.error('Groups Error', 'Failed to load groups. Please try again.');
+      setError('Failed to load groups');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Redirect to CreateGroupPage for payment integration
   const handleCreateGroup = () => {
     navigate('/create-group');
   };
-
-  const deleteGroup = async (groupId) => {
-    if (!window.confirm('Are you sure you want to delete this group? This action cannot be undone.')) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`http://localhost:4000/api/groups/${groupId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete group');
-      }
-
-      toast.success('Group Deleted', 'Your group has been successfully deleted.');
-      fetchGroups(); // Refresh the list
-    } catch (error) {
-      console.error('Error deleting group:', error);
-      toast.error('Delete Error', 'Failed to delete group. Please try again.');
-    }
-  };
-
-  const getProgressPercentage = (group) => {
-    if (!group.targetAmount || group.targetAmount === 0) return 0;
-    return Math.min((group.currentAmount / group.targetAmount) * 100, 100);
-  };
-
-  const getStatusColor = (group) => {
-    const progress = getProgressPercentage(group);
-    if (progress >= 100) return 'text-loopfund-emerald-600 bg-loopfund-emerald-100 dark:bg-loopfund-emerald-900/20';
-    if (progress >= 80) return 'text-loopfund-electric-600 bg-loopfund-electric-100 dark:bg-loopfund-electric-900/20';
-    if (progress >= 50) return 'text-loopfund-gold-600 bg-loopfund-gold-100 dark:bg-loopfund-gold-900/20';
-    return 'text-loopfund-coral-600 bg-loopfund-coral-100 dark:bg-loopfund-coral-900/20';
-  };
-
-  const filteredGroups = groups.filter(group => {
-    const matchesSearch = group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         group.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterType === 'all' || group.status === filterType;
-    return matchesSearch && matchesFilter;
-  });
 
   const handleInviteClick = (group) => {
     setSelectedGroup(group);
@@ -196,156 +134,134 @@ const GroupsPage = () => {
     setShowContributeModal(true);
   };
 
+  const handleAddContribution = async (contributionData) => {
+    try {
+      console.log('🚀 Group contribution data:', contributionData);
+      
+      const response = await fetch('http://localhost:4000/api/contributions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...contributionData,
+          type: 'group'
+        })
+      });
+
+      const data = await response.json();
+      console.log('📊 Group contribution response:', data);
+      console.log('📊 Response data structure:', JSON.stringify(data, null, 2));
+      console.log('📊 Response status:', response.status);
+      console.log('📊 Response ok:', response.ok);
+
+      if (response.ok) {
+        // Check if this is a direct Paystack payment
+        console.log('🔍 Checking for authorizationUrl:', {
+          hasData: !!data.data,
+          hasAuthorizationUrl: !!(data.data && data.data.authorizationUrl),
+          hasNestedData: !!(data.data && data.data.data),
+          hasNestedAuthorizationUrl: !!(data.data && data.data.data && data.data.data.authorizationUrl),
+          dataKeys: data.data ? Object.keys(data.data) : 'no data',
+          nestedDataKeys: data.data && data.data.data ? Object.keys(data.data.data) : 'no nested data',
+          fullData: data
+        });
+        
+        // Check for nested structure first (data.data.data.authorizationUrl)
+        if (data.data && data.data.data && data.data.data.authorizationUrl) {
+          console.log('💳 Opening Paystack payment page (nested):', data.data.data.authorizationUrl);
+          // Open Paystack payment page
+          window.open(data.data.data.authorizationUrl, '_blank');
+          toast.success('Success', 'Payment page opened. Complete payment to add contribution.');
+        } else if (data.data && data.data.authorizationUrl) {
+          console.log('💳 Opening Paystack payment page (direct):', data.data.authorizationUrl);
+          // Open Paystack payment page
+          window.open(data.data.authorizationUrl, '_blank');
+          toast.success('Success', 'Payment page opened. Complete payment to add contribution.');
+        } else {
+          console.log('✅ Wallet payment completed, refreshing groups...');
+          console.log('🔍 Data structure check:', {
+            hasData: !!data.data,
+            hasAuthorizationUrl: !!(data.data && data.data.authorizationUrl),
+            dataKeys: data.data ? Object.keys(data.data) : 'no data'
+          });
+          // Wallet payment completed immediately
+          toast.success('Success', 'Contribution added successfully!');
+          setShowContributeModal(false);
+          await fetchGroups();
+        }
+      } else {
+        console.error('❌ Group contribution failed:', data);
+        toast.error('Error', data.error || 'Failed to add contribution');
+      }
+    } catch (error) {
+      console.error('Error adding contribution:', error);
+      toast.error('Error', 'Failed to add contribution. Please try again.');
+    }
+  };
+
   const handleMessageClick = (group) => {
     navigate(`/groups/${group._id}`);
   };
 
-  const handleContribute = async (e) => {
-    e.preventDefault();
-    
-    if (!contributionData.amount || parseFloat(contributionData.amount) <= 0) {
-      toast.error('Please enter a valid amount');
-      return;
-    }
-
-    setIsContributing(true);
-    try {
-      // Initialize contribution payment with Paystack
-      const response = await fetch('http://localhost:4000/api/payments/initialize-contribution', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          groupId: selectedGroup._id,
-          amount: parseFloat(contributionData.amount),
-          description: contributionData.description
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        
-        if (data.success) {
-          // Redirect to Paystack payment page
-          window.location.href = data.data.authorizationUrl;
-        } else {
-          toast.error(data.error || 'Failed to initialize payment');
-        }
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.error || 'Failed to initialize payment');
-      }
-    } catch (error) {
-      console.error('Error initializing contribution payment:', error);
-      toast.error('Failed to initialize payment');
-    } finally {
-      setIsContributing(false);
-    }
-  };
-
-  const getPaymentMethodIcon = (method) => {
-    switch (method) {
-      case 'bank_transfer': return <Banknote className="w-4 h-4" />;
-      case 'card_payment': return <CreditCard className="w-4 h-4" />;
-      case 'cash': return <Wallet className="w-4 h-4" />;
-      default: return <Banknote className="w-4 h-4" />;
-    }
-  };
-
-  const getPaymentMethodLabel = (method) => {
-    switch (method) {
-      case 'bank_transfer': return 'Bank Transfer';
-      case 'card_payment': return 'Card Payment';
-      case 'cash': return 'Cash';
-      default: return 'Other';
-    }
-  };
-
   const handleInviteSent = () => {
-    // Refresh groups or show success message
-    fetchGroups();
+    setIsInviteModalOpen(false);
+    setSelectedGroup(null);
+    toast.success('Invitation Sent', 'Group invitation has been sent successfully!');
   };
+
+  const filteredGroups = groups.filter(group => {
+    const matchesSearch = group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         group.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (filterType === 'all') return matchesSearch;
+    if (filterType === 'active') return matchesSearch && group.status === 'active';
+    if (filterType === 'completed') return matchesSearch && group.status === 'completed';
+    if (filterType === 'paused') return matchesSearch && group.status === 'paused';
+    
+    return matchesSearch;
+  });
 
   if (isLoading) {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center">
-          <motion.div 
-            className="text-center"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <motion.div
-              className="w-16 h-16 bg-gradient-loopfund rounded-3xl flex items-center justify-center shadow-loopfund-lg mx-auto mb-6"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            >
-              <Users className="w-8 h-8 text-white" />
-            </motion.div>
-            <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
-              Loading Groups
-            </h3>
-            <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
-              Fetching your collaborative savings groups...
-            </p>
-          </motion.div>
+      <div className="min-h-screen bg-loopfund-neutral-50 dark:bg-loopfund-dark-background flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="w-8 h-8 animate-spin text-loopfund-emerald-600 mx-auto mb-4" />
+          <p className="text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Loading groups...</p>
+        </div>
         </div>
     );
   }
 
   if (error) {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center">
-          <motion.div 
-            className="text-center"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <motion.div
-              className="w-16 h-16 bg-loopfund-coral-100 dark:bg-loopfund-coral-900/20 rounded-3xl flex items-center justify-center shadow-loopfund-lg mx-auto mb-6"
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            >
-              <AlertCircle className="w-8 h-8 text-loopfund-coral-600" />
-            </motion.div>
-            <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
-              Failed to Load Groups
-            </h3>
-            <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-6">
-              {error}
-            </p>
-            <LoopFundButton 
+      <div className="min-h-screen bg-loopfund-neutral-50 dark:bg-loopfund-dark-background flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-4" />
+          <p className="text-red-600 dark:text-red-400">{error}</p>
+          <button 
               onClick={fetchGroups}
-              variant="primary"
-              size="md"
-              icon={<RefreshCw className="w-5 h-5" />}
+            className="mt-4 px-4 py-2 bg-loopfund-emerald-600 text-white rounded-lg hover:bg-loopfund-emerald-700 transition-colors"
             >
               Try Again
-            </LoopFundButton>
-          </motion.div>
+          </button>
+        </div>
         </div>
     );
   }
 
   return (
-      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated">
-        <div className="space-y-8 p-6">
+    <div className="min-h-screen bg-loopfund-neutral-50 dark:bg-loopfund-dark-background">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <motion.div 
-            className="relative"
-            initial={{ opacity: 0, y: 30 }}
+          className="mb-8"
+          initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            {/* Background Elements */}
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-loopfund opacity-5 rounded-full blur-3xl animate-float" />
-              <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-gradient-coral opacity-5 rounded-full blur-2xl animate-float-delayed" />
-            </div>
-            
-            <div className="relative flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <motion.h1 
                   className="font-display text-display-lg text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-3"
@@ -379,7 +295,6 @@ const GroupsPage = () => {
                 </LoopFundButton>
               </motion.div>
             </div>
-          </motion.div>
 
           {/* Search and Filter */}
           <motion.div 
@@ -411,213 +326,133 @@ const GroupsPage = () => {
               </select>
             </div>
           </motion.div>
+          </motion.div>
 
           {/* Groups Grid */}
           <motion.div 
-            className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-10"
-            initial={{ opacity: 0, y: 30 }}
+          className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-2 gap-8"
+          initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
             {filteredGroups.map((group, index) => (
               <motion.div
                 key={group._id}
-                initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 + index * 0.1 }}
-                className="relative group"
-              >
-                <LoopFundCard variant="elevated" hover className="h-full min-h-[500px] w-full">
-                  {/* Background Elements */}
-                  <div className="absolute inset-0 overflow-hidden">
-                    <div className="absolute -top-10 -right-10 w-24 h-24 bg-gradient-loopfund opacity-5 rounded-full blur-2xl animate-float" />
-                    <div className="absolute -bottom-10 -left-10 w-16 h-16 bg-gradient-coral opacity-5 rounded-full blur-xl animate-float-delayed" />
+            >
+              <LoopFundCard variant="elevated" className="h-full overflow-hidden min-w-0 w-full min-h-[400px]">
+                <div className="p-10 w-full h-full flex flex-col">
+                  {/* Group Header */}
+                  <div className="flex items-start justify-between mb-8">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-16 h-16 bg-gradient-loopfund rounded-2xl flex items-center justify-center shadow-loopfund">
+                        <Users className="w-8 h-8 text-white" />
                   </div>
-                  
-                  <div className="relative p-10">
-                    {/* Group Header */}
-                    <div className="flex items-start justify-between mb-8">
-                      <div className="flex items-center space-x-4 flex-1 min-w-0">
-                        <motion.div 
-                          className="w-16 h-16 bg-gradient-loopfund rounded-3xl flex items-center justify-center shadow-loopfund-lg flex-shrink-0"
-                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                        >
-                          <Users className="w-8 h-8 text-white" />
-                        </motion.div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2 truncate">
+                        <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-1 truncate">
                             {group.name}
                           </h3>
-                          <span className="inline-block px-4 py-2 rounded-full text-sm font-body font-medium bg-loopfund-emerald-100 text-loopfund-emerald-700 dark:bg-loopfund-emerald-900/30 dark:text-loopfund-emerald-300">
-                            {group.members?.length || 0} Members
+                        <div className="flex items-center space-x-2">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-loopfund-emerald-100 text-loopfund-emerald-700 dark:bg-loopfund-emerald-900/30 dark:text-loopfund-emerald-300">
+                            {group.members?.length || 0} members
+                          </span>
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-loopfund-neutral-100 text-loopfund-neutral-600 dark:bg-loopfund-dark-elevated dark:text-loopfund-neutral-400">
+                            {group.status || 'active'}
                           </span>
                         </div>
                       </div>
-                      
-                      {/* Actions Menu */}
-                      <div className="flex items-center space-x-2 ml-4">
-                        <motion.button 
-                          onClick={() => deleteGroup(group._id)}
-                          className="p-3 text-loopfund-neutral-500 hover:text-loopfund-coral-600 dark:text-loopfund-neutral-400 dark:hover:text-loopfund-coral-400 transition-colors rounded-xl hover:bg-loopfund-neutral-100 dark:hover:bg-loopfund-dark-elevated"
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </motion.button>
-                        <motion.button
-                          onClick={() => handleInviteClick(group)}
-                          className="p-3 text-loopfund-neutral-500 hover:text-loopfund-emerald-600 dark:text-loopfund-neutral-400 dark:hover:text-loopfund-emerald-400 transition-colors rounded-xl hover:bg-loopfund-neutral-100 dark:hover:bg-loopfund-dark-elevated"
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          <Mail className="w-5 h-5" />
-                        </motion.button>
                       </div>
+                    <button className="p-2 hover:bg-loopfund-neutral-100 dark:hover:bg-loopfund-dark-elevated rounded-xl transition-colors">
+                      <MoreVertical className="w-5 h-5 text-loopfund-neutral-500" />
+                    </button>
                     </div>
 
                     {/* Group Description */}
-                    {group.description && (
-                      <div className="mb-8">
-                        <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 leading-relaxed">
-                          {group.description}
-                        </p>
-                      </div>
-                    )}
+                  <p className="font-body text-body text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-6 line-clamp-2">
+                    {group.description || 'No description provided'}
+                  </p>
 
-                    {/* Progress Section */}
-                    <div className="mb-10">
-                      <div className="flex items-center justify-between mb-6">
-                        <span className="font-body text-body font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300">Progress</span>
-                        <span className="font-display text-h3 text-loopfund-emerald-600">
-                          {getProgressPercentage(group).toFixed(1)}%
-                        </span>
+                  {/* Group Stats */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="text-center p-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-xl border border-loopfund-neutral-200 dark:border-loopfund-neutral-700 min-w-0">
+                      <div className="font-display text-h5 text-loopfund-emerald-600 mb-1 break-words">
+                        {(group.currentAmount || 0) >= 1000000 ? 
+                          `₦${formatCompactCurrency(group.currentAmount || 0)}` : 
+                          formatCurrency(group.currentAmount || 0)
+                        }
                       </div>
-                      <div className="w-full h-5 bg-loopfund-neutral-200 dark:bg-loopfund-neutral-700 rounded-full overflow-hidden">
-                        <motion.div
-                          className="h-5 rounded-full bg-gradient-loopfund"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${getProgressPercentage(group)}%` }}
-                          transition={{ duration: 1, delay: 0.8 + index * 0.1 }}
-                        />
+                      <div className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                        Total Saved
                       </div>
-                      {getProgressPercentage(group) >= 100 && (
-                        <motion.div 
-                          className="mt-4 text-center"
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 1 }}
-                        >
-                          <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-body font-medium bg-loopfund-emerald-100 text-loopfund-emerald-700 dark:bg-loopfund-emerald-900/30 dark:text-loopfund-emerald-300">
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            Goal Achieved!
-                          </span>
-                        </motion.div>
-                      )}
                     </div>
-
-                    {/* Group Details */}
-                    <div className="space-y-5 mb-10">
-                      <div className="flex items-center justify-between py-3 px-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-2xl">
-                        <span className="font-body text-body font-medium text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Current Balance:</span>
-                        <span className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text whitespace-nowrap">
-                          {formatCurrencySimple(group.currentAmount || 0)}
-                        </span>
+                    <div className="text-center p-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-xl border border-loopfund-neutral-200 dark:border-loopfund-neutral-700 min-w-0">
+                      <div className="font-display text-h5 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-1 break-words">
+                        {group.targetAmount ? 
+                          (group.targetAmount >= 1000000 ? 
+                            `₦${formatCompactCurrency(group.targetAmount)}` : 
+                            formatCurrency(group.targetAmount)
+                          ) : 'N/A'
+                        }
                       </div>
-                      <div className="flex items-center justify-between py-3 px-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-2xl">
-                        <span className="font-body text-body font-medium text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Target Goal:</span>
-                        <span className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text whitespace-nowrap">
-                          {formatCurrencySimple(group.targetAmount || 0)}
-                        </span>
-                      </div>
-                      {group.deadline && (
-                        <div className="flex items-center justify-between py-3 px-4 bg-loopfund-coral-50 dark:bg-loopfund-coral-900/20 rounded-2xl">
-                          <div className="flex items-center space-x-2">
-                            <Calendar className="w-5 h-5 text-loopfund-coral-600" />
-                            <span className="font-body text-body font-medium text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Deadline:</span>
+                      <div className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                        Target
                           </div>
-                          <span className="font-display text-h4 text-loopfund-coral-600 whitespace-nowrap">
-                            {new Date(group.deadline).toLocaleDateString()}
-                          </span>
                         </div>
-                      )}
                     </div>
 
-                    {/* Group Members */}
-                    {group.members && group.members.length > 0 && (
-                      <div className="mb-8">
-                        <div className="flex items-center justify-between mb-4">
-                          <h4 className="font-body text-body font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300">
-                            Members ({group.members.length})
-                          </h4>
-                          <span className="font-body text-body-sm text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
-                            Max {group.settings?.maxMembers || 50}
+                  {/* Progress Bar */}
+                  {group.targetAmount && (
+                    <div className="mb-8">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300">
+                          Progress
+                        </span>
+                        <span className="font-display text-body-sm font-medium text-loopfund-emerald-600">
+                          {Math.round(((group.currentAmount || 0) / group.targetAmount) * 100)}%
                           </span>
                         </div>
-                        <div className="flex -space-x-3">
-                          {group.members.slice(0, 5).map((member, index) => (
-                            <motion.div
-                              key={member._id || index}
-                              className="w-10 h-10 rounded-full bg-gradient-to-br from-loopfund-coral-500 to-loopfund-orange-500 flex items-center justify-center text-white text-sm font-medium border-2 border-white dark:border-loopfund-dark-surface shadow-loopfund"
-                              title={member.user?.firstName ? `${member.user.firstName} ${member.user.lastName}` : 'Member'}
-                              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                            >
-                              {member.user?.firstName ? member.user.firstName.charAt(0).toUpperCase() : 'U'}
-                            </motion.div>
-                          ))}
-                          {group.members.length > 5 && (
-                            <motion.div 
-                              className="w-10 h-10 rounded-full bg-loopfund-neutral-200 dark:bg-loopfund-neutral-600 flex items-center justify-center text-loopfund-neutral-600 dark:text-loopfund-neutral-400 text-sm font-medium border-2 border-white dark:border-loopfund-dark-surface shadow-loopfund"
-                            >
-                              +{group.members.length - 5}
-                            </motion.div>
-                          )}
+                      <div className="w-full bg-loopfund-neutral-200 dark:bg-loopfund-neutral-700 rounded-full h-3 overflow-hidden">
+                        <div
+                          className="bg-gradient-loopfund h-3 rounded-full transition-all duration-500"
+                          style={{ 
+                            width: `${Math.min(((group.currentAmount || 0) / group.targetAmount) * 100, 100)}%` 
+                          }}
+                        />
                         </div>
                       </div>
                     )}
 
-                    {/* Main Action Button */}
-                    <div className="mb-8">
+                  {/* Action Buttons */}
+                  <div className="flex space-x-4 mt-auto pt-6">
                       <LoopFundButton
                         onClick={() => handleContributeClick(group)}
-                        variant="secondary"
-                        size="lg"
-                        icon={<Plus className="w-5 h-5" />}
-                        className="w-full"
-                      >
-                        Contribute Now
+                      variant="primary"
+                      size="lg"
+                      icon={<Plus className="w-5 h-5" />}
+                      className="flex-1 rounded-xl py-3"
+                    >
+                      Contribute
                       </LoopFundButton>
-                    </div>
-
-                    {/* Group Actions */}
-                    <div className="flex items-center justify-between pt-8 border-t border-loopfund-neutral-200 dark:border-loopfund-neutral-700">
-                      <div className={`px-4 py-2 rounded-full text-sm font-body font-medium ${getStatusColor(group)} flex items-center space-x-2 flex-shrink-0`}>
-                        <Zap className="w-4 h-4" />
-                        <span>{group.status || 'active'}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <motion.button 
-                          onClick={() => navigate(`/groups/${group._id}`)}
-                          className="p-3 text-loopfund-neutral-500 hover:text-loopfund-emerald-600 dark:text-loopfund-neutral-400 dark:hover:text-loopfund-emerald-400 transition-colors rounded-xl hover:bg-loopfund-neutral-100 dark:hover:bg-loopfund-dark-elevated"
-                          title="View Group Details"
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          <Eye className="w-5 h-5" />
-                        </motion.button>
-                        <motion.button 
-                          onClick={() => handleMessageClick(group)}
-                          className="p-3 text-loopfund-neutral-500 hover:text-loopfund-coral-600 dark:text-loopfund-neutral-400 dark:hover:text-loopfund-coral-400 transition-colors rounded-xl hover:bg-loopfund-neutral-100 dark:hover:bg-loopfund-dark-elevated"
-                          title="Message Group"
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          <MessageCircle className="w-5 h-5" />
-                        </motion.button>
-                        <motion.button 
+                    <LoopFundButton
                           onClick={() => handleInviteClick(group)}
-                          className="p-3 text-loopfund-neutral-500 hover:text-loopfund-gold-600 dark:text-loopfund-neutral-400 dark:hover:text-loopfund-gold-400 transition-colors rounded-xl hover:bg-loopfund-neutral-100 dark:hover:bg-loopfund-dark-elevated"
-                          title="Invite Members"
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          <UserPlus className="w-5 h-5" />
-                        </motion.button>
-                      </div>
+                      variant="outline"
+                      size="lg"
+                      icon={<UserPlus className="w-5 h-5" />}
+                      className="flex-1 rounded-xl py-3"
+                    >
+                      Invite
+                    </LoopFundButton>
+                    <LoopFundButton
+                          onClick={() => handleMessageClick(group)}
+                      variant="outline"
+                      size="lg"
+                      icon={<Users className="w-5 h-5" />}
+                      className="flex-1 rounded-xl py-3"
+                    >
+                      View
+                    </LoopFundButton>
                     </div>
                   </div>
                 </LoopFundCard>
@@ -626,33 +461,29 @@ const GroupsPage = () => {
           </motion.div>
 
           {/* Empty State */}
-          {filteredGroups.length === 0 && !isLoading && (
+        {filteredGroups.length === 0 && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="text-center py-16"
-            >
-              <motion.div
-                className="w-20 h-20 bg-gradient-loopfund rounded-3xl flex items-center justify-center shadow-loopfund-lg mx-auto mb-6"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              >
-                <Users className="w-10 h-10 text-white" />
-              </motion.div>
-              <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-3">
-                No Groups Found
+          >
+            <div className="w-24 h-24 bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated rounded-full flex items-center justify-center mx-auto mb-6">
+              <Users className="w-12 h-12 text-loopfund-neutral-400" />
+            </div>
+            <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
+              {searchTerm ? 'No groups found' : 'No groups yet'}
               </h3>
-              <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-8 max-w-md mx-auto">
-                {searchTerm || filterType !== 'all' 
-                  ? 'Try adjusting your search or filters to find groups'
-                  : 'Start collaborating by creating your first group and invite friends to save together'
+            <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-6">
+              {searchTerm 
+                ? 'Try adjusting your search terms' 
+                : 'Create your first group to start collaborating with others'
                 }
               </p>
-              {!searchTerm && filterType === 'all' && (
+            {!searchTerm && (
                 <LoopFundButton
                   onClick={handleCreateGroup}
-                  variant="secondary"
+                variant="primary"
                   size="lg"
                   icon={<Plus className="w-5 h-5" />}
                 >
@@ -661,9 +492,8 @@ const GroupsPage = () => {
               )}
             </motion.div>
           )}
-        </div>
 
-        {/* Invite Modal */}
+        {/* Modals */}
         <InviteModal
           isOpen={isInviteModalOpen}
           onClose={() => {
@@ -677,126 +507,16 @@ const GroupsPage = () => {
         {/* Contribution Modal */}
         <AnimatePresence>
             {showContributeModal && selectedGroup && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-              >
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.9, opacity: 0 }}
-                  className="w-full max-w-md"
-                >
-                  <LoopFundCard variant="elevated" className="relative">
-                    {/* Background Elements */}
-                    <div className="absolute inset-0 overflow-hidden">
-                      <div className="absolute -top-10 -right-10 w-20 h-20 bg-gradient-coral opacity-5 rounded-full blur-2xl animate-float" />
-                    </div>
-                    
-                    <div className="relative p-8">
-                      <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center space-x-4">
-                          <motion.div 
-                            className="w-12 h-12 bg-gradient-coral rounded-2xl flex items-center justify-center shadow-loopfund"
-                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                          >
-                            <Banknote className="w-6 h-6 text-white" />
-                          </motion.div>
-                          <div>
-                            <h3 className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
-                              Contribute to {selectedGroup.name}
-                            </h3>
-                            <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
-                              Add your contribution to the group goal
-                            </p>
-                          </div>
-                        </div>
-                        <motion.button
-                          onClick={() => setShowContributeModal(false)}
-                          className="p-3 bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated hover:bg-loopfund-neutral-200 dark:hover:bg-loopfund-dark-surface rounded-xl transition-colors"
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          <X className="w-5 h-5 text-loopfund-neutral-600 dark:text-loopfund-neutral-400" />
-                        </motion.button>
-                      </div>
-
-                      <form onSubmit={handleContribute} className="space-y-6">
-                        <div>
-                          <LoopFundInput
-                            type="number"
-                            step="0.01"
-                            min="0.01"
-                            label="Amount"
-                            value={contributionData.amount}
-                            onChange={(e) => setContributionData({ ...contributionData, amount: e.target.value })}
-                            placeholder="1000.00"
-                            icon={<Banknote className="w-5 h-5" />}
-                            required
-                          />
-                        </div>
-
-                        <div className="p-4 bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/20 rounded-xl border border-loopfund-emerald-200 dark:border-loopfund-emerald-800">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-full flex items-center justify-center">
-                              <CreditCard className="w-5 h-5 text-white" />
-                            </div>
-                        <div>
-                              <h4 className="font-body text-body font-medium text-loopfund-emerald-700 dark:text-loopfund-emerald-300">
-                                Secure Payment via Paystack
-                              </h4>
-                              <p className="font-body text-body-xs text-loopfund-emerald-600 dark:text-loopfund-emerald-400">
-                                Your contribution will be processed securely through Paystack
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block font-body text-body font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-3">
-                            Description (Optional)
-                          </label>
-                          <textarea
-                            value={contributionData.description}
-                            onChange={(e) => setContributionData({ ...contributionData, description: e.target.value })}
-                            placeholder="Add a note about this contribution..."
-                            rows={3}
-                            className="w-full px-4 py-3 border border-loopfund-neutral-300 dark:border-loopfund-neutral-600 rounded-xl bg-loopfund-neutral-50 dark:bg-loopfund-dark-surface text-loopfund-neutral-900 dark:text-loopfund-dark-text focus:ring-2 focus:ring-loopfund-emerald-500 focus:border-transparent resize-none font-body text-body"
-                          />
-                        </div>
-
-                        <div className="flex space-x-4 pt-6">
-                          <LoopFundButton
-                            type="button"
-                            onClick={() => setShowContributeModal(false)}
-                            variant="outline"
-                            size="lg"
-                            className="flex-1"
-                          >
-                            Cancel
-                          </LoopFundButton>
-                          <LoopFundButton
-                            type="submit"
-                            disabled={isContributing}
-                            variant="primary"
-                            size="lg"
-                            icon={isContributing ? <Loader2 className="w-5 h-5 animate-spin" /> : <CreditCard className="w-5 h-5" />}
-                            className="flex-1"
-                          >
-                            {isContributing ? 'Processing...' : 'Pay with Paystack'}
-                          </LoopFundButton>
-                        </div>
-                      </form>
-                    </div>
-                  </LoopFundCard>
-                </motion.div>
-              </motion.div>
+            <GroupContributionForm
+              group={selectedGroup}
+              onSubmit={handleAddContribution}
+              onClose={() => setShowContributeModal(false)}
+            />
             )}
         </AnimatePresence>
+      </div>
       </div>
   );
 };
 
-
-export default GroupsPage; 
+export default GroupsPage;

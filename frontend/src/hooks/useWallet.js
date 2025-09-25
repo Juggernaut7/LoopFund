@@ -28,12 +28,21 @@ export const useWallet = () => {
     }
   }, [toast]);
 
-  // Fetch transactions
-  const fetchTransactions = useCallback(async (page = 1, limit = 20, type = null) => {
+  // Fetch transactions with enhanced filtering
+  const fetchTransactions = useCallback(async (page = 1, limit = 20, filters = {}) => {
     try {
-      const response = await walletService.getTransactions(page, limit, type);
-      setTransactions(response.data.transactions);
-      return response.data;
+      console.log('🔄 Fetching transactions with filters:', { page, limit, filters });
+      const response = await walletService.getTransactions(page, limit, filters);
+      console.log('📊 Transactions response:', response);
+      console.log('📊 Response data:', response.data);
+      console.log('📊 Response data.data:', response.data?.data);
+      
+      if (response.data && response.data.success && response.data.data) {
+        console.log('💰 Setting transactions:', response.data.data.transactions);
+        setTransactions(response.data.data.transactions);
+        return response.data.data;
+      }
+      return null;
     } catch (error) {
       console.error('Error fetching transactions:', error);
       toast.error('Transaction Error', 'Failed to load transactions');
@@ -97,10 +106,55 @@ export const useWallet = () => {
     }
   }, [toast]);
 
+  // Release group funds
+  const releaseGroupFunds = useCallback(async (groupId) => {
+    try {
+      const response = await walletService.releaseGroupFunds(groupId);
+      setWallet(response.data.wallet);
+      toast.success('Funds Released', 'Group funds released to creator successfully');
+      return response.data;
+    } catch (error) {
+      console.error('Error releasing group funds:', error);
+      toast.error('Release Error', error.response?.data?.message || 'Failed to release group funds');
+      throw error;
+    }
+  }, [toast]);
+
   // Load wallet on mount
   useEffect(() => {
     fetchWallet();
   }, [fetchWallet]);
+
+  const withdrawFromWallet = useCallback(async (amount, description, bankAccount) => {
+    try {
+      console.log('🔄 Withdrawing from wallet:', { amount, description, bankAccount });
+      const response = await walletService.withdrawFromWallet(amount, description, bankAccount);
+      console.log('📊 Withdrawal response:', response);
+      
+      if (response.data.success) {
+        setWallet(response.data.data);
+        toast.success('Withdrawal Requested', 'Your withdrawal request has been submitted for review.');
+        return true;
+      } else {
+        toast.error('Withdrawal Failed', response.data.message || 'Failed to process withdrawal request');
+        return false;
+      }
+    } catch (err) {
+      console.error('❌ Withdrawal error:', err);
+      toast.error('Withdrawal Error', err.message || 'An unexpected error occurred');
+      return false;
+    }
+  }, [toast]);
+
+  const getWithdrawalRequests = useCallback(async () => {
+    try {
+      const response = await walletService.getWithdrawalRequests();
+      return response.data;
+    } catch (err) {
+      console.error('Error fetching withdrawal requests:', err);
+      return [];
+    }
+  }, []);
 
   return {
     wallet,
@@ -112,6 +166,9 @@ export const useWallet = () => {
     addToWallet,
     contributeToGoal,
     contributeToGroup,
-    releaseGoalFunds
+    releaseGoalFunds,
+    releaseGroupFunds,
+    withdrawFromWallet,
+    getWithdrawalRequests,
   };
 };

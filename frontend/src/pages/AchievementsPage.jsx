@@ -179,7 +179,7 @@ const AchievementsPage = () => {
       }
     };
 
-    // Only check if we have achievements loaded
+    // Only check if we have achievements loaded 
     if (achievements.length > 0) {
       checkNewAchievements();
     }

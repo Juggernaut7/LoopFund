@@ -110,6 +110,18 @@ const AdminLayout = ({ children }) => {
       ]
     },
     {
+      title: 'Withdrawals',
+      icon: Wallet,
+      path: '/admin/withdrawals',
+      badge: '2',
+      submenu: [
+        { title: 'All Withdrawals', path: '/admin/withdrawals' },
+        { title: 'Pending Approval', path: '/admin/withdrawals?status=pending' },
+        { title: 'Approved', path: '/admin/withdrawals?status=completed' },
+        { title: 'Rejected', path: '/admin/withdrawals?status=failed' }
+      ]
+    },
+    {
       title: 'System Health',
       icon: Server,
       path: '/admin/system',
