@@ -42,11 +42,11 @@ const UserSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// Index for better query performance (removed duplicate email index)
+// Indexes for better query performance
+// Note: email and googleId already have indexes via unique/sparse properties
 UserSchema.index({ isActive: 1 });
-UserSchema.index({ googleId: 1 }); // Index for Google OAuth lookups
-UserSchema.index({ status: 1 }); // Index for status filtering
-UserSchema.index({ role: 1 }); // Index for role filtering
+UserSchema.index({ status: 1 });
+UserSchema.index({ role: 1 });
 
 // Virtual for full name
 UserSchema.virtual('name').get(function() {

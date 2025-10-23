@@ -67,7 +67,7 @@ const walletSchema = new mongoose.Schema({
 });
 
 // Index for efficient queries
-walletSchema.index({ user: 1 });
+// Note: user already has an index via unique property in schema
 walletSchema.index({ 'transactions.timestamp': -1 });
 
 module.exports = mongoose.model('Wallet', walletSchema);

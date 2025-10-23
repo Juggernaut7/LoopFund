@@ -119,11 +119,9 @@ GroupSchema.pre('save', function(next) {
 });
 
 // Indexes for better performance
+// Note: inviteCode and inviteLink already have indexes via unique/sparse properties in schema
 GroupSchema.index({ createdBy: 1, status: 1 });
 GroupSchema.index({ 'members.user': 1, status: 1 });
-GroupSchema.index({ inviteCode: 1 }, { unique: true, sparse: true });
-// Remove the problematic inviteLink unique index and make it sparse only
-GroupSchema.index({ inviteLink: 1 }, { sparse: true });
 GroupSchema.index({ category: 1 });
 GroupSchema.index({ isPublic: 1, status: 1 });
 

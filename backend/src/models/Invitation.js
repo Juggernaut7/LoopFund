@@ -57,9 +57,8 @@ const invitationSchema = new mongoose.Schema({
 });
 
 // Index for performance
+// Note: inviteCode and invitationToken already have indexes via unique/sparse properties
 invitationSchema.index({ group: 1, status: 1 });
-invitationSchema.index({ inviteCode: 1 });
-invitationSchema.index({ invitationToken: 1 });
 invitationSchema.index({ expiresAt: 1 });
 
 // Method to check if invitation is expired

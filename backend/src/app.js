@@ -104,6 +104,37 @@ app.use('/api/therapy-games', require('./routes/therapyGame.route'));
 // Swagger docs
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+// Root route - API welcome page
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: '🔄 Welcome to LoopFund API',
+    version: '2.0.0',
+    status: 'online',
+    description: 'Smart Savings Platform API for Africa',
+    endpoints: {
+      health: '/api/health',
+      documentation: '/docs',
+      test: '/api/test'
+    },
+    features: [
+      'Individual Goal Management',
+      'Group Savings',
+      'Payment Integration (Paystack)',
+      'Achievement System',
+      'Analytics & Insights',
+      'Real-time Notifications',
+      'AI Financial Advisor'
+    ],
+    links: {
+      github: 'https://github.com/Juggernaut7/LoopFund',
+      frontend: env.frontendUrl || 'https://loopfund.netlify.app',
+      documentation: `${req.protocol}://${req.get('host')}/docs`
+    },
+    timestamp: new Date().toISOString()
+  });
+});
+
 // 404 & Error handler
 app.use(notFound);
 app.use(errorHandler);

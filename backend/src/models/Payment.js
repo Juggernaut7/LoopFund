@@ -83,8 +83,8 @@ paymentSchema.pre('save', function(next) {
 });
 
 // Index for faster queries
+// Note: reference already has an index via unique property in schema
 paymentSchema.index({ userId: 1, status: 1 });
-paymentSchema.index({ reference: 1 });
 paymentSchema.index({ createdAt: -1 });
 paymentSchema.index({ type: 1, status: 1 });
 paymentSchema.index({ 'metadata.groupId': 1 });
