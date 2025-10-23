@@ -59,7 +59,8 @@ const AuthCallback = () => {
         setMessage('Loading your profile...');
 
         // Fetch user profile directly using the token
-        const response = await fetch('http://localhost:4000/api/auth/profile', {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+        const response = await fetch(`${apiUrl}/auth/profile`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'

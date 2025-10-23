@@ -1,8 +1,11 @@
 import axios from 'axios';
 
+// Get API URL from environment or fallback to localhost
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+
 // Create axios instance with default configuration
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000/api',
+  baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
