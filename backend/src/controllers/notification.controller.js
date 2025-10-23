@@ -191,30 +191,6 @@ const triggerCronJob = async (req, res, next) => {
   }
 };
 
-// Test notification creation (for development)
-const createTestNotification = async (req, res, next) => {
-  try {
-    const userId = req.user.userId;
-    const { title, message, type = 'info', category = 'system' } = req.body;
-
-    const notification = await notificationService.createNotification({
-      user: userId,
-      title: title || 'Test Notification',
-      message: message || 'This is a test notification',
-      type,
-      category,
-      priority: 'medium'
-    });
-
-    res.json({
-      success: true,
-      data: notification
-    });
-  } catch (error) {
-    console.error('Create test notification error:', error);
-    next(error);
-  }
-};
 
 // Schedule payment reminder
 const schedulePaymentReminder = async (req, res, next) => {
@@ -518,7 +494,6 @@ module.exports = {
   getNotificationStats,
   getCronStatus,
   triggerCronJob,
-  createTestNotification,
   schedulePaymentReminder,
   getUpcomingReminders,
   sendPaymentDueNotification,

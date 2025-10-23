@@ -219,167 +219,177 @@ const NotificationsPage = () => {
   return (
       <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated">
         <div className="max-w-7xl mx-auto p-6 space-y-8">
-          {/* Header */}
+          {/* Revolutionary Header */}
           <motion.div 
+            className="relative mb-8"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between"
+            transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            <div className="relative">
-              {/* Floating background elements */}
-              <div className="absolute -top-4 -left-4 w-8 h-8 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-full opacity-20 animate-float" />
-              <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-gradient-to-r from-loopfund-coral-500 to-loopfund-orange-500 rounded-full opacity-20 animate-float-delayed" />
-              
-              <h1 className="font-display text-display-lg text-loopfund-neutral-900 dark:text-loopfund-dark-text relative z-10">
-                Notifications
-              </h1>
-              <p className="font-body text-body-lg text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mt-2 relative z-10">
-                Stay updated with your savings progress and achievements
-              </p>
-            </div>
-            <div className="flex items-center space-x-3">
-              {selectedNotifications.length > 0 && (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
+            <div className="relative flex items-center justify-between">
+              <div>
+                <motion.h1 
+                  className="font-display text-display-lg text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-3"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2, duration: 0.6 }}
                 >
-                  <LoopFundButton
-                    onClick={archiveNotifications}
-                    variant="gold"
-                    size="md"
-                    icon={<Archive className="w-4 h-4" />}
-                  >
-                    Archive ({selectedNotifications.length})
-                  </LoopFundButton>
-                </motion.div>
-              )}
-              <LoopFundButton
-                onClick={markAllAsRead}
-                variant="primary"
-                size="md"
-                icon={<Check className="w-4 h-4" />}
+                  Notifications
+                </motion.h1>
+                <motion.p 
+                  className="font-body text-body-lg text-loopfund-neutral-600 dark:text-loopfund-neutral-400"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                >
+                  Stay updated with your savings progress and achievements
+                </motion.p>
+              </div>
+              
+              <motion.div 
+                className="flex items-center space-x-4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
               >
-                Mark All Read
-              </LoopFundButton>
+                {selectedNotifications.length > 0 && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                  >
+                    <LoopFundButton
+                      onClick={archiveNotifications}
+                      variant="gold"
+                      size="lg"
+                      icon={<Archive className="w-5 h-5" />}
+                    >
+                      Archive ({selectedNotifications.length})
+                    </LoopFundButton>
+                  </motion.div>
+                )}
+                <LoopFundButton
+                  onClick={markAllAsRead}
+                  variant="primary"
+                  size="lg"
+                  icon={<Check className="w-5 h-5" />}
+                >
+                  Mark All Read
+                </LoopFundButton>
+              </motion.div>
             </div>
           </motion.div>
 
-          {/* Stats Cards */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+          {/* Revolutionary Notification Statistics */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="grid grid-cols-1 md:grid-cols-4 gap-6"
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
           >
-            <motion.div
+            <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              whileHover={{ scale: 1.02, y: -5 }}
+              transition={{ delay: 0.6 }}
+              className="relative group"
             >
-              <LoopFundCard variant="elevated" className="p-6 hover:shadow-loopfund-lg transition-all duration-300">
-                <div className="flex items-center space-x-4">
-                  <motion.div 
-                    className="w-12 h-12 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-xl flex items-center justify-center shadow-loopfund"
-                    whileHover={{ rotate: 5, scale: 1.1 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    <Bell className="w-6 h-6 text-white" />
-                  </motion.div>
-                  <div>
-                    <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Total</p>
-                    <p className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text">{totalCount}</p>
+              <LoopFundCard className="min-h-36 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Total Notifications</p>
+                    <p className="font-display text-h3 text-loopfund-neutral-900">{totalCount}</p>
                   </div>
-                </div>
-                <motion.div
-                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                  initial={{ scale: 0 }}
-                  whileHover={{ scale: 1 }}
-                >
-                  <Sparkles className="w-4 h-4 text-loopfund-gold-500" />
-                </motion.div>
-              </LoopFundCard>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              whileHover={{ scale: 1.02, y: -5 }}
-            >
-              <LoopFundCard variant="elevated" className="p-6 hover:shadow-loopfund-lg transition-all duration-300">
-                <div className="flex items-center space-x-4">
-                  <motion.div 
-                    className="w-12 h-12 bg-gradient-to-r from-loopfund-coral-500 to-loopfund-orange-500 rounded-xl flex items-center justify-center shadow-loopfund"
-                    whileHover={{ rotate: 5, scale: 1.1 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    <AlertCircle className="w-6 h-6 text-white" />
-                  </motion.div>
-                  <div>
-                    <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Unread</p>
-                    <p className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text">{unreadCount}</p>
+                  <div className="p-3 bg-loopfund-emerald-100 rounded-full">
+                    <Bell className="w-6 h-6 text-loopfund-emerald-600" />
                   </div>
                 </div>
               </LoopFundCard>
             </motion.div>
 
-            <motion.div
+            <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              whileHover={{ scale: 1.02, y: -5 }}
+              transition={{ delay: 0.7 }}
+              className="relative group"
             >
-              <LoopFundCard variant="elevated" className="p-6 hover:shadow-loopfund-lg transition-all duration-300">
-                <div className="flex items-center space-x-4">
-                  <motion.div 
-                    className="w-12 h-12 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-xl flex items-center justify-center shadow-loopfund"
-                    whileHover={{ rotate: 5, scale: 1.1 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    <CheckCircle className="w-6 h-6 text-white" />
-                  </motion.div>
-                  <div>
-                    <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Read</p>
-                    <p className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text">{totalCount - unreadCount}</p>
+              <LoopFundCard className="min-h-36 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Unread</p>
+                    <p className="font-display text-h3 text-loopfund-coral-600">{unreadCount}</p>
+                  </div>
+                  <div className="p-3 bg-loopfund-coral-100 rounded-full">
+                    <AlertCircle className="w-6 h-6 text-loopfund-coral-600" />
                   </div>
                 </div>
               </LoopFundCard>
             </motion.div>
-
-            <motion.div
+            
+            <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              whileHover={{ scale: 1.02, y: -5 }}
+              transition={{ delay: 0.8 }}
+              className="relative group"
             >
-              <LoopFundCard variant="elevated" className="p-6 hover:shadow-loopfund-lg transition-all duration-300">
-                <div className="flex items-center space-x-4">
-                  <motion.div 
-                    className="w-12 h-12 bg-gradient-to-r from-loopfund-gold-500 to-loopfund-orange-500 rounded-xl flex items-center justify-center shadow-loopfund"
-                    whileHover={{ rotate: 5, scale: 1.1 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    <Trophy className="w-6 h-6 text-white" />
-                  </motion.div>
-                  <div>
-                    <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Achievements</p>
-                    <p className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+              <LoopFundCard className="min-h-36 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Read</p>
+                    <p className="font-display text-h3 text-loopfund-emerald-600">{totalCount - unreadCount}</p>
+                  </div>
+                  <div className="p-3 bg-loopfund-emerald-100 rounded-full">
+                    <CheckCircle className="w-6 h-6 text-loopfund-emerald-600" />
+                  </div>
+                </div>
+              </LoopFundCard>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}
+              className="relative group"
+            >
+              <LoopFundCard className="min-h-36 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Achievements</p>
+                    <p className="font-display text-h3 text-loopfund-gold-600">
                       {(notifications || []).filter(n => n && n.type === 'achievement').length}
                     </p>
                   </div>
+                  <div className="p-3 bg-loopfund-gold-100 rounded-full">
+                    <Trophy className="w-6 h-6 text-loopfund-gold-600" />
+                  </div>
                 </div>
               </LoopFundCard>
             </motion.div>
           </motion.div>
 
-          {/* Filters and Search */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+          {/* Revolutionary Filter Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ duration: 0.6, delay: 1.0 }}
+            className="relative mb-8"
           >
-            <LoopFundCard variant="elevated" className="p-6">
+            <LoopFundCard className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-loopfund-electric-100 rounded-lg">
+                    <Filter className="w-5 h-5 text-loopfund-electric-600" />
+                  </div>
+                  <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                    Filter Notifications
+                  </h3>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-loopfund-emerald-500 rounded-full"></div>
+                  <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                    {filteredNotifications.length} notifications
+                  </span>
+                </div>
+              </div>
+              
               <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-6">
                 {/* Search */}
                 <div className="flex-1">
@@ -394,7 +404,7 @@ const NotificationsPage = () => {
                 </div>
 
                 {/* Filter Tabs */}
-                <div className="flex space-x-1 bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated rounded-xl p-1">
+                <div className="flex flex-wrap gap-3">
                   {[
                     { id: 'all', label: 'All', count: totalCount, color: 'emerald' },
                     { id: 'unread', label: 'Unread', count: unreadCount, color: 'coral' },
@@ -405,15 +415,18 @@ const NotificationsPage = () => {
                     <motion.button
                       key={tab.id}
                       onClick={() => setFilter(tab.id)}
-                      className={`px-4 py-2 rounded-lg text-sm font-body font-medium transition-all duration-300 ${
+                      className={`px-4 py-3 rounded-xl font-body text-body font-medium transition-all duration-200 flex items-center space-x-2 ${
                         filter === tab.id
-                          ? `bg-loopfund-${tab.color}-100 dark:bg-loopfund-${tab.color}-900/20 text-loopfund-${tab.color}-700 dark:text-loopfund-${tab.color}-300 shadow-loopfund border border-loopfund-${tab.color}-200 dark:border-loopfund-${tab.color}-800`
-                          : 'text-loopfund-neutral-600 dark:text-loopfund-neutral-400 hover:text-loopfund-neutral-900 dark:hover:text-loopfund-neutral-100 hover:bg-loopfund-neutral-200 dark:hover:bg-loopfund-dark-surface'
+                          ? `bg-loopfund-${tab.color}-100 dark:bg-loopfund-${tab.color}-900/20 text-loopfund-${tab.color}-700 dark:text-loopfund-${tab.color}-300 shadow-loopfund border-2 border-loopfund-${tab.color}-200 dark:border-loopfund-${tab.color}-800`
+                          : 'bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated text-loopfund-neutral-700 dark:text-loopfund-neutral-300 hover:bg-loopfund-neutral-200 dark:hover:bg-loopfund-dark-surface border-2 border-transparent'
                       }`}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      {tab.label} ({tab.count})
+                      <span>{tab.label}</span>
+                      <span className="px-2 py-1 bg-loopfund-neutral-200 dark:bg-loopfund-dark-surface rounded-full text-xs">
+                        {tab.count}
+                      </span>
                     </motion.button>
                   ))}
                 </div>
@@ -437,11 +450,12 @@ const NotificationsPage = () => {
             </LoopFundCard>
           </motion.div>
 
-          {/* Notifications List */}
+
+          {/* Revolutionary Notifications List */}
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ duration: 0.6, delay: 1.1 }}
             className="space-y-4"
           >
             {filteredNotifications.length === 0 ? (
@@ -461,9 +475,17 @@ const NotificationsPage = () => {
                   <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
                     No notifications found
                   </h3>
-                  <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                  <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-6">
                     {searchTerm ? 'Try adjusting your search terms' : 'You\'re all caught up!'}
                   </p>
+                  <LoopFundButton
+                    onClick={() => setSearchTerm('')}
+                    variant="outline"
+                    size="lg"
+                    icon={<Bell className="w-5 h-5" />}
+                  >
+                    Clear Filters
+                  </LoopFundButton>
                 </LoopFundCard>
               </motion.div>
             ) : (
@@ -472,7 +494,7 @@ const NotificationsPage = () => {
                   key={notification._id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
+                  transition={{ delay: 1.2 + index * 0.05 }}
                   whileHover={{ scale: 1.01, y: -2 }}
                   className={`p-6 rounded-2xl border-l-4 transition-all duration-300 hover:shadow-loopfund ${
                     getNotificationColor(notification.type)

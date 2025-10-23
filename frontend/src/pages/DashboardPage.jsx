@@ -42,6 +42,7 @@ import StatsCard from '../components/ui/StatsCard';
 import ProgressRing from '../components/ui/ProgressRing';
 import FloatingActionButton from '../components/ui/FloatingActionButton';
 import WeatherWidget from '../components/ui/WeatherWidget';
+import { LoopFundCard } from '../components/ui';
 import dashboardService from '../services/dashboardService';
 import { useToast } from '../context/ToastContext';
 import QuickActions from '../components/dashboard/QuickActions';
@@ -375,31 +376,25 @@ const DashboardPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="lg:col-span-3 bg-gradient-to-br from-loopfund-emerald-500 via-loopfund-mint-500 to-loopfund-emerald-600 rounded-2xl p-8 text-white relative overflow-hidden"
+            className="lg:col-span-3"
           >
-            {/* Revolutionary Background Elements */}
-            <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-20 translate-x-20 animate-float" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-16 -translate-x-16 animate-float-delayed" />
-            <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-white/5 rounded-full -translate-x-12 -translate-y-12 animate-float-slow" />
-            
-            <div className="relative z-10">
-              <motion.h1 
-                className="font-display text-display-lg mb-3"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                Welcome back, {dashboardData?.profile?.firstName || dashboardData?.profile?.name || 'User'}! 👋
-              </motion.h1>
-              <motion.p 
-                className="font-body text-body-lg text-white/90"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                You're making great progress on your savings goals. Keep up the amazing work!
-              </motion.p>
-            </div>
+            <LoopFundCard className="p-8">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="p-4 bg-loopfund-emerald-100 rounded-full">
+                    <User className="w-8 h-8 text-loopfund-emerald-600" />
+                  </div>
+                  <div>
+                    <h1 className="font-display text-display-lg text-loopfund-neutral-900 mb-2">
+                      Welcome back, {dashboardData?.profile?.firstName || dashboardData?.profile?.name || 'User'}! 👋
+                    </h1>
+                    <p className="font-body text-body-lg text-loopfund-neutral-600">
+                      You're making great progress on your savings goals. Keep up the amazing work!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </LoopFundCard>
           </motion.div>
           
           <WeatherWidget />

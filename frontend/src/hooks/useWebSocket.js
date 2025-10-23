@@ -6,10 +6,6 @@ export const useWebSocket = () => {
   const { token } = useAuthStore();
 
   useEffect(() => {
-    // Temporarily disable WebSocket to fix dashboard
-    console.log('🔌 WebSocket temporarily disabled for dashboard fix');
-    return;
-
     if (!token) {
       console.log('❌ No token available for WebSocket');
       return;
@@ -53,11 +49,18 @@ export const useWebSocket = () => {
     };
   }, [token]);
 
-  // Return a mock WebSocket object when disabled
   return {
     ws: wsRef.current,
-    isConnected: false,
-    send: () => console.log('WebSocket disabled'),
-    close: () => console.log('WebSocket disabled')
+    isConnected: wsRef.current?.readyState === WebSocket.OPEN,
+    send: (message) => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify(message));
+      }
+    },
+    close: () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    }
   };
 }; 

@@ -58,6 +58,7 @@ const GoalsPage = () => {
     amount: '',
     description: ''
   });
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -100,6 +101,7 @@ const GoalsPage = () => {
     // Listen for payment completion events
     const handlePaymentCompleted = (event) => {
       console.log('🔄 Payment completed event received:', event.detail);
+      toast.success('Payment completed', 'Your payment has been completed successfully');
       if (event.detail.type === 'goals' || event.detail.type === 'dashboard') {
         console.log('🔄 Refreshing goals data after payment completion...');
         fetchGoals();
@@ -754,7 +756,7 @@ const GoalsPage = () => {
   // Show loading state
   if (isLoading) {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center">
+        <div className="min-h-screen bg-loopfund-neutral-50 dark:bg-loopfund-dark-bg flex items-center justify-center">
           <motion.div 
             className="text-center"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -762,11 +764,11 @@ const GoalsPage = () => {
             transition={{ duration: 0.5 }}
           >
             <motion.div
-              className="w-16 h-16 bg-gradient-loopfund rounded-full flex items-center justify-center mx-auto mb-6"
+              className="w-16 h-16 bg-loopfund-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6"
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
             >
-              <Target className="w-8 h-8 text-white" />
+              <Target className="w-8 h-8 text-loopfund-emerald-600" />
             </motion.div>
             <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
               Loading Your Goals
@@ -782,7 +784,7 @@ const GoalsPage = () => {
   // Show error state
   if (error) {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center">
+        <div className="min-h-screen bg-loopfund-neutral-50 dark:bg-loopfund-dark-bg flex items-center justify-center">
           <motion.div 
             className="text-center"
             initial={{ opacity: 0, y: 20 }}
@@ -812,7 +814,7 @@ const GoalsPage = () => {
   }
 
   return (
-      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated">
+      <div className="min-h-screen bg-loopfund-neutral-50 dark:bg-loopfund-dark-bg">
         <div className="space-y-8 p-6">
           {/* Revolutionary Header */}
           <motion.div 
@@ -821,11 +823,6 @@ const GoalsPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            {/* Background Elements */}
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-loopfund opacity-10 rounded-full blur-3xl animate-float" />
-              <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-gradient-coral opacity-10 rounded-full blur-2xl animate-float-delayed" />
-            </div>
             
             <div className="relative flex items-center justify-between">
               <div>
@@ -882,22 +879,15 @@ const GoalsPage = () => {
                 transition={{ delay: 0.5 }}
                 className="relative group"
               >
-                <LoopFundCard variant="elevated" hover className="min-h-[140px]">
-                  <div className="flex items-center justify-between p-6">
+                <LoopFundCard className="min-h-[140px] p-6">
+                  <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <p className="font-body text-body font-medium text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-3">Total Goals</p>
-                      <p className="font-display text-h1 text-loopfund-neutral-900 dark:text-loopfund-dark-text">{getGoalStats().total}</p>
+                      <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Total Goals</p>
+                      <p className="font-display text-h3 text-loopfund-neutral-900">{getGoalStats().total}</p>
                     </div>
-                    <motion.div 
-                      className="w-16 h-16 bg-gradient-loopfund rounded-3xl flex items-center justify-center shadow-loopfund-lg flex-shrink-0"
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                      <Target className="w-8 h-8 text-white" />
-                    </motion.div>
-                  </div>
-                  {/* Floating sparkles */}
-                  <div className="absolute top-2 right-2 opacity-0 transition-opacity duration-300">
-                    <Sparkles className="w-4 h-4 text-loopfund-emerald-500 animate-pulse" />
+                    <div className="p-3 bg-loopfund-emerald-100 rounded-full">
+                      <Target className="w-6 h-6 text-loopfund-emerald-600" />
+                    </div>
                   </div>
                 </LoopFundCard>
               </motion.div>
@@ -908,22 +898,15 @@ const GoalsPage = () => {
                 transition={{ delay: 0.6 }}
                 className="relative group"
               >
-                <LoopFundCard variant="elevated" hover className="min-h-[140px]">
-                  <div className="flex items-center justify-between p-6">
+                <LoopFundCard className="min-h-[140px] p-6">
+                  <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <p className="font-body text-body font-medium text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-3">Completed</p>
-                      <p className="font-display text-h1 text-loopfund-gold-600">{getGoalStats().completed}</p>
+                      <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Completed</p>
+                      <p className="font-display text-h3 text-loopfund-gold-600">{getGoalStats().completed}</p>
                     </div>
-                    <motion.div 
-                      className="w-16 h-16 bg-gradient-gold rounded-3xl flex items-center justify-center shadow-loopfund-lg flex-shrink-0"
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                      <Trophy className="w-8 h-8 text-loopfund-midnight-900" />
-                    </motion.div>
-                  </div>
-                  {/* Floating sparkles */}
-                  <div className="absolute top-2 right-2 opacity-0 transition-opacity duration-300">
-                    <Sparkles className="w-4 h-4 text-loopfund-gold-500 animate-pulse" />
+                    <div className="p-3 bg-loopfund-gold-100 rounded-full">
+                      <Trophy className="w-6 h-6 text-loopfund-gold-600" />
+                    </div>
                   </div>
                 </LoopFundCard>
               </motion.div>
@@ -934,22 +917,15 @@ const GoalsPage = () => {
                 transition={{ delay: 0.7 }}
                 className="relative group"
               >
-                <LoopFundCard variant="elevated" hover className="min-h-[140px]">
-                  <div className="flex items-center justify-between p-6">
+                <LoopFundCard className="min-h-[140px] p-6">
+                  <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <p className="font-body text-body font-medium text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-3">In Progress</p>
-                      <p className="font-display text-h1 text-loopfund-coral-600">{getGoalStats().incomplete}</p>
+                      <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">In Progress</p>
+                      <p className="font-display text-h3 text-loopfund-coral-600">{getGoalStats().incomplete}</p>
                     </div>
-                    <motion.div 
-                      className="w-16 h-16 bg-gradient-coral rounded-3xl flex items-center justify-center shadow-loopfund-lg flex-shrink-0"
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                      <Zap className="w-8 h-8 text-white" />
-                    </motion.div>
-                  </div>
-                  {/* Floating sparkles */}
-                  <div className="absolute top-2 right-2 opacity-0 transition-opacity duration-300">
-                    <Sparkles className="w-4 h-4 text-loopfund-coral-500 animate-pulse" />
+                    <div className="p-3 bg-loopfund-coral-100 rounded-full">
+                      <Zap className="w-6 h-6 text-loopfund-coral-600" />
+                    </div>
                   </div>
                 </LoopFundCard>
               </motion.div>
@@ -960,123 +936,79 @@ const GoalsPage = () => {
                 transition={{ delay: 0.8 }}
                 className="relative group"
               >
-                <LoopFundCard variant="elevated" hover className="min-h-[140px]">
-                  <div className="flex items-center justify-between p-6">
+                <LoopFundCard className="min-h-[140px] p-6">
+                  <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
-                      <p className="font-body text-body font-medium text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-3">Total Saved</p>
-                      <p className="font-display text-h1 text-loopfund-emerald-600 break-words">{formatCurrencySimple(getGoalStats().totalValue)}</p>
+                      <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Total Saved</p>
+                      <p className="font-display text-h3 text-loopfund-emerald-600 break-words">{formatCurrencySimple(getGoalStats().totalValue)}</p>
                     </div>
-                    <motion.div 
-                      className="w-16 h-16 bg-gradient-electric rounded-3xl flex items-center justify-center shadow-loopfund-lg flex-shrink-0"
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                      <Banknote className="w-8 h-8 text-white" />
-                    </motion.div>
-                  </div>
-                  {/* Floating sparkles */}
-                  <div className="absolute top-2 right-2 opacity-0 transition-opacity duration-300">
-                    <Sparkles className="w-4 h-4 text-loopfund-electric-500 animate-pulse" />
+                    <div className="p-3 bg-loopfund-electric-100 rounded-full">
+                      <Banknote className="w-6 h-6 text-loopfund-electric-600" />
+                    </div>
                   </div>
                 </LoopFundCard>
               </motion.div>
             </motion.div>
           )}
 
-          {/* Revolutionary Revenue Model Info */}
+          {/* Goal Creation Plan */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.9 }}
             className="relative"
           >
-            <LoopFundCard variant="gradient" className="overflow-hidden">
-              {/* Background Pattern */}
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute inset-0" style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-                }}></div>
-              </div>
-              
-              <div className="relative flex items-start space-x-6">
-                <motion.div 
-                  className="flex-shrink-0"
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                >
-                  <div className="w-16 h-16 bg-gradient-to-r from-loopfund-gold-500 to-loopfund-orange-500 rounded-3xl flex items-center justify-center shadow-loopfund-lg">
-                    <Crown className="w-8 h-8 text-white" />
-                  </div>
-                </motion.div>
+            <LoopFundCard className="p-6">
+              <div className="flex items-start space-x-4">
+                <div className="p-3 bg-loopfund-gold-100 rounded-full">
+                  <Crown className="w-6 h-6 text-loopfund-gold-600" />
+                </div>
                 
                 <div className="flex-1">
-                  <motion.h3 
-                    className="font-display text-h3 text-white mb-4"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 1.0 }}
-                  >
-                    Revolutionary Goal Creation Plan
-                  </motion.h3>
+                  <h3 className="font-display text-h4 text-loopfund-neutral-900 mb-4">
+                    Goal Creation Plan
+                  </h3>
                   
-                  <div className="space-y-4">
-                    <motion.div 
-                      className="flex items-center space-x-4 p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 1.1 }}
-                    >
-                      <div className="w-10 h-10 bg-loopfund-emerald-500/20 rounded-xl flex items-center justify-center">
-                        <CheckCircle className="w-5 h-5 text-loopfund-emerald-300" />
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3 p-3 bg-loopfund-neutral-50 rounded-xl">
+                      <div className="p-2 bg-loopfund-emerald-100 rounded-lg">
+                        <CheckCircle className="w-4 h-4 text-loopfund-emerald-600" />
                       </div>
-                      <span className="font-body text-body text-white/90">
-                        <strong className="text-white">First Goal:</strong> Create your first individual goal for FREE!
+                      <span className="font-body text-body-sm text-loopfund-neutral-700">
+                        <strong>First Goal:</strong> Create your first individual goal for FREE!
                       </span>
-                    </motion.div>
+                    </div>
                     
-                    <motion.div 
-                      className="flex items-center space-x-4 p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 1.2 }}
-                    >
-                      <div className="w-10 h-10 bg-loopfund-coral-500/20 rounded-xl flex items-center justify-center">
-                        <CreditCard className="w-5 h-5 text-loopfund-coral-300" />
+                    <div className="flex items-center space-x-3 p-3 bg-loopfund-neutral-50 rounded-xl">
+                      <div className="p-2 bg-loopfund-coral-100 rounded-lg">
+                        <CreditCard className="w-4 h-4 text-loopfund-coral-600" />
                       </div>
-                      <span className="font-body text-body text-white/90">
-                        <strong className="text-white">Additional Goals:</strong> Pay 2.5% fee (min ₦500, max ₦10,000)
+                      <span className="font-body text-body-sm text-loopfund-neutral-700">
+                        <strong>Additional Goals:</strong> Pay 2.5% fee (min ₦500, max ₦10,000)
                       </span>
-                    </motion.div>
+                    </div>
                     
-                    <motion.div 
-                      className="flex items-center space-x-4 p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 1.3 }}
-                    >
-                      <div className="w-10 h-10 bg-loopfund-electric-500/20 rounded-xl flex items-center justify-center">
-                        <Users className="w-5 h-5 text-loopfund-electric-300" />
+                    <div className="flex items-center space-x-3 p-3 bg-loopfund-neutral-50 rounded-xl">
+                      <div className="p-2 bg-loopfund-electric-100 rounded-lg">
+                        <Users className="w-4 h-4 text-loopfund-electric-600" />
                       </div>
-                      <span className="font-body text-body text-white/90">
-                        <strong className="text-white">Group Goals:</strong> Create unlimited group goals for FREE!
+                      <span className="font-body text-body-sm text-loopfund-neutral-700">
+                        <strong>Group Goals:</strong> Create unlimited group goals for FREE!
                       </span>
-                    </motion.div>
+                    </div>
                   </div>
                   
                   {!canCreateGoalForFree() && (
-                    <motion.div 
-                      className="mt-6 p-4 bg-loopfund-coral-500/20 backdrop-blur-sm border border-loopfund-coral-500/30 rounded-2xl"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 1.4 }}
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-loopfund-coral-500/20 rounded-xl flex items-center justify-center">
-                          <Lock className="w-5 h-5 text-loopfund-coral-300" />
+                    <div className="mt-6 p-4 bg-loopfund-coral-50 border border-loopfund-coral-200 rounded-xl">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-loopfund-coral-100 rounded-lg">
+                          <Lock className="w-4 h-4 text-loopfund-coral-600" />
                         </div>
-                        <span className="font-body text-body-sm text-white font-medium">
+                        <span className="font-body text-body-sm text-loopfund-coral-700 font-medium">
                           You've used your free goal. Additional goals require a small fee.
                         </span>
                       </div>
-                    </motion.div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -1647,10 +1579,6 @@ const GoalsPage = () => {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <LoopFundCard variant="elevated" className="overflow-hidden">
-                    {/* Background Elements */}
-                    <div className="absolute inset-0 overflow-hidden">
-                      <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-coral opacity-10 rounded-full blur-3xl animate-float" />
-                    </div>
                     
                     <div className="relative p-8">
                       {/* Header */}
@@ -1712,10 +1640,10 @@ const GoalsPage = () => {
                           >
                             <div className="flex items-center space-x-4 mb-4">
                               <motion.div 
-                                className="w-12 h-12 bg-gradient-loopfund rounded-2xl flex items-center justify-center shadow-loopfund"
+                                className="w-12 h-12 bg-loopfund-emerald-100 rounded-2xl flex items-center justify-center shadow-loopfund"
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                               >
-                                <Target className="w-6 h-6 text-white" />
+                                <Target className="w-6 h-6 text-loopfund-emerald-600" />
                               </motion.div>
                               <div>
                                 <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-1">
@@ -1735,7 +1663,7 @@ const GoalsPage = () => {
                             </div>
                             <div className="w-full bg-loopfund-neutral-200 dark:bg-loopfund-neutral-700 rounded-full h-3 overflow-hidden">
                               <motion.div
-                                className="bg-gradient-loopfund h-3 rounded-full transition-all duration-300"
+                                className="bg-loopfund-emerald-500 h-3 rounded-full transition-all duration-300"
                                 initial={{ width: 0 }}
                                 animate={{ 
                                   width: `${Math.min(((selectedGoal.currentAmount || 0) / selectedGoal.targetAmount) * 100, 100)}%` 
@@ -1775,8 +1703,8 @@ const GoalsPage = () => {
                         >
                           <div className="p-4 bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/20 rounded-xl border border-loopfund-emerald-200 dark:border-loopfund-emerald-800">
                             <div className="flex items-center space-x-3">
-                              <div className="w-10 h-10 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-full flex items-center justify-center">
-                                <CreditCard className="w-5 h-5 text-white" />
+                              <div className="w-10 h-10 bg-loopfund-emerald-100 rounded-full flex items-center justify-center">
+                                <CreditCard className="w-5 h-5 text-loopfund-emerald-600" />
                               </div>
                               <div>
                                 <h4 className="font-body text-body font-medium text-loopfund-emerald-700 dark:text-loopfund-emerald-300">

@@ -2,6 +2,7 @@ const Contribution = require('../models/Contribution');
 const Goal = require('../models/Goal');
 const Group = require('../models/Group');
 const Wallet = require('../models/Wallet');
+const notificationService = require('./notification.service');
 
 const addContribution = async (contributionData) => {
   try {
@@ -137,6 +138,18 @@ const addContribution = async (contributionData) => {
 
     await contribution.save();
 
+    // Send notification for successful contribution
+    try {
+      if (goalId) {
+        await notificationService.notifyGoalContribution(goalId, userId, amount, description);
+      } else if (groupId) {
+        await notificationService.notifyGroupContribution(groupId, userId, amount, description);
+      }
+    } catch (notificationError) {
+      console.error('Error sending contribution notification:', notificationError);
+      // Don't fail the contribution if notification fails
+    }
+
     // Update target progress
     if (goalId) {
       // Update goal progress
@@ -148,6 +161,13 @@ const addContribution = async (contributionData) => {
         targetEntity.status = 'completed';
         targetEntity.completedAt = new Date();
         
+        // Send goal completion notification
+        try {
+          await notificationService.notifyGoalMilestone(targetEntity._id, 100, userId);
+        } catch (notificationError) {
+          console.error('Error sending goal completion notification:', notificationError);
+        }
+        
         // Trigger fund release check for completed goal
         const fundReleaseService = require('./fundRelease.service');
         setTimeout(async () => {
@@ -157,6 +177,22 @@ const addContribution = async (contributionData) => {
             console.error('Error auto-releasing goal funds:', error);
           }
         }, 1000); // Small delay to ensure goal is saved
+      } else {
+        // Check for milestone notifications (25%, 50%, 75%, 90%)
+        const progress = (targetEntity.currentAmount / targetEntity.targetAmount) * 100;
+        const milestones = [25, 50, 75, 90];
+        const reachedMilestone = milestones.find(milestone => 
+          progress >= milestone && 
+          (targetEntity.currentAmount - amount) < (targetEntity.targetAmount * milestone / 100)
+        );
+        
+        if (reachedMilestone) {
+          try {
+            await notificationService.notifyGoalMilestone(targetEntity._id, reachedMilestone, userId);
+          } catch (notificationError) {
+            console.error('Error sending goal milestone notification:', notificationError);
+          }
+        }
       }
       
       await targetEntity.save();
@@ -186,6 +222,13 @@ const addContribution = async (contributionData) => {
       if (targetEntity.targetAmount && targetEntity.currentAmount >= targetEntity.targetAmount && targetEntity.status !== 'completed') {
         targetEntity.status = 'completed';
         targetEntity.completedAt = new Date();
+
+        // Send group completion notification
+        try {
+          await notificationService.notifyGroupTargetReached(targetEntity._id);
+        } catch (notificationError) {
+          console.error('Error sending group completion notification:', notificationError);
+        }
 
         // Trigger fund release to group creator's wallet upon completion
         const fundReleaseService = require('./fundRelease.service');

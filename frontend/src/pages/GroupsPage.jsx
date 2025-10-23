@@ -330,7 +330,7 @@ const GroupsPage = () => {
 
           {/* Groups Grid */}
           <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-2 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
           initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
@@ -342,121 +342,115 @@ const GroupsPage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 + index * 0.1 }}
             >
-              <LoopFundCard variant="elevated" className="h-full overflow-hidden min-w-0 w-full min-h-[400px]">
-                <div className="p-10 w-full h-full flex flex-col">
+              <LoopFundCard className="h-full p-6">
+                <div className="flex flex-col h-full">
                   {/* Group Header */}
-                  <div className="flex items-start justify-between mb-8">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-16 h-16 bg-gradient-loopfund rounded-2xl flex items-center justify-center shadow-loopfund">
-                        <Users className="w-8 h-8 text-white" />
-                  </div>
-                        <div className="flex-1 min-w-0">
-                        <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-1 truncate">
-                            {group.name}
-                          </h3>
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <div className="p-3 bg-loopfund-emerald-100 rounded-full flex-shrink-0">
+                        <Users className="w-6 h-6 text-loopfund-emerald-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-display text-h4 text-loopfund-neutral-900 mb-1 truncate">
+                          {group.name}
+                        </h3>
                         <div className="flex items-center space-x-2">
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-loopfund-emerald-100 text-loopfund-emerald-700 dark:bg-loopfund-emerald-900/30 dark:text-loopfund-emerald-300">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-loopfund-emerald-100 text-loopfund-emerald-700">
                             {group.members?.length || 0} members
                           </span>
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-loopfund-neutral-100 text-loopfund-neutral-600 dark:bg-loopfund-dark-elevated dark:text-loopfund-neutral-400">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-loopfund-neutral-100 text-loopfund-neutral-600">
                             {group.status || 'active'}
                           </span>
                         </div>
                       </div>
-                      </div>
-                    <button className="p-2 hover:bg-loopfund-neutral-100 dark:hover:bg-loopfund-dark-elevated rounded-xl transition-colors">
+                    </div>
+                    <button className="p-2 hover:bg-loopfund-neutral-100 rounded-xl transition-colors flex-shrink-0">
                       <MoreVertical className="w-5 h-5 text-loopfund-neutral-500" />
                     </button>
-                    </div>
+                  </div>
 
-                    {/* Group Description */}
-                  <p className="font-body text-body text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-6 line-clamp-2">
+                  {/* Group Description */}
+                  <p className="font-body text-body-sm text-loopfund-neutral-600 mb-6 line-clamp-2 min-h-[2.5rem]">
                     {group.description || 'No description provided'}
                   </p>
 
                   {/* Group Stats */}
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="text-center p-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-xl border border-loopfund-neutral-200 dark:border-loopfund-neutral-700 min-w-0">
-                      <div className="font-display text-h5 text-loopfund-emerald-600 mb-1 break-words">
-                        {(group.currentAmount || 0) >= 1000000 ? 
-                          `₦${formatCompactCurrency(group.currentAmount || 0)}` : 
-                          formatCurrency(group.currentAmount || 0)
-                        }
+                  <div className="grid grid-cols-2 gap-3 mb-6">
+                    <div className="text-center p-3 bg-loopfund-neutral-50 rounded-xl">
+                      <div className="font-display text-h5 text-loopfund-emerald-600 mb-1 truncate">
+                        {formatCurrencySimple(group.currentAmount || 0)}
                       </div>
-                      <div className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                      <div className="font-body text-body-sm text-loopfund-neutral-600">
                         Total Saved
                       </div>
                     </div>
-                    <div className="text-center p-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-xl border border-loopfund-neutral-200 dark:border-loopfund-neutral-700 min-w-0">
-                      <div className="font-display text-h5 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-1 break-words">
-                        {group.targetAmount ? 
-                          (group.targetAmount >= 1000000 ? 
-                            `₦${formatCompactCurrency(group.targetAmount)}` : 
-                            formatCurrency(group.targetAmount)
-                          ) : 'N/A'
-                        }
+                    <div className="text-center p-3 bg-loopfund-neutral-50 rounded-xl">
+                      <div className="font-display text-h5 text-loopfund-neutral-900 mb-1 truncate">
+                        {group.targetAmount ? formatCurrencySimple(group.targetAmount) : 'N/A'}
                       </div>
-                      <div className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                      <div className="font-body text-body-sm text-loopfund-neutral-600">
                         Target
-                          </div>
-                        </div>
+                      </div>
                     </div>
+                  </div>
 
                   {/* Progress Bar */}
                   {group.targetAmount && (
-                    <div className="mb-8">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300">
+                    <div className="mb-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-body text-body-sm font-medium text-loopfund-neutral-700">
                           Progress
                         </span>
                         <span className="font-display text-body-sm font-medium text-loopfund-emerald-600">
                           {Math.round(((group.currentAmount || 0) / group.targetAmount) * 100)}%
-                          </span>
-                        </div>
-                      <div className="w-full bg-loopfund-neutral-200 dark:bg-loopfund-neutral-700 rounded-full h-3 overflow-hidden">
+                        </span>
+                      </div>
+                      <div className="w-full bg-loopfund-neutral-200 rounded-full h-2 overflow-hidden">
                         <div
-                          className="bg-gradient-loopfund h-3 rounded-full transition-all duration-500"
+                          className="bg-loopfund-emerald-500 h-2 rounded-full transition-all duration-500"
                           style={{ 
                             width: `${Math.min(((group.currentAmount || 0) / group.targetAmount) * 100, 100)}%` 
                           }}
                         />
-                        </div>
                       </div>
-                    )}
+                    </div>
+                  )}
 
                   {/* Action Buttons */}
-                  <div className="flex space-x-4 mt-auto pt-6">
+                  <div className="flex flex-col space-y-2 mt-auto">
+                    <div className="flex space-x-2">
                       <LoopFundButton
                         onClick={() => handleContributeClick(group)}
-                      variant="primary"
-                      size="lg"
-                      icon={<Plus className="w-5 h-5" />}
-                      className="flex-1 rounded-xl py-3"
-                    >
-                      Contribute
+                        variant="primary"
+                        size="sm"
+                        icon={<Plus className="w-4 h-4" />}
+                        className="flex-1"
+                      >
+                        Contribute
                       </LoopFundButton>
-                    <LoopFundButton
-                          onClick={() => handleInviteClick(group)}
-                      variant="outline"
-                      size="lg"
-                      icon={<UserPlus className="w-5 h-5" />}
-                      className="flex-1 rounded-xl py-3"
-                    >
-                      Invite
-                    </LoopFundButton>
-                    <LoopFundButton
-                          onClick={() => handleMessageClick(group)}
-                      variant="outline"
-                      size="lg"
-                      icon={<Users className="w-5 h-5" />}
-                      className="flex-1 rounded-xl py-3"
-                    >
-                      View
-                    </LoopFundButton>
+                      <LoopFundButton
+                        onClick={() => handleInviteClick(group)}
+                        variant="outline"
+                        size="sm"
+                        icon={<UserPlus className="w-4 h-4" />}
+                        className="flex-1"
+                      >
+                        Invite
+                      </LoopFundButton>
                     </div>
+                    <LoopFundButton
+                      onClick={() => handleMessageClick(group)}
+                      variant="outline"
+                      size="sm"
+                      icon={<Eye className="w-4 h-4" />}
+                      className="w-full"
+                    >
+                      View Details
+                    </LoopFundButton>
                   </div>
-                </LoopFundCard>
-              </motion.div>
+                </div>
+              </LoopFundCard>
+            </motion.div>
             ))}
           </motion.div>
 

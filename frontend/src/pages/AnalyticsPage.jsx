@@ -172,7 +172,7 @@ const AnalyticsPage = () => {
   if (!analytics) return null;
 
   return (
-      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated">
+      <div className="min-h-screen bg-loopfund-neutral-50 dark:bg-loopfund-dark-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <motion.div
@@ -181,19 +181,13 @@ const AnalyticsPage = () => {
             className="mb-8"
           >
             <div className="flex items-center justify-between">
-              <div className="relative">
-                {/* Background Elements */}
-                <div className="absolute -top-10 -right-10 w-20 h-20 bg-gradient-loopfund opacity-5 rounded-full blur-2xl animate-float" />
-                <div className="absolute -bottom-5 -left-5 w-16 h-16 bg-gradient-coral opacity-5 rounded-full blur-xl animate-float-delayed" />
-                
-                <div className="relative">
-                  <h1 className="font-display text-display-lg text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-3">
-                    Your Financial Overview
-                  </h1>
-                  <p className="font-body text-body-lg text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
-                    Track your savings progress and financial insights
-                  </p>
-                </div>
+              <div>
+                <h1 className="font-display text-display-lg text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-3">
+                  Your Financial Overview
+                </h1>
+                <p className="font-body text-body-lg text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                  Track your savings progress and financial insights
+                </p>
               </div>
               
               <div className="flex items-center space-x-4">
@@ -227,30 +221,20 @@ const AnalyticsPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-              <LoopFundCard variant="elevated" className="relative">
-                {/* Background Elements */}
-                <div className="absolute inset-0 overflow-hidden">
-                  <div className="absolute -top-5 -right-5 w-10 h-10 bg-gradient-emerald opacity-5 rounded-full blur-xl animate-float" />
-                </div>
-
-                <div className="relative p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-2">Total Saved</p>
-                      <p className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text break-words">
-                        {formatCurrencySimple(analytics.summary.totalSaved)}
-                      </p>
-                      <div className="flex items-center mt-3">
-                        <ArrowUpRight className="w-4 h-4 text-loopfund-emerald-500 mr-1" />
-                        <span className="font-body text-body-sm text-loopfund-emerald-600 dark:text-loopfund-emerald-400 font-medium">+12.5%</span>
-                      </div>
+              <LoopFundCard className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-body text-body-sm text-loopfund-neutral-600 mb-1">Total Saved</p>
+                    <p className="font-display text-h3 text-loopfund-neutral-900 break-words">
+                      {formatCurrencySimple(analytics.summary.totalSaved)}
+                    </p>
+                    <div className="flex items-center mt-2">
+                      <ArrowUpRight className="w-4 h-4 text-loopfund-emerald-500 mr-1" />
+                      <span className="font-body text-body-sm text-loopfund-emerald-600 font-medium">+12.5%</span>
                     </div>
-                    <motion.div 
-                      className="w-12 h-12 bg-gradient-emerald rounded-2xl flex items-center justify-center shadow-loopfund flex-shrink-0 ml-3"
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                      <Banknote className="w-6 h-6 text-white" />
-                    </motion.div>
+                  </div>
+                  <div className="p-3 bg-loopfund-emerald-100 rounded-full">
+                    <Banknote className="w-6 h-6 text-loopfund-emerald-600" />
                   </div>
                 </div>
               </LoopFundCard>
@@ -259,33 +243,22 @@ const AnalyticsPage = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              transition={{ delay: 0.1, type: "spring", stiffness: 300, damping: 20 }}
             >
-              <LoopFundCard variant="elevated" className="relative">
-                {/* Background Elements */}
-                <div className="absolute inset-0 overflow-hidden">
-                  <div className="absolute -top-5 -right-5 w-10 h-10 bg-gradient-coral opacity-5 rounded-full blur-xl animate-float" />
-                </div>
-
-                <div className="relative p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-2">Group Contributions</p>
-                      <p className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text break-words">
-                        {formatCurrencySimple(analytics.summary.groupContributions)}
-                      </p>
-                      <div className="flex items-center mt-3">
-                        <Users className="w-4 h-4 text-loopfund-coral-500 mr-1" />
-                        <span className="font-body text-body-sm text-loopfund-coral-600 dark:text-loopfund-coral-400 font-medium">{analytics.summary.groupCount} groups</span>
-                      </div>
+              <LoopFundCard className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-body text-body-sm text-loopfund-neutral-600 mb-1">Group Contributions</p>
+                    <p className="font-display text-h3 text-loopfund-neutral-900 break-words">
+                      {formatCurrencySimple(analytics.summary.groupContributions)}
+                    </p>
+                    <div className="flex items-center mt-2">
+                      <Users className="w-4 h-4 text-loopfund-coral-500 mr-1" />
+                      <span className="font-body text-body-sm text-loopfund-coral-600 font-medium">{analytics.summary.groupCount} groups</span>
                     </div>
-                    <motion.div 
-                      className="w-12 h-12 bg-gradient-coral rounded-2xl flex items-center justify-center shadow-loopfund flex-shrink-0 ml-3"
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                      <Users className="w-6 h-6 text-white" />
-                    </motion.div>
+                  </div>
+                  <div className="p-3 bg-loopfund-coral-100 rounded-full">
+                    <Users className="w-6 h-6 text-loopfund-coral-600" />
                   </div>
                 </div>
               </LoopFundCard>
@@ -294,33 +267,22 @@ const AnalyticsPage = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 300, damping: 20 }}
             >
-              <LoopFundCard variant="elevated" className="relative">
-                {/* Background Elements */}
-                <div className="absolute inset-0 overflow-hidden">
-                  <div className="absolute -top-5 -right-5 w-10 h-10 bg-gradient-gold opacity-5 rounded-full blur-xl animate-float" />
-                </div>
-
-                <div className="relative p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-2">Solo Savings</p>
-                      <p className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text break-words">
-                        {formatCurrencySimple(analytics.summary.soloSavings)}
-                      </p>
-                      <div className="flex items-center mt-3">
-                        <PiggyBank className="w-4 h-4 text-loopfund-gold-500 mr-1" />
-                        <span className="font-body text-body-sm text-loopfund-gold-600 dark:text-loopfund-gold-400 font-medium">{analytics.summary.soloGoalCount} goals</span>
-                      </div>
+              <LoopFundCard className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-body text-body-sm text-loopfund-neutral-600 mb-1">Solo Savings</p>
+                    <p className="font-display text-h3 text-loopfund-neutral-900 break-words">
+                      {formatCurrencySimple(analytics.summary.soloSavings)}
+                    </p>
+                    <div className="flex items-center mt-2">
+                      <PiggyBank className="w-4 h-4 text-loopfund-gold-500 mr-1" />
+                      <span className="font-body text-body-sm text-loopfund-gold-600 font-medium">{analytics.summary.soloGoalCount} goals</span>
                     </div>
-                    <motion.div 
-                      className="w-12 h-12 bg-gradient-gold rounded-2xl flex items-center justify-center shadow-loopfund flex-shrink-0 ml-3"
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                      <PiggyBank className="w-6 h-6 text-white" />
-                    </motion.div>
+                  </div>
+                  <div className="p-3 bg-loopfund-gold-100 rounded-full">
+                    <PiggyBank className="w-6 h-6 text-loopfund-gold-600" />
                   </div>
                 </div>
               </LoopFundCard>
@@ -329,33 +291,22 @@ const AnalyticsPage = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              transition={{ delay: 0.3, type: "spring", stiffness: 300, damping: 20 }}
             >
-              <LoopFundCard variant="elevated" className="relative">
-                {/* Background Elements */}
-                <div className="absolute inset-0 overflow-hidden">
-                  <div className="absolute -top-5 -right-5 w-10 h-10 bg-gradient-electric opacity-5 rounded-full blur-xl animate-float" />
-                </div>
-
-                <div className="relative p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-2">Active Goals</p>
-                      <p className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
-                        {analytics.summary.activeGoals}
-                      </p>
-                      <div className="flex items-center mt-3">
-                        <Target className="w-4 h-4 text-loopfund-electric-500 mr-1" />
-                        <span className="font-body text-body-sm text-loopfund-electric-600 dark:text-loopfund-electric-400 font-medium">{analytics.summary.completedGoals} completed</span>
-                      </div>
+              <LoopFundCard className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-body text-body-sm text-loopfund-neutral-600 mb-1">Active Goals</p>
+                    <p className="font-display text-h3 text-loopfund-neutral-900">
+                      {analytics.summary.activeGoals}
+                    </p>
+                    <div className="flex items-center mt-2">
+                      <Target className="w-4 h-4 text-loopfund-electric-500 mr-1" />
+                      <span className="font-body text-body-sm text-loopfund-electric-600 font-medium">{analytics.summary.completedGoals} completed</span>
                     </div>
-                    <motion.div 
-                      className="w-12 h-12 bg-gradient-electric rounded-2xl flex items-center justify-center shadow-loopfund flex-shrink-0 ml-3"
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                      <Target className="w-6 h-6 text-white" />
-                    </motion.div>
+                  </div>
+                  <div className="p-3 bg-loopfund-electric-100 rounded-full">
+                    <Target className="w-6 h-6 text-loopfund-electric-600" />
                   </div>
                 </div>
               </LoopFundCard>
@@ -370,34 +321,25 @@ const AnalyticsPage = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <LoopFundCard variant="elevated" className="relative">
-                {/* Background Elements */}
-                <div className="absolute inset-0 overflow-hidden">
-                  <div className="absolute -top-5 -right-5 w-10 h-10 bg-gradient-loopfund opacity-5 rounded-full blur-xl animate-float" />
-                </div>
-
-                <div className="relative p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center space-x-3">
-                      <motion.div 
-                        className="w-10 h-10 bg-gradient-loopfund rounded-2xl flex items-center justify-center shadow-loopfund"
-                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      >
-                        <TrendingUp className="w-5 h-5 text-white" />
-                      </motion.div>
-                      <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text">Savings Trend</h3>
+              <LoopFundCard className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-loopfund-emerald-100 rounded-lg">
+                      <TrendingUp className="w-5 h-5 text-loopfund-emerald-600" />
                     </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-loopfund-emerald-500 rounded-full"></div>
-                        <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Group Savings</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-loopfund-coral-500 rounded-full"></div>
-                        <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Individual Savings</span>
-                      </div>
+                    <h3 className="font-display text-h3 text-loopfund-neutral-900">Savings Trend</h3>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#059669'}}></div>
+                      <span className="font-body text-body-sm text-loopfund-neutral-600">Group Savings</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#DC2626'}}></div>
+                      <span className="font-body text-body-sm text-loopfund-neutral-600">Individual Savings</span>
                     </div>
                   </div>
+                </div>
                   
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
@@ -430,22 +372,21 @@ const AnalyticsPage = () => {
                           type="monotone"
                           dataKey="groupSavings"
                           stackId="1"
-                          stroke="#10B981"
-                          fill="#10B981"
+                          stroke="#059669"
+                          fill="#059669"
                           fillOpacity={0.6}
                         />
                         <Area
                           type="monotone"
                           dataKey="individualSavings"
                           stackId="1"
-                          stroke="#F59E0B"
-                          fill="#F59E0B"
+                          stroke="#DC2626"
+                          fill="#DC2626"
                           fillOpacity={0.6}
                         />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
-                </div>
               </LoopFundCard>
             </motion.div>
 
@@ -455,38 +396,29 @@ const AnalyticsPage = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5 }}
             >
-              <LoopFundCard variant="elevated" className="relative">
-                {/* Background Elements */}
-                <div className="absolute inset-0 overflow-hidden">
-                  <div className="absolute -top-5 -right-5 w-10 h-10 bg-gradient-coral opacity-5 rounded-full blur-xl animate-float" />
-                </div>
-
-                <div className="relative p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center space-x-3">
-                      <motion.div 
-                        className="w-10 h-10 bg-gradient-coral rounded-2xl flex items-center justify-center shadow-loopfund"
-                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      >
-                        <Target className="w-5 h-5 text-white" />
-                      </motion.div>
-                      <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text">Goal Progress</h3>
+              <LoopFundCard className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-loopfund-coral-100 rounded-lg">
+                      <Target className="w-5 h-5 text-loopfund-coral-600" />
                     </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-loopfund-emerald-500 rounded-full"></div>
-                        <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Completed</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-loopfund-electric-500 rounded-full"></div>
-                        <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Progress</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-loopfund-gold-500 rounded-full"></div>
-                        <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Pending</span>
-                      </div>
+                    <h3 className="font-display text-h3 text-loopfund-neutral-900">Goal Progress</h3>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-loopfund-emerald-500 rounded-full"></div>
+                      <span className="font-body text-body-sm text-loopfund-neutral-600">Completed</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-loopfund-electric-500 rounded-full"></div>
+                      <span className="font-body text-body-sm text-loopfund-neutral-600">Progress</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-loopfund-gold-500 rounded-full"></div>
+                      <span className="font-body text-body-sm text-loopfund-neutral-600">Pending</span>
                     </div>
                   </div>
+                </div>
                   
                   <div className="space-y-4">
                     {analytics.goalProgress.map((goal, index) => (
@@ -530,7 +462,6 @@ const AnalyticsPage = () => {
                       </motion.div>
                     ))}
                   </div>
-                </div>
               </LoopFundCard>
             </motion.div>
           </div>
@@ -543,57 +474,44 @@ const AnalyticsPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
             >
-              <LoopFundCard variant="elevated" className="relative">
-                {/* Background Elements */}
-                <div className="absolute inset-0 overflow-hidden">
-                  <div className="absolute -top-5 -right-5 w-10 h-10 bg-gradient-gold opacity-5 rounded-full blur-xl animate-float" />
-                </div>
-
-                <div className="relative p-6">
-                  <div className="flex items-center space-x-3 mb-6">
-                    <motion.div 
-                      className="w-10 h-10 bg-gradient-gold rounded-2xl flex items-center justify-center shadow-loopfund"
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                      <Trophy className="w-5 h-5 text-white" />
-                    </motion.div>
-                    <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text">Top Performers</h3>
+              <LoopFundCard className="p-6">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="p-2 bg-loopfund-gold-100 rounded-lg">
+                    <Trophy className="w-5 h-5 text-loopfund-gold-600" />
                   </div>
+                  <h3 className="font-display text-h3 text-loopfund-neutral-900">Top Performers</h3>
+                </div>
                   <div className="space-y-4">
                     {analytics.topPerformers.slice(0, 4).map((performer, index) => (
                       <motion.div 
                         key={index} 
-                        className="flex items-center justify-between p-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-xl"
+                        className="flex items-center justify-between p-4 bg-loopfund-neutral-50 rounded-xl"
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.7 + index * 0.1 }}
                       >
                         <div className="flex items-center space-x-3">
-                          <motion.div 
-                            className="w-10 h-10 bg-gradient-loopfund rounded-xl flex items-center justify-center shadow-loopfund"
-                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                          >
+                          <div className="w-10 h-10 bg-loopfund-emerald-100 rounded-xl flex items-center justify-center">
                             {performer.type === 'group' ? (
-                              <Users className="w-5 h-5 text-white" />
+                              <Users className="w-5 h-5 text-loopfund-emerald-600" />
                             ) : (
-                              <User className="w-5 h-5 text-white" />
+                              <User className="w-5 h-5 text-loopfund-emerald-600" />
                             )}
-                          </motion.div>
+                          </div>
                           <div>
-                            <p className="font-body text-body font-medium text-loopfund-neutral-900 dark:text-loopfund-dark-text">{performer.name}</p>
-                            <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                            <p className="font-body text-body-sm font-medium text-loopfund-neutral-900">{performer.name}</p>
+                            <p className="font-body text-body-xs text-loopfund-neutral-600">
                               {performer.type === 'group' ? `${performer.members} members` : 'Individual Goal'}
                             </p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text">{formatCurrencySimple(performer.amount)}</p>
-                          <p className="font-body text-body-sm text-loopfund-emerald-600 dark:text-loopfund-emerald-400">{performer.progress}% complete</p>
+                          <p className="font-display text-body-sm font-medium text-loopfund-neutral-900">{formatCurrencySimple(performer.amount)}</p>
+                          <p className="font-body text-body-xs text-loopfund-emerald-600">{performer.progress}% complete</p>
                         </div>
                       </motion.div>
                     ))}
                   </div>
-                </div>
               </LoopFundCard>
             </motion.div>
 
@@ -603,22 +521,13 @@ const AnalyticsPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
             >
-              <LoopFundCard variant="elevated" className="relative">
-                {/* Background Elements */}
-                <div className="absolute inset-0 overflow-hidden">
-                  <div className="absolute -top-5 -right-5 w-10 h-10 bg-gradient-electric opacity-5 rounded-full blur-xl animate-float" />
-                </div>
-
-                <div className="relative p-6">
-                  <div className="flex items-center space-x-3 mb-6">
-                    <motion.div 
-                      className="w-10 h-10 bg-gradient-electric rounded-2xl flex items-center justify-center shadow-loopfund"
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                      <Star className="w-5 h-5 text-white" />
-                    </motion.div>
-                    <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text">Top Performing Groups</h3>
+              <LoopFundCard className="p-6">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="p-2 bg-loopfund-electric-100 rounded-lg">
+                    <Star className="w-5 h-5 text-loopfund-electric-600" />
                   </div>
+                  <h3 className="font-display text-h3 text-loopfund-neutral-900">Top Performing Groups</h3>
+                </div>
                   <div className="space-y-4">
                     {analytics.goalProgress.slice(0, 2).map((group, index) => (
                       <motion.div 
@@ -629,8 +538,8 @@ const AnalyticsPage = () => {
                         transition={{ delay: 0.8 + index * 0.1 }}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-body text-body font-medium text-loopfund-neutral-900 dark:text-loopfund-dark-text">{group.name}</span>
-                          <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Group Balance</span>
+                          <span className="font-body text-body-sm font-medium text-loopfund-neutral-900">{group.name}</span>
+                          <span className="font-body text-body-xs text-loopfund-neutral-600">Group Balance</span>
                         </div>
                         <div className="flex space-x-1 h-3 rounded-full overflow-hidden">
                           <motion.div 
@@ -666,7 +575,6 @@ const AnalyticsPage = () => {
                       </motion.div>
                     ))}
                   </div>
-                </div>
               </LoopFundCard>
             </motion.div>
           </div>

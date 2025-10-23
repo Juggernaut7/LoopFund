@@ -16,11 +16,28 @@ import {
   Zap,
   Heart,
   Shield,
-  Gift
+  Gift,
+  Sparkles,
+  Crown,
+  Banknote,
+  PiggyBank,
+  Building2,
+  User,
+  Calendar as CalendarIcon,
+  Filter,
+  Search,
+  MoreVertical,
+  Eye,
+  Download,
+  BarChart3,
+  PieChart,
+  Activity
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import dashboardService from '../services/dashboardService';
 import { useAuthStore } from '../store/useAuthStore';
+import { LoopFundButton, LoopFundCard, LoopFundInput } from '../components/ui';
+import { formatCurrencySimple } from '../utils/currency';
 
 const AchievementsPage = () => {
   const [achievements, setAchievements] = useState([]);
@@ -429,30 +446,63 @@ const AchievementsPage = () => {
   // Show loading state
   if (isLoading) {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
-          <div className="text-center">
-            <Loader className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
-            <p className="text-slate-600 dark:text-slate-400">Loading your achievements...</p>
-          </div>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center">
+        <motion.div 
+          className="text-center"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div
+            className="w-20 h-20 bg-gradient-loopfund rounded-3xl flex items-center justify-center shadow-loopfund-lg mx-auto mb-6"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          >
+            <Trophy className="w-10 h-10 text-white" />
+          </motion.div>
+          <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
+            Loading Your Achievements
+          </h3>
+          <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+            Preparing your milestone celebrations...
+          </p>
+        </motion.div>
+      </div>
     );
   }
 
   // Show error state
   if (error) {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
-          <div className="text-center">
-            <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-            <p className="text-slate-600 dark:text-slate-400 mb-4">Failed to load achievements</p>
-            <button 
-              onClick={fetchAchievements} 
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center">
+        <motion.div 
+          className="text-center"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div
+            className="w-20 h-20 bg-loopfund-coral-100 dark:bg-loopfund-coral-900/20 rounded-3xl flex items-center justify-center shadow-loopfund-lg mx-auto mb-6"
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          >
+            <AlertCircle className="w-10 h-10 text-loopfund-coral-600" />
+          </motion.div>
+          <h2 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-3">
+            Failed to Load Achievements
+          </h2>
+          <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-6">
+            {error}
+          </p>
+          <LoopFundButton
+            onClick={fetchAchievements}
+            variant="primary"
+            size="lg"
+            icon={<Trophy className="w-5 h-5" />}
+          >
+            Try Again
+          </LoopFundButton>
+        </motion.div>
+      </div>
     );
   }
 
@@ -593,186 +643,367 @@ const AchievementsPage = () => {
   };
 
   return (
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-              Achievements & Milestones
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400 mt-2">
-              Track your progress and unlock badges
-            </p>
-          </div>
-        </div>
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">Total Achievements</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white">{totalAchievements}</p>
-              </div>
-              <Trophy className="w-8 h-8 text-blue-600" />
+    <div className="min-h-screen bg-loopfund-neutral-50 dark:bg-loopfund-dark-bg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Revolutionary Header */}
+        <motion.div 
+          className="relative mb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <div className="relative flex items-center justify-between">
+            <div>
+              <motion.h1 
+                className="font-display text-display-lg text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-3"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+              >
+                Achievements & Milestones
+              </motion.h1>
+              <motion.p 
+                className="font-body text-body-lg text-loopfund-neutral-600 dark:text-loopfund-neutral-400"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+              >
+                Celebrate your financial victories and unlock amazing badges
+              </motion.p>
             </div>
+            
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <LoopFundButton
+                variant="gold"
+                size="lg"
+                icon={<Download className="w-5 h-5" />}
+              >
+                Export Achievements
+              </LoopFundButton>
+            </motion.div>
           </div>
+        </motion.div>
+
+        {/* Revolutionary Achievement Statistics */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+        >
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="relative group"
+          >
+            <LoopFundCard className="min-h-[140px] p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Total Achievements</p>
+                  <p className="font-display text-h3 text-loopfund-neutral-900">{totalAchievements}</p>
+                </div>
+                <div className="p-3 bg-loopfund-emerald-100 rounded-full">
+                  <Trophy className="w-6 h-6 text-loopfund-emerald-600" />
+                </div>
+              </div>
+            </LoopFundCard>
+          </motion.div>
           
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">Unlocked</p>
-                <p className="text-3xl font-bold text-green-600">{unlockedAchievements}</p>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="relative group"
+          >
+            <LoopFundCard className="min-h-[140px] p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Unlocked</p>
+                  <p className="font-display text-h3 text-loopfund-gold-600">{unlockedAchievements}</p>
+                </div>
+                <div className="p-3 bg-loopfund-gold-100 rounded-full">
+                  <CheckCircle className="w-6 h-6 text-loopfund-gold-600" />
+                </div>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-600" />
-            </div>
-          </div>
+            </LoopFundCard>
+          </motion.div>
           
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">Completion Rate</p>
-                <p className="text-3xl font-bold text-purple-600">{Math.round(completionRate)}%</p>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="relative group"
+          >
+            <LoopFundCard className="min-h-[140px] p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Completion Rate</p>
+                  <p className="font-display text-h3 text-loopfund-coral-600">{Math.round(completionRate)}%</p>
+                </div>
+                <div className="p-3 bg-loopfund-coral-100 rounded-full">
+                  <Target className="w-6 h-6 text-loopfund-coral-600" />
+                </div>
               </div>
-              <Target className="w-8 h-8 text-purple-600" />
+            </LoopFundCard>
+          </motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="relative group"
+          >
+            <LoopFundCard className="min-h-[140px] p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Points Earned</p>
+                  <p className="font-display text-h3 text-loopfund-electric-600">
+                    {achievements.reduce((sum, a) => sum + (a.achievement?.points || 0), 0)}
+                  </p>
+                </div>
+                <div className="p-3 bg-loopfund-electric-100 rounded-full">
+                  <Star className="w-6 h-6 text-loopfund-electric-600" />
+                </div>
+              </div>
+            </LoopFundCard>
+          </motion.div>
+        </motion.div>
+
+        {/* Revolutionary Category Filter */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.9 }}
+          className="relative"
+        >
+          <LoopFundCard className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-loopfund-electric-100 rounded-lg">
+                  <Filter className="w-5 h-5 text-loopfund-electric-600" />
+                </div>
+                <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                  Filter Achievements
+                </h3>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-loopfund-emerald-500 rounded-full"></div>
+                <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                  {filteredAchievements.length} achievements
+                </span>
+              </div>
             </div>
-          </div>
-        </div>
+            
+            <div className="flex flex-wrap gap-3">
+              {categories.map((category) => {
+                const Icon = category.icon;
+                const isSelected = selectedCategory === category.id;
+                return (
+                  <motion.button
+                    key={category.id}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`px-4 py-3 rounded-xl font-body text-body font-medium transition-all duration-200 flex items-center space-x-2 ${
+                      isSelected
+                        ? 'bg-loopfund-emerald-600 text-white shadow-lg'
+                        : 'bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated text-loopfund-neutral-700 dark:text-loopfund-neutral-300 hover:bg-loopfund-neutral-200 dark:hover:bg-loopfund-dark-surface'
+                    }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{category.name}</span>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </LoopFundCard>
+        </motion.div>
 
-        {/* Category Filter */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-          <div className="flex flex-wrap gap-3">
-            {categories.map((category) => {
-              const Icon = category.icon;
-              return (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                    selectedCategory === category.id
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{category.name}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Achievements Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Revolutionary Achievements Grid */}
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.0 }}
+        >
           {filteredAchievements.map((achievementData, index) => {
             const { achievement, progress, unlocked, unlockedAt } = achievementData;
             
             if (!achievement) return null;
+
+            const progressPercentage = Math.min(progress || 0, 100);
+            const Icon = getAchievementIcon(achievement.type);
 
             return (
               <motion.div
                 key={achievement._id || `achievement-${index}`}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 }}
-                className={`bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 transition-all duration-200 ${
-                  unlocked ? 'ring-2 ring-green-500/20' : ''
-                }`}
+                transition={{ delay: 1.1 + index * 0.1 }}
+                className="group"
               >
-                <div className="text-center">
-                  {/* Achievement Icon */}
-                  <div className={`w-20 h-20 rounded-full bg-gradient-to-r ${
-                    unlocked ? 'from-blue-500 to-blue-600' : 'from-slate-300 to-slate-400'
-                  } flex items-center justify-center mx-auto mb-4 ${
-                    !unlocked ? 'grayscale opacity-50' : ''
-                  }`}>
-                    <span className="text-3xl">{achievement.icon}</span>
-                  </div>
-                  
-                  {/* Achievement Info */}
-                  <h3 className={`text-lg font-semibold mb-2 ${
+                <LoopFundCard 
+                  variant="elevated" 
+                  className={`h-full transition-all duration-300 ${
                     unlocked 
-                      ? 'text-slate-900 dark:text-white' 
-                      : 'text-slate-500 dark:text-slate-400'
-                  }`}>
-                    {achievement.name}
-                  </h3>
-                  
-                  <p className={`text-sm mb-4 ${
-                    unlocked 
-                      ? 'text-slate-600 dark:text-slate-400' 
-                      : 'text-slate-400 dark:text-slate-500'
-                  }`}>
-                    {achievement.description}
-                  </p>
-                  
-                  {/* Progress Bar */}
-                  <div className="w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-full mb-3">
-                    <div
-                      className={`h-2 rounded-full ${
-                        unlocked 
-                          ? 'bg-gradient-to-r from-blue-500 to-blue-600' 
-                          : 'bg-gradient-to-r from-blue-400 to-blue-500'
-                      }`}
-                      style={{ width: `${Math.min(progress || 0, 100)}%` }}
-                    />
-                  </div>
-                  
-                  {/* Criteria */}
-                  {achievementData.criteria && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
-                      {achievementData.criteria}
+                      ? 'ring-2 ring-loopfund-emerald-200 dark:ring-loopfund-emerald-800 shadow-loopfund-lg' 
+                      : 'hover:shadow-loopfund'
+                  }`}
+                >
+                  <div className="p-6">
+                    {/* Achievement Header */}
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="flex items-center space-x-3">
+                        <motion.div 
+                          className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${
+                            unlocked 
+                              ? 'bg-gradient-to-br from-loopfund-emerald-500 to-loopfund-mint-500' 
+                              : 'bg-loopfund-neutral-200 dark:bg-loopfund-neutral-700'
+                          }`}
+                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        >
+                          <span className="text-2xl">{achievement.icon}</span>
+                        </motion.div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className={`font-display text-h4 mb-1 truncate ${
+                            unlocked 
+                              ? 'text-loopfund-neutral-900 dark:text-loopfund-dark-text' 
+                              : 'text-loopfund-neutral-500 dark:text-loopfund-neutral-400'
+                          }`}>
+                            {achievement.name}
+                          </h3>
+                          <div className="flex items-center space-x-2">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                              unlocked 
+                                ? 'bg-loopfund-emerald-100 text-loopfund-emerald-700 dark:bg-loopfund-emerald-900/30 dark:text-loopfund-emerald-300' 
+                                : 'bg-loopfund-neutral-100 text-loopfund-neutral-600 dark:bg-loopfund-neutral-800 dark:text-loopfund-neutral-400'
+                            }`}>
+                              {achievement.category}
+                            </span>
+                            <span className="font-body text-body-xs text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
+                              {achievement.points} pts
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {unlocked && (
+                        <motion.div
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="w-6 h-6 bg-loopfund-emerald-500 rounded-full flex items-center justify-center"
+                        >
+                          <CheckCircle className="w-4 h-4 text-white" />
+                        </motion.div>
+                      )}
+                    </div>
+
+                    {/* Achievement Description */}
+                    <p className={`font-body text-body-sm mb-6 line-clamp-2 ${
+                      unlocked 
+                        ? 'text-loopfund-neutral-600 dark:text-loopfund-neutral-400' 
+                        : 'text-loopfund-neutral-400 dark:text-loopfund-neutral-500'
+                    }`}>
+                      {achievement.description}
                     </p>
-                  )}
-                  
-                  {/* Status */}
-                  <div className="flex items-center justify-center space-x-2">
-                    {unlocked ? (
-                      <>
-                        <CheckCircle className="w-4 h-4 text-green-500" />
-                        <span className="text-sm text-green-600 dark:text-green-400 font-medium">
-                          Unlocked
+
+                    {/* Progress Section */}
+                    <div className="mb-6">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300">Progress</span>
+                        <span className="font-display text-h5 text-loopfund-emerald-600">
+                          {Math.round(progressPercentage)}%
                         </span>
-                      </>
-                    ) : (
-                      <>
-                        <Clock className="w-4 h-4 text-slate-400" />
-                        <span className="text-sm text-slate-500 dark:text-slate-400">
-                          {Math.round(progress || 0)}% Complete
-                        </span>
-                      </>
-                    )}
+                      </div>
+                      <div className="w-full h-2 bg-loopfund-neutral-200 dark:bg-loopfund-neutral-700 rounded-full overflow-hidden">
+                        <motion.div
+                          className={`h-2 rounded-full ${
+                            unlocked 
+                              ? 'bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500' 
+                              : 'bg-gradient-to-r from-loopfund-electric-400 to-loopfund-electric-500'
+                          }`}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${progressPercentage}%` }}
+                          transition={{ delay: 1.2 + index * 0.1, duration: 0.8, ease: "easeOut" }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Achievement Footer */}
+                    <div className="pt-4 border-t border-loopfund-neutral-200 dark:border-loopfund-neutral-700">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          {unlocked ? (
+                            <>
+                              <div className="w-2 h-2 bg-loopfund-emerald-500 rounded-full"></div>
+                              <span className="font-body text-body-sm text-loopfund-emerald-600 font-medium">
+                                Unlocked
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <div className="w-2 h-2 bg-loopfund-neutral-400 rounded-full"></div>
+                              <span className="font-body text-body-sm text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
+                                In Progress
+                              </span>
+                            </>
+                          )}
+                        </div>
+                        
+                        {unlocked && unlockedAt && (
+                          <div className="text-right">
+                            <span className="font-body text-body-xs text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
+                              {new Date(unlockedAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  
-                  {/* Unlock Date */}
-                  {unlocked && unlockedAt && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                      Unlocked {new Date(unlockedAt).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
+                </LoopFundCard>
               </motion.div>
             );
           })}
-        </div>
+        </motion.div>
 
-        {/* Empty State */}
+        {/* Revolutionary Empty State */}
         {filteredAchievements.length === 0 && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-12"
+            transition={{ delay: 1.2 }}
+            className="text-center py-16"
           >
-            <Trophy className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
-              No achievements in this category
+            <div className="w-24 h-24 bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated rounded-full flex items-center justify-center mx-auto mb-6">
+              <Trophy className="w-12 h-12 text-loopfund-neutral-400" />
+            </div>
+            <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-3">
+              {selectedCategory === 'all' ? 'No Achievements Yet' : 'No achievements in this category'}
             </h3>
-            <p className="text-slate-600 dark:text-slate-400 mb-6">
-              Try selecting a different category or complete more goals to unlock achievements
+            <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-8 max-w-md mx-auto">
+              {selectedCategory === 'all' 
+                ? 'Start your financial journey to unlock amazing achievements and badges'
+                : 'Try selecting a different category or complete more goals to unlock achievements'
+              }
             </p>
+            {selectedCategory === 'all' && (
+              <LoopFundButton
+                variant="primary"
+                size="lg"
+                icon={<Target className="w-5 h-5" />}
+              >
+                Start Your Journey
+              </LoopFundButton>
+            )}
           </motion.div>
         )}
       </div>
+    </div>
   );
 };
 

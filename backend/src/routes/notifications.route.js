@@ -1,15 +1,14 @@
 const express = require('express');
 const { body } = require('express-validator');
 const { requireAuth } = require('../middleware/auth');
-const {
-  getUserNotifications,
-  markAsRead,
-  markAllAsRead,
-  deleteNotification,
+const { 
+  getUserNotifications, 
+  markAsRead, 
+  markAllAsRead, 
+  deleteNotification, 
   getNotificationStats,
   getCronStatus,
   triggerCronJob,
-  createTestNotification,
   schedulePaymentReminder,
   getUpcomingReminders,
   sendPaymentDueNotification,
@@ -45,13 +44,6 @@ router.delete('/:notificationId', deleteNotification);
 router.get('/admin/cron-status', getCronStatus);
 router.post('/admin/trigger/:jobName', triggerCronJob);
 
-// Test notification creation (for development)
-router.post('/test', [
-  body('title').optional().isString().trim().isLength({ max: 100 }),
-  body('message').optional().isString().trim().isLength({ max: 500 }),
-  body('type').optional().isIn(['success', 'warning', 'error', 'info', 'achievement']),
-  body('category').optional().isIn(['goal', 'group', 'achievement', 'system', 'reminder', 'payment'])
-], createTestNotification);
 
 // Goal notification endpoints
 router.post('/schedule-payment-reminder', [

@@ -254,73 +254,216 @@ const CalendarPage = () => {
   return (
       <div className="min-h-screen bg-loopfund-neutral-50 dark:bg-loopfund-dark-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
+          {/* Revolutionary Header */}
+          <motion.div 
+            className="relative mb-8"
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8"
+            transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            <div>
-              <motion.div
-                className="flex items-center space-x-3 mb-2"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <motion.div 
-                  className="w-12 h-12 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-2xl flex items-center justify-center shadow-loopfund"
-                  whileHover={{ rotate: 5, scale: 1.1 }}
-                  transition={{ type: "spring", stiffness: 300 }}
+            <div className="relative flex items-center justify-between">
+              <div>
+                <motion.h1 
+                  className="font-display text-display-lg text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-3"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2, duration: 0.6 }}
                 >
-                  <CalendarIcon className="w-6 h-6 text-white" />
-                </motion.div>
-                <div>
-                  <h1 className="font-display text-h1 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
-                    Financial Calendar
-                  </h1>
-                  <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
-                    Track your financial milestones, goals, and important dates
-                  </p>
-                </div>
-              </motion.div>
-            </div>
-            
-            <motion.div 
-              className="flex items-center space-x-4 mt-4 lg:mt-0"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              {/* View Toggle */}
-              <div className="flex bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated rounded-xl border border-loopfund-neutral-200 dark:border-loopfund-dark-border p-1">
-                {['month', 'week', 'day'].map((viewType) => (
-                  <motion.button
-                    key={viewType}
-                    onClick={() => setView(viewType)}
-                    className={`px-4 py-2 text-sm font-medium capitalize transition-all duration-300 rounded-lg ${
-                      view === viewType
-                        ? 'bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 text-white shadow-loopfund'
-                        : 'text-loopfund-neutral-600 dark:text-loopfund-neutral-400 hover:text-loopfund-neutral-900 dark:hover:text-loopfund-dark-text hover:bg-loopfund-neutral-200 dark:hover:bg-loopfund-dark-surface'
-                    }`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {viewType}
-                  </motion.button>
-                ))}
+                  Financial Calendar
+                </motion.h1>
+                <motion.p 
+                  className="font-body text-body-lg text-loopfund-neutral-600 dark:text-loopfund-neutral-400"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                >
+                  Track your financial milestones, goals, and important dates
+                </motion.p>
               </div>
               
-              {/* Add Event Button */}
-              <LoopFundButton
-                onClick={() => setShowEventModal(true)}
-                variant="primary"
-                size="md"
-                className="flex items-center space-x-2"
+              <motion.div 
+                className="flex items-center space-x-4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
               >
-                <Plus className="w-4 h-4" />
-                <span>Add Event</span>
-              </LoopFundButton>
+                {/* View Toggle */}
+                <div className="flex bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated rounded-xl border border-loopfund-neutral-200 dark:border-loopfund-dark-border p-1">
+                  {['month', 'week', 'day'].map((viewType) => (
+                    <motion.button
+                      key={viewType}
+                      onClick={() => setView(viewType)}
+                      className={`px-4 py-2 text-sm font-medium capitalize transition-all duration-300 rounded-lg ${
+                        view === viewType
+                          ? 'bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 text-white shadow-loopfund'
+                          : 'text-loopfund-neutral-600 dark:text-loopfund-neutral-400 hover:text-loopfund-neutral-900 dark:hover:text-loopfund-dark-text hover:bg-loopfund-neutral-200 dark:hover:bg-loopfund-dark-surface'
+                      }`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {viewType}
+                    </motion.button>
+                  ))}
+                </div>
+                
+                {/* Add Event Button */}
+                <LoopFundButton
+                  onClick={() => setShowEventModal(true)}
+                  variant="primary"
+                  size="lg"
+                  icon={<Plus className="w-5 h-5" />}
+                >
+                  Add Event
+                </LoopFundButton>
+              </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Revolutionary Calendar Statistics */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          >
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="relative group"
+            >
+              <LoopFundCard className="min-h-[140px] p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Total Events</p>
+                    <p className="font-display text-h3 text-loopfund-neutral-900">{events.length}</p>
+                  </div>
+                  <div className="p-3 bg-loopfund-emerald-100 rounded-full">
+                    <CalendarIcon className="w-6 h-6 text-loopfund-emerald-600" />
+                  </div>
+                </div>
+              </LoopFundCard>
             </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="relative group"
+            >
+              <LoopFundCard className="min-h-[140px] p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">This Month</p>
+                    <p className="font-display text-h3 text-loopfund-coral-600">
+                      {events.filter(e => new Date(e.date).getMonth() === currentDate.getMonth()).length}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-loopfund-coral-100 rounded-full">
+                    <Clock className="w-6 h-6 text-loopfund-coral-600" />
+                  </div>
+                </div>
+              </LoopFundCard>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="relative group"
+            >
+              <LoopFundCard className="min-h-[140px] p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Goal Deadlines</p>
+                    <p className="font-display text-h3 text-loopfund-gold-600">
+                      {events.filter(e => e.type === 'deadline').length}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-loopfund-gold-100 rounded-full">
+                    <Target className="w-6 h-6 text-loopfund-gold-600" />
+                  </div>
+                </div>
+              </LoopFundCard>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}
+              className="relative group"
+            >
+              <LoopFundCard className="min-h-[140px] p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Group Events</p>
+                    <p className="font-display text-h3 text-loopfund-electric-600">
+                      {events.filter(e => e.type === 'group').length}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-loopfund-electric-100 rounded-full">
+                    <Users className="w-6 h-6 text-loopfund-electric-600" />
+                  </div>
+                </div>
+              </LoopFundCard>
+            </motion.div>
+          </motion.div>
+
+          {/* Revolutionary Filter Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.0 }}
+            className="relative mb-8"
+          >
+            <LoopFundCard className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-loopfund-electric-100 rounded-lg">
+                    <Filter className="w-5 h-5 text-loopfund-electric-600" />
+                  </div>
+                  <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                    Filter Events
+                  </h3>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-loopfund-emerald-500 rounded-full"></div>
+                  <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                    {filteredEvents.length} events
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap gap-3">
+                {[
+                  { id: 'all', name: 'All Events', icon: CalendarIcon },
+                  { id: 'goal', name: 'Goals', icon: Target },
+                  { id: 'group', name: 'Groups', icon: Users },
+                  { id: 'ai', name: 'AI Sessions', icon: Brain },
+                  { id: 'therapy', name: 'Therapy', icon: Gamepad2 },
+                  { id: 'deadline', name: 'Deadlines', icon: AlertCircle }
+                ].map((filterType) => {
+                  const Icon = filterType.icon;
+                  const isSelected = filter === filterType.id;
+                  return (
+                    <motion.button
+                      key={filterType.id}
+                      onClick={() => setFilter(filterType.id)}
+                      className={`px-4 py-3 rounded-xl font-body text-body font-medium transition-all duration-200 flex items-center space-x-2 ${
+                        isSelected
+                          ? 'bg-loopfund-emerald-600 text-white shadow-lg'
+                          : 'bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated text-loopfund-neutral-700 dark:text-loopfund-neutral-300 hover:bg-loopfund-neutral-200 dark:hover:bg-loopfund-dark-surface'
+                      }`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{filterType.name}</span>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </LoopFundCard>
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -328,7 +471,7 @@ const CalendarPage = () => {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
+              transition={{ delay: 1.1 }}
               className="lg:col-span-3"
             >
               <LoopFundCard variant="elevated" className="overflow-hidden">
@@ -439,11 +582,11 @@ const CalendarPage = () => {
               </LoopFundCard>
             </motion.div>
 
-            {/* Sidebar */}
+            {/* Revolutionary Sidebar */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 1.2 }}
               className="space-y-6"
             >
               {/* Selected Date Events */}
@@ -468,20 +611,24 @@ const CalendarPage = () => {
                 
                 {selectedDateEvents.length > 0 ? (
                   <div className="space-y-4">
-                    {selectedDateEvents.map((event) => {
+                    {selectedDateEvents.map((event, index) => {
                       const Icon = getEventTypeIcon(event.type);
                       return (
                         <motion.div
                           key={event.id}
                           className={`p-4 rounded-xl border-l-4 ${getPriorityColor(event.priority)} bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated hover:shadow-loopfund transition-all duration-300`}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 1.3 + index * 0.1 }}
                           whileHover={{ scale: 1.02, y: -2 }}
                         >
                           <div className="flex items-start space-x-3">
                             <motion.div 
-                              className="p-2 bg-loopfund-neutral-100 dark:bg-loopfund-dark-surface rounded-lg"
-                              whileHover={{ rotate: 5 }}
+                              className={`p-2 rounded-lg ${getEventTypeColor(event.type)}`}
+                              whileHover={{ rotate: 5, scale: 1.1 }}
+                              transition={{ type: "spring", stiffness: 300, damping: 20 }}
                             >
-                              <Icon className="w-4 h-4 text-loopfund-neutral-600 dark:text-loopfund-neutral-400" />
+                              <Icon className="w-4 h-4" />
                             </motion.div>
                             <div className="flex-1 min-w-0">
                               <h4 className="font-display font-medium text-loopfund-neutral-900 dark:text-loopfund-dark-text text-body-sm">
@@ -495,6 +642,26 @@ const CalendarPage = () => {
                                   ${event.amount.toLocaleString()}
                                 </p>
                               )}
+                              <div className="flex items-center space-x-2 mt-2">
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                  event.priority === 'high' 
+                                    ? 'bg-loopfund-electric-100 text-loopfund-electric-700 dark:bg-loopfund-electric-900/30 dark:text-loopfund-electric-300'
+                                    : event.priority === 'medium'
+                                    ? 'bg-loopfund-gold-100 text-loopfund-gold-700 dark:bg-loopfund-gold-900/30 dark:text-loopfund-gold-300'
+                                    : 'bg-loopfund-emerald-100 text-loopfund-emerald-700 dark:bg-loopfund-emerald-900/30 dark:text-loopfund-emerald-300'
+                                }`}>
+                                  {event.priority} priority
+                                </span>
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                  event.status === 'confirmed' 
+                                    ? 'bg-loopfund-emerald-100 text-loopfund-emerald-700 dark:bg-loopfund-emerald-900/30 dark:text-loopfund-emerald-300'
+                                    : event.status === 'pending'
+                                    ? 'bg-loopfund-gold-100 text-loopfund-gold-700 dark:bg-loopfund-gold-900/30 dark:text-loopfund-gold-300'
+                                    : 'bg-loopfund-coral-100 text-loopfund-coral-700 dark:bg-loopfund-coral-900/30 dark:text-loopfund-coral-300'
+                                }`}>
+                                  {event.status}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </motion.div>
@@ -533,7 +700,7 @@ const CalendarPage = () => {
                 </div>
                 
                 <div className="space-y-4">
-                  {upcomingEvents.map((event) => {
+                  {upcomingEvents.map((event, index) => {
                     const Icon = getEventTypeIcon(event.type);
                     const eventDate = new Date(event.date);
                     const daysUntil = Math.ceil((eventDate - new Date()) / (1000 * 60 * 60 * 24));
@@ -542,6 +709,9 @@ const CalendarPage = () => {
                       <motion.div
                         key={event.id}
                         className="flex items-center space-x-3 p-4 rounded-xl hover:bg-loopfund-neutral-50 dark:hover:bg-loopfund-dark-elevated transition-all duration-300 hover:shadow-loopfund"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 1.4 + index * 0.1 }}
                         whileHover={{ scale: 1.02, x: 5 }}
                       >
                         <motion.div 
@@ -558,9 +728,26 @@ const CalendarPage = () => {
                           <p className="font-body text-body-xs text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
                             {eventDate.toLocaleDateString()} • {event.time}
                           </p>
-                          <p className="font-body text-body-xs text-loopfund-emerald-600 dark:text-loopfund-emerald-400">
-                            {daysUntil === 0 ? 'Today' : `${daysUntil} days`}
-                          </p>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className={`font-body text-body-xs font-medium ${
+                              daysUntil === 0 
+                                ? 'text-loopfund-coral-600 dark:text-loopfund-coral-400'
+                                : daysUntil <= 3
+                                ? 'text-loopfund-gold-600 dark:text-loopfund-gold-400'
+                                : 'text-loopfund-emerald-600 dark:text-loopfund-emerald-400'
+                            }`}>
+                              {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `${daysUntil} days`}
+                            </span>
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                              event.priority === 'high' 
+                                ? 'bg-loopfund-electric-100 text-loopfund-electric-700 dark:bg-loopfund-electric-900/30 dark:text-loopfund-electric-300'
+                                : event.priority === 'medium'
+                                ? 'bg-loopfund-gold-100 text-loopfund-gold-700 dark:bg-loopfund-gold-900/30 dark:text-loopfund-gold-300'
+                                : 'bg-loopfund-emerald-100 text-loopfund-emerald-700 dark:bg-loopfund-emerald-900/30 dark:text-loopfund-emerald-300'
+                            }`}>
+                              {event.priority}
+                            </span>
+                          </div>
                         </div>
                       </motion.div>
                     );
@@ -585,30 +772,74 @@ const CalendarPage = () => {
                 
                 <div className="space-y-4">
                   <motion.div 
-                    className="flex items-center justify-between p-3 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-xl"
-                    whileHover={{ scale: 1.02 }}
+                    className="flex items-center justify-between p-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-xl hover:shadow-loopfund transition-all duration-300"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 1.5 }}
+                    whileHover={{ scale: 1.02, y: -2 }}
                   >
-                    <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Total Events</span>
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-loopfund-neutral-100 dark:bg-loopfund-dark-surface rounded-lg">
+                        <CalendarIcon className="w-4 h-4 text-loopfund-neutral-600 dark:text-loopfund-neutral-400" />
+                      </div>
+                      <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Total Events</span>
+                    </div>
                     <span className="font-display font-semibold text-loopfund-neutral-900 dark:text-loopfund-dark-text">
                       {events.filter(e => new Date(e.date).getMonth() === currentDate.getMonth()).length}
                     </span>
                   </motion.div>
+                  
                   <motion.div 
-                    className="flex items-center justify-between p-3 bg-loopfund-coral-50 dark:bg-loopfund-coral-900/20 rounded-xl"
-                    whileHover={{ scale: 1.02 }}
+                    className="flex items-center justify-between p-4 bg-loopfund-coral-50 dark:bg-loopfund-coral-900/20 rounded-xl hover:shadow-loopfund transition-all duration-300"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 1.6 }}
+                    whileHover={{ scale: 1.02, y: -2 }}
                   >
-                    <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Goal Deadlines</span>
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-loopfund-coral-100 dark:bg-loopfund-coral-900/40 rounded-lg">
+                        <AlertCircle className="w-4 h-4 text-loopfund-coral-600 dark:text-loopfund-coral-400" />
+                      </div>
+                      <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Goal Deadlines</span>
+                    </div>
                     <span className="font-display font-semibold text-loopfund-coral-600 dark:text-loopfund-coral-400">
                       {events.filter(e => e.type === 'deadline' && new Date(e.date).getMonth() === currentDate.getMonth()).length}
                     </span>
                   </motion.div>
+                  
                   <motion.div 
-                    className="flex items-center justify-between p-3 bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/20 rounded-xl"
-                    whileHover={{ scale: 1.02 }}
+                    className="flex items-center justify-between p-4 bg-loopfund-emerald-50 dark:bg-loopfund-emerald-900/20 rounded-xl hover:shadow-loopfund transition-all duration-300"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 1.7 }}
+                    whileHover={{ scale: 1.02, y: -2 }}
                   >
-                    <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Group Meetings</span>
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-loopfund-emerald-100 dark:bg-loopfund-emerald-900/40 rounded-lg">
+                        <Users className="w-4 h-4 text-loopfund-emerald-600 dark:text-loopfund-emerald-400" />
+                      </div>
+                      <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">Group Meetings</span>
+                    </div>
                     <span className="font-display font-semibold text-loopfund-emerald-600 dark:text-loopfund-emerald-400">
                       {events.filter(e => e.type === 'group' && new Date(e.date).getMonth() === currentDate.getMonth()).length}
+                    </span>
+                  </motion.div>
+                  
+                  <motion.div 
+                    className="flex items-center justify-between p-4 bg-loopfund-gold-50 dark:bg-loopfund-gold-900/20 rounded-xl hover:shadow-loopfund transition-all duration-300"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 1.8 }}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-loopfund-gold-100 dark:bg-loopfund-gold-900/40 rounded-lg">
+                        <Brain className="w-4 h-4 text-loopfund-gold-600 dark:text-loopfund-gold-400" />
+                      </div>
+                      <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">AI Sessions</span>
+                    </div>
+                    <span className="font-display font-semibold text-loopfund-gold-600 dark:text-loopfund-gold-400">
+                      {events.filter(e => e.type === 'ai' && new Date(e.date).getMonth() === currentDate.getMonth()).length}
                     </span>
                   </motion.div>
                 </div>

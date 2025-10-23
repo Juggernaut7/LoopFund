@@ -253,7 +253,7 @@ const GroupDetailsPage = () => {
 
   if (isLoading) {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center">
+        <div className="min-h-screen bg-loopfund-neutral-50 dark:bg-loopfund-dark-bg flex items-center justify-center">
           <motion.div 
             className="text-center"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -261,11 +261,11 @@ const GroupDetailsPage = () => {
             transition={{ duration: 0.5 }}
           >
             <motion.div
-              className="w-16 h-16 bg-gradient-loopfund rounded-3xl flex items-center justify-center shadow-loopfund-lg mx-auto mb-6"
+              className="w-16 h-16 bg-loopfund-emerald-100 rounded-3xl flex items-center justify-center shadow-loopfund-lg mx-auto mb-6"
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
             >
-              <Users className="w-8 h-8 text-white" />
+              <Users className="w-8 h-8 text-loopfund-emerald-600" />
             </motion.div>
             <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
               Loading Group Details
@@ -280,7 +280,7 @@ const GroupDetailsPage = () => {
 
   if (!group) {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated flex items-center justify-center">
+        <div className="min-h-screen bg-loopfund-neutral-50 dark:bg-loopfund-dark-bg flex items-center justify-center">
           <motion.div 
             className="text-center"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -313,7 +313,7 @@ const GroupDetailsPage = () => {
   }
 
   return (
-      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated">
+      <div className="min-h-screen bg-loopfund-neutral-50 dark:bg-loopfund-dark-bg">
         <div className="space-y-8 p-6">
           {/* Header */}
           <motion.div 
@@ -322,11 +322,6 @@ const GroupDetailsPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            {/* Background Elements */}
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-loopfund opacity-5 rounded-full blur-3xl animate-float" />
-              <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-gradient-coral opacity-5 rounded-full blur-2xl animate-float-delayed" />
-            </div>
 
             <div className="relative flex items-center justify-between">
               <div className="flex items-center space-x-6">
@@ -412,7 +407,8 @@ const GroupDetailsPage = () => {
                 label: 'Total Saved',
                 value: formatCurrency(group.currentAmount || 0),
                 subtext: group.targetAmount ? `of ${formatCurrency(group.targetAmount)} target` : null,
-                gradient: 'bg-gradient-loopfund',
+                iconBg: 'bg-loopfund-emerald-100',
+                iconColor: 'text-loopfund-emerald-600',
                 color: 'emerald'
               },
               {
@@ -420,7 +416,8 @@ const GroupDetailsPage = () => {
                 label: 'Members',
                 value: group.members?.length || 0,
                 subtext: `Max ${group.settings?.maxMembers || 50}`,
-                gradient: 'bg-gradient-coral',
+                iconBg: 'bg-loopfund-coral-100',
+                iconColor: 'text-loopfund-coral-600',
                 color: 'coral'
               },
               {
@@ -428,7 +425,8 @@ const GroupDetailsPage = () => {
                 label: 'Progress',
                 value: `${group.progress?.percentage || 0}%`,
                 subtext: null,
-                gradient: 'bg-gradient-gold',
+                iconBg: 'bg-loopfund-gold-100',
+                iconColor: 'text-loopfund-gold-600',
                 color: 'gold'
               },
               {
@@ -436,7 +434,8 @@ const GroupDetailsPage = () => {
                 label: 'Days Left',
                 value: group.progress?.daysRemaining || 0,
                 subtext: group.endDate ? formatDate(group.endDate) : 'No end date',
-                gradient: 'bg-gradient-electric',
+                iconBg: 'bg-loopfund-electric-100',
+                iconColor: 'text-loopfund-electric-600',
                 color: 'electric'
               }
             ].map((stat, index) => (
@@ -446,43 +445,33 @@ const GroupDetailsPage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 + index * 0.1 }}
               >
-                <LoopFundCard variant="elevated" hover className="h-full">
-                  <div className="relative p-6">
-                    {/* Background Elements */}
-                    <div className="absolute inset-0 overflow-hidden">
-                      <div className={`absolute -top-10 -right-10 w-20 h-20 ${stat.gradient} opacity-5 rounded-full blur-2xl animate-float`} />
+                <LoopFundCard className="h-full p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`p-3 ${stat.iconBg} rounded-full`}>
+                      <stat.icon className={`w-6 h-6 ${stat.iconColor}`} />
                     </div>
-
-                    <div className="relative flex items-center justify-between mb-4">
-                      <motion.div 
-                        className={`w-12 h-12 ${stat.gradient} rounded-2xl flex items-center justify-center shadow-loopfund`}
-                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      >
-                        <stat.icon className="w-6 h-6 text-white" />
-                      </motion.div>
-                      <span className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
-                        {stat.value}
-                      </span>
-                    </div>
-                    <p className="font-body text-body font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 mb-1">
-                      {stat.label}
-                    </p>
-                    {stat.subtext && (
-                      <p className="font-body text-body-sm text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
-                        {stat.subtext}
-                      </p>
-                    )}
-                    {stat.label === 'Progress' && (
-                      <div className="w-full bg-loopfund-neutral-200 dark:bg-loopfund-neutral-700 rounded-full h-2 mt-3">
-                        <motion.div 
-                          className="bg-gradient-loopfund h-2 rounded-full transition-all duration-300"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${group.progress?.percentage || 0}%` }}
-                          transition={{ duration: 1, delay: 0.8 + index * 0.1 }}
-                        />
-                      </div>
-                    )}
+                    <span className="font-display text-h3 text-loopfund-neutral-900">
+                      {stat.value}
+                    </span>
                   </div>
+                  <p className="font-body text-body-sm font-medium text-loopfund-neutral-700 mb-1">
+                    {stat.label}
+                  </p>
+                  {stat.subtext && (
+                    <p className="font-body text-body-sm text-loopfund-neutral-500">
+                      {stat.subtext}
+                    </p>
+                  )}
+                  {stat.label === 'Progress' && (
+                    <div className="w-full bg-loopfund-neutral-200 rounded-full h-2 mt-3">
+                      <motion.div 
+                        className="bg-loopfund-emerald-500 h-2 rounded-full transition-all duration-300"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${group.progress?.percentage || 0}%` }}
+                        transition={{ duration: 1, delay: 0.8 + index * 0.1 }}
+                      />
+                    </div>
+                  )}
                 </LoopFundCard>
               </motion.div>
             ))}
@@ -494,63 +483,53 @@ const GroupDetailsPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
           >
-            <LoopFundCard variant="elevated" className="relative">
-              {/* Background Elements */}
-              <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute -top-10 -right-10 w-20 h-20 bg-gradient-coral opacity-5 rounded-full blur-2xl animate-float" />
-              </div>
-
-              <div className="relative p-8">
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center space-x-4">
-                    <motion.div 
-                      className="w-12 h-12 bg-gradient-coral rounded-2xl flex items-center justify-center shadow-loopfund"
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                      <Users className="w-6 h-6 text-white" />
-                    </motion.div>
-                    <h2 className="font-display text-h2 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
-                      Members
-                    </h2>
+            <LoopFundCard className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="p-3 bg-loopfund-coral-100 rounded-full">
+                    <Users className="w-6 h-6 text-loopfund-coral-600" />
                   </div>
-                  <LoopFundButton
-                    variant="secondary"
-                    size="md"
-                    icon={<UserPlus className="w-5 h-5" />}
+                  <h2 className="font-display text-h3 text-loopfund-neutral-900">
+                    Members
+                  </h2>
+                </div>
+                <LoopFundButton
+                  variant="outline"
+                  size="sm"
+                  icon={<UserPlus className="w-4 h-4" />}
+                >
+                  Invite
+                </LoopFundButton>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {group.members?.map((member, index) => (
+                  <motion.div 
+                    key={index} 
+                    className="flex items-center space-x-3 p-4 bg-loopfund-neutral-50 rounded-xl"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.9 + index * 0.1 }}
                   >
-                    Invite
-                  </LoopFundButton>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {group.members?.map((member, index) => (
-                    <motion.div 
-                      key={index} 
-                      className="flex items-center space-x-4 p-4 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-2xl border border-loopfund-neutral-200 dark:border-loopfund-neutral-700"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.9 + index * 0.1 }}
-                    >
-                      <div className="w-12 h-12 bg-gradient-to-br from-loopfund-coral-500 to-loopfund-orange-500 rounded-full flex items-center justify-center text-white font-medium shadow-loopfund">
-                        {member.user?.firstName?.charAt(0) || 'U'}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-body text-body font-medium text-loopfund-neutral-900 dark:text-loopfund-dark-text">
-                          {member.user?.firstName} {member.user?.lastName}
-                        </p>
-                        <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400 capitalize">
-                          {member.role}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
-                          {formatCurrency(member.totalContributed || 0)}
-                        </p>
-                        <p className="font-body text-body-sm text-loopfund-neutral-500 dark:text-loopfund-neutral-400">contributed</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                    <div className="w-10 h-10 bg-loopfund-coral-100 rounded-full flex items-center justify-center text-loopfund-coral-600 font-medium">
+                      {member.user?.firstName?.charAt(0) || 'U'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-body text-body-sm font-medium text-loopfund-neutral-900 truncate">
+                        {member.user?.firstName} {member.user?.lastName}
+                      </p>
+                      <p className="font-body text-body-xs text-loopfund-neutral-600 capitalize">
+                        {member.role}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-display text-body-sm font-medium text-loopfund-neutral-900">
+                        {formatCurrency(member.totalContributed || 0)}
+                      </p>
+                      <p className="font-body text-body-xs text-loopfund-neutral-500">contributed</p>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             </LoopFundCard>
           </motion.div>
@@ -562,37 +541,28 @@ const GroupDetailsPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.9 }}
             >
-              <LoopFundCard variant="gradient" className="relative">
-                {/* Background Elements */}
-                <div className="absolute inset-0 overflow-hidden">
-                  <div className="absolute -top-10 -right-10 w-20 h-20 bg-gradient-gold opacity-5 rounded-full blur-2xl animate-float" />
-                </div>
-
-                <div className="relative p-8">
-                  <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center space-x-4">
-                      <motion.div 
-                        className="w-12 h-12 bg-gradient-to-r from-loopfund-gold-500 to-loopfund-orange-500 rounded-2xl flex items-center justify-center shadow-loopfund"
-                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      >
-                        <CreditCard className="w-6 h-6 text-white" />
-                      </motion.div>
-                      <h2 className="font-display text-h2 text-white">
-                        Payment Information
-                      </h2>
+              <LoopFundCard className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-3 bg-loopfund-gold-100 rounded-full">
+                      <CreditCard className="w-6 h-6 text-loopfund-gold-600" />
                     </div>
-                    <span className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-full font-body text-body font-medium">
-                      {group.accountInfo.paymentMethod?.replace('_', ' ').toUpperCase() || 'BANK TRANSFER'}
-                    </span>
+                    <h2 className="font-display text-h3 text-loopfund-neutral-900">
+                      Payment Information
+                    </h2>
                   </div>
+                  <span className="px-3 py-1 bg-loopfund-gold-100 text-loopfund-gold-700 rounded-full font-body text-body-sm font-medium">
+                    {group.accountInfo.paymentMethod?.replace('_', ' ').toUpperCase() || 'BANK TRANSFER'}
+                  </span>
+                </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {group.accountInfo.bankName && (
                       <div>
-                        <label className="block font-body text-body font-medium text-white/90 mb-2">
+                        <label className="block font-body text-body-sm font-medium text-loopfund-neutral-600 mb-2">
                           Bank Name
                         </label>
-                        <p className="font-body text-body font-medium text-white">
+                        <p className="font-body text-body font-medium text-loopfund-neutral-900">
                           {group.accountInfo.bankName}
                         </p>
                       </div>
@@ -600,10 +570,10 @@ const GroupDetailsPage = () => {
                     
                     {group.accountInfo.accountName && (
                       <div>
-                        <label className="block font-body text-body font-medium text-white/90 mb-2">
+                        <label className="block font-body text-body-sm font-medium text-loopfund-neutral-600 mb-2">
                           Account Name
                         </label>
-                        <p className="font-body text-body font-medium text-white">
+                        <p className="font-body text-body font-medium text-loopfund-neutral-900">
                           {group.accountInfo.accountName}
                         </p>
                       </div>
@@ -611,11 +581,11 @@ const GroupDetailsPage = () => {
                     
                     {group.accountInfo.accountNumber && (
                       <div>
-                        <label className="block font-body text-body font-medium text-white/90 mb-2">
+                        <label className="block font-body text-body-sm font-medium text-loopfund-neutral-600 mb-2">
                           Account Number
                         </label>
                         <div className="flex items-center space-x-3">
-                          <p className="font-body text-body font-medium text-white font-mono">
+                          <p className="font-body text-body font-medium text-loopfund-neutral-900 font-mono">
                             {group.accountInfo.accountNumber}
                           </p>
                           <motion.button
@@ -623,11 +593,11 @@ const GroupDetailsPage = () => {
                               navigator.clipboard.writeText(group.accountInfo.accountNumber);
                               toast.success('Account number copied to clipboard');
                             }}
-                            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                            className="p-2 hover:bg-loopfund-neutral-100 rounded-lg transition-colors"
                             title="Copy account number"
                             whileTap={{ scale: 0.9 }}
                           >
-                            <Copy className="w-4 h-4 text-white/80" />
+                            <Copy className="w-4 h-4 text-loopfund-neutral-600" />
                           </motion.button>
                         </div>
                       </div>
@@ -635,10 +605,10 @@ const GroupDetailsPage = () => {
                     
                     {group.accountInfo.routingNumber && (
                       <div>
-                        <label className="block font-body text-body font-medium text-white/90 mb-2">
+                        <label className="block font-body text-body-sm font-medium text-loopfund-neutral-600 mb-2">
                           Routing Number
                         </label>
-                        <p className="font-body text-body font-medium text-white font-mono">
+                        <p className="font-body text-body font-medium text-loopfund-neutral-900 font-mono">
                           {group.accountInfo.routingNumber}
                         </p>
                       </div>
@@ -646,36 +616,32 @@ const GroupDetailsPage = () => {
                     
                     {group.accountInfo.additionalInfo && (
                       <div className="md:col-span-2">
-                        <label className="block font-body text-body font-medium text-white/90 mb-2">
+                        <label className="block font-body text-body-sm font-medium text-loopfund-neutral-600 mb-2">
                           Additional Information
                         </label>
-                        <p className="font-body text-body text-white">
+                        <p className="font-body text-body text-loopfund-neutral-900">
                           {group.accountInfo.additionalInfo}
                         </p>
                       </div>
                     )}
                   </div>
                   
-                  <div className="mt-8 p-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
-                    <div className="flex items-start space-x-4">
-                      <motion.div 
-                        className="w-8 h-8 bg-gradient-to-r from-loopfund-gold-500 to-loopfund-orange-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1"
-                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      >
-                        <span className="text-white text-sm font-bold">i</span>
-                      </motion.div>
+                  <div className="mt-6 p-4 bg-loopfund-gold-50 rounded-xl border border-loopfund-gold-200">
+                    <div className="flex items-start space-x-3">
+                      <div className="p-2 bg-loopfund-gold-100 rounded-lg flex-shrink-0 mt-0.5">
+                        <AlertCircle className="w-4 h-4 text-loopfund-gold-600" />
+                      </div>
                       <div>
-                        <p className="text-white font-body text-body font-medium mb-2">
+                        <p className="font-body text-body-sm font-medium text-loopfund-gold-700 mb-1">
                           How to Contribute
                         </p>
-                        <p className="text-white/80 font-body text-body-sm">
+                        <p className="font-body text-body-sm text-loopfund-gold-600">
                           Use the account information above to send your contributions directly to the group account. 
                           Make sure to include your name in the transaction reference so we can track your contribution.
                         </p>
                       </div>
                     </div>
                   </div>
-                </div>
               </LoopFundCard>
             </motion.div>
           )}
