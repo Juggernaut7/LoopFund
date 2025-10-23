@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, XCircle, Loader } from 'lucide-react';
@@ -12,9 +12,16 @@ const AuthCallback = () => {
   const [message, setMessage] = useState('Processing authentication...');
   const { login } = useAuthStore();
   const { toast } = useToast();
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
     const handleCallback = async () => {
+      // Prevent multiple executions
+      if (hasProcessed.current) {
+        console.log('🔍 AuthCallback: Already processed, skipping...');
+        return;
+      }
+      hasProcessed.current = true;
       try {
         console.log('🔍 AuthCallback: Starting callback handling...');
         console.log('🔍 Current URL:', window.location.href);
@@ -52,7 +59,8 @@ const AuthCallback = () => {
         setMessage('Loading your profile...');
 
         // Fetch user profile directly using the token
-        const response = await fetch('http://localhost:4000/api/auth/profile', {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+        const response = await fetch(`${apiUrl}/auth/profile`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -97,7 +105,8 @@ const AuthCallback = () => {
 
     console.log('🔍 AuthCallback: useEffect triggered');
     handleCallback();
-  }, [searchParams, navigate, login, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
 
   const getStatusIcon = () => {
     switch (status) {
