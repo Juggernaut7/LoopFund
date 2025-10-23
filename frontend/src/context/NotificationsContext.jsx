@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useWebSocket } from '../hooks/useWebSocket';
+import { useToast } from './ToastContext';
 
 const NotificationsContext = createContext();
 
@@ -16,14 +17,15 @@ export const NotificationsProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const { user } = useAuthStore();
+  const { toast } = useToast();
   
-  // Get WebSocket connection (will be disabled for now)
+  // Get WebSocket connection
   const { ws, isConnected } = useWebSocket();
 
   // Fetch notifications from API
   const fetchNotifications = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('authToken');
       const response = await fetch('http://localhost:4000/api/notifications', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -33,8 +35,8 @@ export const NotificationsProvider = ({ children }) => {
 
       if (response.ok) {
         const data = await response.json();
-        setNotifications(data.notifications || []);
-        setUnreadCount(data.unreadCount || 0);
+        setNotifications(data.data?.notifications || data.notifications || []);
+        setUnreadCount(data.data?.unreadCount || data.unreadCount || 0);
       }
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
@@ -44,7 +46,7 @@ export const NotificationsProvider = ({ children }) => {
   // Mark notification as read
   const markAsRead = async (notificationId) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('authToken');
       const response = await fetch(`http://localhost:4000/api/notifications/${notificationId}/read`, {
         method: 'PUT',
         headers: {
@@ -71,8 +73,8 @@ export const NotificationsProvider = ({ children }) => {
   // Mark all notifications as read
   const markAllAsRead = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:4000/api/notifications/read-all', {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch('http://localhost:4000/api/notifications/mark-all-read', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -91,22 +93,38 @@ export const NotificationsProvider = ({ children }) => {
     }
   };
 
-  // WebSocket message handler (disabled for now)
+  // WebSocket message handler
   useEffect(() => {
     if (ws && isConnected) {
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+          console.log('📨 WebSocket notification received:', data);
+          
           if (data.type === 'notification') {
-            setNotifications(prev => [data.notification, ...prev]);
+            const notification = data.notification;
+            setNotifications(prev => [notification, ...prev]);
             setUnreadCount(prev => prev + 1);
+            
+            // Show toast notification
+            if (notification.type === 'success') {
+              toast.success(notification.title, notification.message);
+            } else if (notification.type === 'error') {
+              toast.error(notification.title, notification.message);
+            } else if (notification.type === 'warning') {
+              toast.warning(notification.title, notification.message);
+            } else if (notification.type === 'achievement') {
+              toast.success(notification.title, notification.message);
+            } else {
+              toast.info(notification.title, notification.message);
+            }
           }
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);
         }
       };
     }
-  }, [ws, isConnected]);
+  }, [ws, isConnected, toast]);
 
   // Fetch notifications on mount
   useEffect(() => {
@@ -121,7 +139,7 @@ export const NotificationsProvider = ({ children }) => {
     markAsRead,
     markAllAsRead,
     fetchNotifications,
-    isConnected: false // WebSocket is disabled
+    isConnected
   };
 
   return (

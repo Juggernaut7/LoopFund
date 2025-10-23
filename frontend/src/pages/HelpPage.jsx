@@ -437,33 +437,140 @@ const HelpPage = () => {
   return (
       <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
+          {/* Revolutionary Header */}
+          <motion.div 
+            className="relative mb-8"
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8"
+            transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            <div className="relative">
-              {/* Floating background elements */}
-              <div className="absolute -top-4 -left-4 w-8 h-8 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-full opacity-20 animate-float" />
-              <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-gradient-to-r from-loopfund-coral-500 to-loopfund-orange-500 rounded-full opacity-20 animate-float-delayed" />
+            <div className="relative flex items-center justify-between">
+              <div>
+                <motion.h1 
+                  className="font-display text-display-lg text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-3"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2, duration: 0.6 }}
+                >
+                  Help & Support
+                </motion.h1>
+                <motion.p 
+                  className="font-body text-body-lg text-loopfund-neutral-600 dark:text-loopfund-neutral-400"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                >
+                  Everything you need to know about LoopFund. Find answers, learn features, and get help from our support team.
+                </motion.p>
+              </div>
               
-              <div className="flex items-center justify-center mb-6 relative z-10">
+              <motion.div 
+                className="flex items-center space-x-4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <div className="text-right">
+                  <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                    Support Available
+                  </p>
+                  <p className="font-display text-h4 text-loopfund-emerald-600 dark:text-loopfund-emerald-400">
+                    24/7
+                  </p>
+                </div>
                 <motion.div 
-                  className="w-20 h-20 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-2xl flex items-center justify-center shadow-loopfund"
+                  className="w-16 h-16 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-2xl flex items-center justify-center shadow-loopfund"
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  <HelpCircle className="w-10 h-10 text-white" />
+                  <HelpCircle className="w-8 h-8 text-white" />
                 </motion.div>
-              </div>
-              <h1 className="font-display text-display-lg text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-4 relative z-10">
-                Help & Support
-              </h1>
-              <p className="font-body text-body-lg text-loopfund-neutral-600 dark:text-loopfund-neutral-400 max-w-3xl mx-auto relative z-10">
-                Everything you need to know about LoopFund. Find answers, learn features, and get help from our support team.
-              </p>
+              </motion.div>
             </div>
+          </motion.div>
+
+          {/* Revolutionary Support Statistics */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          >
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="relative group"
+            >
+              <LoopFundCard className="min-h-36 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Help Articles</p>
+                    <p className="font-display text-h3 text-loopfund-neutral-900">50+</p>
+                  </div>
+                  <div className="p-3 bg-loopfund-emerald-100 rounded-full">
+                    <BookOpen className="w-6 h-6 text-loopfund-emerald-600" />
+                  </div>
+                </div>
+              </LoopFundCard>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="relative group"
+            >
+              <LoopFundCard className="min-h-36 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Response Time</p>
+                    <p className="font-display text-h3 text-loopfund-coral-600">&lt; 5min</p>
+                  </div>
+                  <div className="p-3 bg-loopfund-coral-100 rounded-full">
+                    <Clock className="w-6 h-6 text-loopfund-coral-600" />
+                  </div>
+                </div>
+              </LoopFundCard>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="relative group"
+            >
+              <LoopFundCard className="min-h-36 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Support Channels</p>
+                    <p className="font-display text-h3 text-loopfund-gold-600">3</p>
+                  </div>
+                  <div className="p-3 bg-loopfund-gold-100 rounded-full">
+                    <MessageCircle className="w-6 h-6 text-loopfund-gold-600" />
+                  </div>
+                </div>
+              </LoopFundCard>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}
+              className="relative group"
+            >
+              <LoopFundCard className="min-h-36 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Success Rate</p>
+                    <p className="font-display text-h3 text-loopfund-electric-600">98%</p>
+                  </div>
+                  <div className="p-3 bg-loopfund-electric-100 rounded-full">
+                    <CheckCircle className="w-6 h-6 text-loopfund-electric-600" />
+                  </div>
+                </div>
+              </LoopFundCard>
+            </motion.div>
           </motion.div>
 
           {/* Search Bar */}
@@ -522,64 +629,111 @@ const HelpPage = () => {
           >
             {activeTab === 'help' && (
               <>
-                {/* Quick Actions */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {quickActions.map((action, index) => (
-              <motion.div
-                key={action.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + index * 0.1 }}
-                whileHover={{ scale: 1.02, y: -5 }}
-              >
-                <LoopFundCard 
-                  variant="elevated" 
-                  className="p-6 hover:shadow-loopfund-lg transition-all duration-300 cursor-pointer group"
-                  onClick={action.action}
+                {/* Revolutionary Quick Actions */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 1.0 }}
+                  className="relative mb-8"
                 >
-                  <div className="flex items-center mb-4">
-                    <motion.div 
-                      className="w-12 h-12 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-xl flex items-center justify-center shadow-loopfund group-hover:scale-110 transition-transform"
-                      whileHover={{ rotate: 5 }}
-                      transition={{ type: "spring", stiffness: 300 }}
-                    >
-                      <action.icon className="w-6 h-6 text-white" />
-                    </motion.div>
-                  </div>
-                  <h3 className="font-display font-semibold text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
-                    {action.title}
-                  </h3>
-                  <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
-                    {action.description}
-                  </p>
-                </LoopFundCard>
-              </motion.div>
-            ))}
-                </div>
+                  <LoopFundCard className="p-6 mb-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-loopfund-electric-100 rounded-lg">
+                          <Zap className="w-5 h-5 text-loopfund-electric-600" />
+                        </div>
+                        <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                          Quick Actions
+                        </h3>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 bg-loopfund-emerald-500 rounded-full"></div>
+                        <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                          Get help instantly
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {quickActions.map((action, index) => (
+                        <motion.div
+                          key={action.title}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 1.1 + index * 0.1 }}
+                          whileHover={{ scale: 1.02, y: -5 }}
+                        >
+                          <LoopFundCard 
+                            variant="elevated" 
+                            className="p-6 hover:shadow-loopfund-lg transition-all duration-300 cursor-pointer group"
+                            onClick={action.action}
+                          >
+                            <div className="flex items-center mb-4">
+                              <motion.div 
+                                className="w-12 h-12 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-xl flex items-center justify-center shadow-loopfund group-hover:scale-110 transition-transform"
+                                whileHover={{ rotate: 5 }}
+                                transition={{ type: "spring", stiffness: 300 }}
+                              >
+                                <action.icon className="w-6 h-6 text-white" />
+                              </motion.div>
+                            </div>
+                            <h3 className="font-display font-semibold text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
+                              {action.title}
+                            </h3>
+                            <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                              {action.description}
+                            </p>
+                          </LoopFundCard>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </LoopFundCard>
+                </motion.div>
 
-          {/* Category Tabs */}
+          {/* Revolutionary Category Filter */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-wrap justify-center gap-3 mb-8"
+            transition={{ duration: 0.6, delay: 1.2 }}
+            className="relative mb-8"
           >
-            {categories.map((category) => (
-              <motion.button
-                key={category.id}
-                onClick={() => setActiveCategory(category.id)}
-                className={`px-6 py-3 rounded-xl font-body text-body-sm font-medium transition-all duration-300 flex items-center space-x-2 ${
-                  activeCategory === category.id
-                    ? `bg-loopfund-${category.color}-100 dark:bg-loopfund-${category.color}-900/20 text-loopfund-${category.color}-700 dark:text-loopfund-${category.color}-300 shadow-loopfund border-2 border-loopfund-${category.color}-200 dark:border-loopfund-${category.color}-800`
-                    : 'bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated text-loopfund-neutral-700 dark:text-loopfund-neutral-300 hover:bg-loopfund-neutral-200 dark:hover:bg-loopfund-dark-surface border-2 border-transparent'
-                }`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <category.icon className="w-5 h-5" />
-                <span>{category.title}</span>
-              </motion.button>
-            ))}
+            <LoopFundCard className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-loopfund-gold-100 rounded-lg">
+                    <BookOpen className="w-5 h-5 text-loopfund-gold-600" />
+                  </div>
+                  <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                    Help Categories
+                  </h3>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-loopfund-gold-500 rounded-full"></div>
+                  <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                    {categories.length} categories
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap gap-3">
+                {categories.map((category) => (
+                  <motion.button
+                    key={category.id}
+                    onClick={() => setActiveCategory(category.id)}
+                    className={`px-6 py-3 rounded-xl font-body text-body-sm font-medium transition-all duration-300 flex items-center space-x-2 ${
+                      activeCategory === category.id
+                        ? `bg-loopfund-${category.color}-100 dark:bg-loopfund-${category.color}-900/20 text-loopfund-${category.color}-700 dark:text-loopfund-${category.color}-300 shadow-loopfund border-2 border-loopfund-${category.color}-200 dark:border-loopfund-${category.color}-800`
+                        : 'bg-loopfund-neutral-100 dark:bg-loopfund-dark-elevated text-loopfund-neutral-700 dark:text-loopfund-neutral-300 hover:bg-loopfund-neutral-200 dark:hover:bg-loopfund-dark-surface border-2 border-transparent'
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <category.icon className="w-5 h-5" />
+                    <span>{category.title}</span>
+                  </motion.button>
+                ))}
+              </div>
+            </LoopFundCard>
           </motion.div>
 
           {/* Content */}
@@ -807,7 +961,7 @@ const HelpPage = () => {
                       value={userMessage}
                       onChange={(e) => setUserMessage(e.target.value)}
                       placeholder="Tell us what you need help with... (Optional - you can also describe your issue directly in the chat)"
-                      className="min-h-[100px] resize-none"
+                      className="min-h-24 resize-none"
                       icon={<User className="w-4 h-4" />}
                     />
                     <p className="font-body text-body-xs text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
@@ -816,75 +970,102 @@ const HelpPage = () => {
                   </div>
                 </LoopFundCard>
 
-                {/* Support Methods */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {supportMethods.map((method, index) => {
-                    const Icon = method.icon;
-                    const config = supportConfig[method.id];
+                {/* Revolutionary Support Methods */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 1.3 }}
+                  className="relative mb-8"
+                >
+                  <LoopFundCard className="p-6 mb-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-loopfund-coral-100 rounded-lg">
+                          <MessageCircle className="w-5 h-5 text-loopfund-coral-600" />
+                        </div>
+                        <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                          Contact Support
+                        </h3>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 bg-loopfund-coral-500 rounded-full"></div>
+                        <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                          Available 24/7
+                        </span>
+                      </div>
+                    </div>
                     
-                    return (
-                      <motion.div
-                        key={method.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <LoopFundCard 
-                          variant="elevated" 
-                          className="p-6 cursor-pointer transition-all duration-300 hover:scale-105"
-                        >
-                          <div className="text-center space-y-4">
-                            {/* Icon */}
-                            <motion.div
-                              className={`inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r ${method.color} rounded-xl shadow-lg`}
-                              whileHover={{ scale: 1.1, rotate: 5 }}
-                              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {supportMethods.map((method, index) => {
+                        const Icon = method.icon;
+                        const config = supportConfig[method.id];
+                        
+                        return (
+                          <motion.div
+                            key={method.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 1.4 + index * 0.1 }}
+                            whileHover={{ scale: 1.02, y: -5 }}
+                          >
+                            <LoopFundCard 
+                              variant="elevated" 
+                              className="p-6 cursor-pointer transition-all duration-300 hover:shadow-loopfund-lg"
                             >
-                              <Icon className="w-6 h-6 text-white" />
-                            </motion.div>
+                              <div className="text-center space-y-4">
+                                {/* Icon */}
+                                <motion.div
+                                  className={`inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r ${method.color} rounded-xl shadow-lg`}
+                                  whileHover={{ scale: 1.1, rotate: 5 }}
+                                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                                >
+                                  <Icon className="w-6 h-6 text-white" />
+                                </motion.div>
 
-                            {/* Title & Description */}
-                            <div>
-                              <h3 className="font-display text-h6 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-1">
-                                {method.title}
-                              </h3>
-                              <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-2">
-                                {method.description}
-                              </p>
-                              <div className="flex items-center justify-center space-x-1 text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
-                                <Clock className="w-3 h-3" />
-                                <span className="font-body text-body-xs">{method.responseTime}</span>
+                                {/* Title & Description */}
+                                <div>
+                                  <h3 className="font-display text-h6 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-1">
+                                    {method.title}
+                                  </h3>
+                                  <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-2">
+                                    {method.description}
+                                  </p>
+                                  <div className="flex items-center justify-center space-x-1 text-loopfund-neutral-500 dark:text-loopfund-neutral-400">
+                                    <Clock className="w-3 h-3" />
+                                    <span className="font-body text-body-xs">{method.responseTime}</span>
+                                  </div>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="space-y-2">
+                                  <LoopFundButton
+                                    onClick={() => handleSupportClick(method.id)}
+                                    variant="primary"
+                                    size="sm"
+                                    className="w-full"
+                                    icon={<ExternalLink className="w-4 h-4" />}
+                                  >
+                                    Contact Support
+                                  </LoopFundButton>
+                                  
+                                  <LoopFundButton
+                                    onClick={() => copyContactInfo(method.id)}
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full"
+                                    icon={copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                                  >
+                                    {copied ? 'Copied!' : 'Copy Contact'}
+                                  </LoopFundButton>
+                                </div>
                               </div>
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="space-y-2">
-                              <LoopFundButton
-                                onClick={() => handleSupportClick(method.id)}
-                                variant="primary"
-                                size="sm"
-                                className="w-full"
-                                icon={<ExternalLink className="w-4 h-4" />}
-                              >
-                                Contact Support
-                              </LoopFundButton>
-                              
-                              <LoopFundButton
-                                onClick={() => copyContactInfo(method.id)}
-                                variant="outline"
-                                size="sm"
-                                className="w-full"
-                                icon={copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                              >
-                                {copied ? 'Copied!' : 'Copy Contact'}
-                              </LoopFundButton>
-                            </div>
-                          </div>
-                        </LoopFundCard>
-                      </motion.div>
-                    );
-                  })}
-                </div>
+                            </LoopFundCard>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  </LoopFundCard>
+                </motion.div>
 
                 {/* Quick Help Tips */}
                 <LoopFundCard variant="elevated" className="p-6">
@@ -920,32 +1101,63 @@ const HelpPage = () => {
                   </div>
                 </LoopFundCard>
 
-                {/* FAQ Section */}
-                <LoopFundCard variant="elevated" className="p-6">
-                  <div className="space-y-4">
-                    <h3 className="font-display text-h5 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
-                      Frequently Asked Questions
-                    </h3>
+                {/* Revolutionary FAQ Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 1.5 }}
+                  className="relative mb-8"
+                >
+                  <LoopFundCard variant="elevated" className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-loopfund-lavender-100 rounded-lg">
+                          <HelpCircle className="w-5 h-5 text-loopfund-lavender-600" />
+                        </div>
+                        <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                          Frequently Asked Questions
+                        </h3>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 bg-loopfund-lavender-500 rounded-full"></div>
+                        <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                          Quick answers
+                        </span>
+                      </div>
+                    </div>
+                    
                     <div className="space-y-4">
                       {faqData.slice(0, 3).map((category, categoryIndex) => (
-                        <div key={categoryIndex} className="space-y-2">
+                        <motion.div 
+                          key={categoryIndex} 
+                          className="space-y-2"
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 1.6 + categoryIndex * 0.1 }}
+                        >
                           <h4 className="font-body text-body-sm font-medium text-loopfund-neutral-700 dark:text-loopfund-neutral-300 flex items-center space-x-2">
                             <category.icon className={`w-4 h-4 ${category.color}`} />
                             <span>{category.category}</span>
                           </h4>
                           <div className="space-y-2">
                             {category.questions.slice(0, 2).map((faq, faqIndex) => (
-                              <div key={faqIndex} className="pl-6">
+                              <motion.div 
+                                key={faqIndex} 
+                                className="pl-6 p-3 bg-loopfund-neutral-50 dark:bg-loopfund-dark-elevated rounded-lg hover:bg-loopfund-neutral-100 dark:hover:bg-loopfund-dark-surface transition-colors"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 1.7 + categoryIndex * 0.1 + faqIndex * 0.05 }}
+                              >
                                 <p className="font-body text-body-xs font-medium text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-1">
                                   Q: {faq.question}
                                 </p>
                                 <p className="font-body text-body-xs text-loopfund-neutral-500 dark:text-loopfund-neutral-500">
                                   A: {faq.answer}
                                 </p>
-                              </div>
+                              </motion.div>
                             ))}
                           </div>
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                     <div className="text-center pt-4">
@@ -958,8 +1170,8 @@ const HelpPage = () => {
                         View All FAQs
                       </LoopFundButton>
                     </div>
-                  </div>
-                </LoopFundCard>
+                  </LoopFundCard>
+                </motion.div>
 
                 {/* Contact Information */}
                 <div className="text-center">

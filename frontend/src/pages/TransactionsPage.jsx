@@ -184,124 +184,206 @@ const TransactionsPage = () => {
   };
 
   return (
-      <div className="space-y-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h1 className="font-body text-body-xl font-bold text-loopfund-neutral-900 mb-2">
-            Transaction History
-          </h1>
-          <p className="font-body text-body text-loopfund-neutral-600">
-            Track all your financial activities and payment history
-          </p>
-        </motion.div>
-
-        {/* Stats Cards */}
-        {stats && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
+      <div className="min-h-screen bg-gradient-to-br from-loopfund-neutral-50 via-loopfund-cream-50 to-loopfund-neutral-100 dark:from-loopfund-dark-bg dark:via-loopfund-dark-surface dark:to-loopfund-dark-elevated">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+          {/* Revolutionary Header */}
+          <motion.div 
+            className="relative mb-8"
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
+            <div className="relative flex items-center justify-between">
+              <div>
+                <motion.h1 
+                  className="font-display text-display-lg text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-3"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2, duration: 0.6 }}
+                >
+                  Transaction History
+                </motion.h1>
+                <motion.p 
+                  className="font-body text-body-lg text-loopfund-neutral-600 dark:text-loopfund-neutral-400"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                >
+                  Track all your financial activities and payment history
+                </motion.p>
+              </div>
+              
+              <motion.div 
+                className="flex items-center space-x-4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <div className="text-right">
+                  <p className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                    Total Transactions
+                  </p>
+                  <p className="font-display text-h4 text-loopfund-emerald-600 dark:text-loopfund-emerald-400">
+                    {stats?.summary?.totalTransactions || 0}
+                  </p>
+                </div>
+                <motion.div 
+                  className="w-16 h-16 bg-gradient-to-r from-loopfund-emerald-500 to-loopfund-mint-500 rounded-2xl flex items-center justify-center shadow-loopfund"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <CreditCard className="w-8 h-8 text-white" />
+                </motion.div>
+              </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Revolutionary Transaction Statistics */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
           >
-            <LoopFundCard className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-body text-body-sm font-medium text-loopfund-neutral-600">Total Transactions</p>
-                  <p className="font-body text-body-lg font-bold text-loopfund-neutral-900">
-                    {stats.summary?.totalTransactions || 0}
-                  </p>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="relative group"
+            >
+              <LoopFundCard className="min-h-36 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Total Transactions</p>
+                    <p className="font-display text-h3 text-loopfund-neutral-900">
+                      {stats?.summary?.totalTransactions || 0}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-loopfund-emerald-100 rounded-full">
+                    <CreditCard className="w-6 h-6 text-loopfund-emerald-600" />
+                  </div>
                 </div>
-                <div className="p-3 bg-loopfund-emerald-100 rounded-full">
-                  <CreditCard className="w-6 h-6 text-loopfund-emerald-600" />
+              </LoopFundCard>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="relative group"
+            >
+              <LoopFundCard className="min-h-36 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Total Amount</p>
+                    <p className="font-display text-h3 text-loopfund-coral-600">
+                      {formatCurrencySimple(stats?.summary?.totalAmount || 0)}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-loopfund-coral-100 rounded-full">
+                    <Banknote className="w-6 h-6 text-loopfund-coral-600" />
+                  </div>
                 </div>
-              </div>
-            </LoopFundCard>
-
-            <LoopFundCard className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-body text-body-sm font-medium text-loopfund-neutral-600">Total Amount</p>
-                  <p className="font-body text-body-lg font-bold text-loopfund-neutral-900">
-                    {formatCurrencySimple(stats.summary?.totalAmount || 0)}
-                  </p>
+              </LoopFundCard>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="relative group"
+            >
+              <LoopFundCard className="min-h-36 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Success Rate</p>
+                    <p className="font-display text-h3 text-loopfund-gold-600">
+                      {analytics?.insights?.successRate || 0}%
+                    </p>
+                  </div>
+                  <div className="p-3 bg-loopfund-gold-100 rounded-full">
+                    <TrendingUp className="w-6 h-6 text-loopfund-gold-600" />
+                  </div>
                 </div>
-                <div className="p-3 bg-loopfund-coral-100 rounded-full">
-                  <Banknote className="w-6 h-6 text-loopfund-coral-600" />
+              </LoopFundCard>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}
+              className="relative group"
+            >
+              <LoopFundCard className="min-h-36 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-body text-body-sm font-medium text-loopfund-neutral-600 mb-1">Average Amount</p>
+                    <p className="font-display text-h3 text-loopfund-lavender-600">
+                      {formatCurrencySimple(stats?.summary?.avgTransactionAmount || 0)}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-loopfund-lavender-100 rounded-full">
+                    <TrendingDown className="w-6 h-6 text-loopfund-lavender-600" />
+                  </div>
                 </div>
-              </div>
-            </LoopFundCard>
-
-            <LoopFundCard className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-body text-body-sm font-medium text-loopfund-neutral-600">Success Rate</p>
-                  <p className="font-body text-body-lg font-bold text-loopfund-neutral-900">
-                    {analytics?.insights?.successRate || 0}%
-                  </p>
-                </div>
-                <div className="p-3 bg-loopfund-gold-100 rounded-full">
-                  <TrendingUp className="w-6 h-6 text-loopfund-gold-600" />
-                </div>
-              </div>
-            </LoopFundCard>
-
-            <LoopFundCard className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-body text-body-sm font-medium text-loopfund-neutral-600">Average Amount</p>
-                  <p className="font-body text-body-lg font-bold text-loopfund-neutral-900">
-                    {formatCurrencySimple(stats.summary?.avgTransactionAmount || 0)}
-                  </p>
-                </div>
-                <div className="p-3 bg-loopfund-lavender-100 rounded-full">
-                  <TrendingDown className="w-6 h-6 text-loopfund-lavender-600" />
-                </div>
-              </div>
-            </LoopFundCard>
+              </LoopFundCard>
+            </motion.div>
           </motion.div>
-        )}
 
-        {/* Filters and Search */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-6"
-        >
-          <LoopFundCard className="p-6">
-            <div className="flex flex-col lg:flex-row gap-4">
-              {/* Search */}
-              <div className="flex-1">
-                <LoopFundInput
-                  placeholder="Search transactions..."
-                  value={filters.search}
-                  onChange={(e) => handleFilterChange('search', e.target.value)}
-                  icon={<Search className="w-4 h-4" />}
-                />
+          {/* Revolutionary Filter Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.0 }}
+            className="relative mb-8"
+          >
+            <LoopFundCard className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-loopfund-electric-100 rounded-lg">
+                    <Filter className="w-5 h-5 text-loopfund-electric-600" />
+                  </div>
+                  <h3 className="font-display text-h4 text-loopfund-neutral-900 dark:text-loopfund-dark-text">
+                    Filter Transactions
+                  </h3>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-loopfund-emerald-500 rounded-full"></div>
+                  <span className="font-body text-body-sm text-loopfund-neutral-600 dark:text-loopfund-neutral-400">
+                    {transactions.length} transactions
+                  </span>
+                </div>
               </div>
+              
+              <div className="flex flex-col lg:flex-row gap-4">
+                {/* Search */}
+                <div className="flex-1">
+                  <LoopFundInput
+                    placeholder="Search transactions..."
+                    value={filters.search}
+                    onChange={(e) => handleFilterChange('search', e.target.value)}
+                    icon={<Search className="w-4 h-4" />}
+                  />
+                </div>
 
-              {/* Filter Toggle */}
-              <LoopFundButton
-                variant="outline"
-                onClick={() => setShowFilters(!showFilters)}
-                icon={<Filter className="w-4 h-4" />}
-              >
-                Filters
-              </LoopFundButton>
+                {/* Filter Toggle */}
+                <LoopFundButton
+                  variant="outline"
+                  onClick={() => setShowFilters(!showFilters)}
+                  icon={<Filter className="w-4 h-4" />}
+                >
+                  Filters
+                </LoopFundButton>
 
-              {/* Export */}
-              <LoopFundButton
-                variant="secondary"
-                onClick={handleExport}
-                icon={<Download className="w-4 h-4" />}
-              >
-                Export
-              </LoopFundButton>
-            </div>
+                {/* Export */}
+                <LoopFundButton
+                  variant="secondary"
+                  onClick={handleExport}
+                  icon={<Download className="w-4 h-4" />}
+                >
+                  Export
+                </LoopFundButton>
+              </div>
 
             {/* Advanced Filters */}
             {showFilters && (
@@ -392,12 +474,12 @@ const TransactionsPage = () => {
           </LoopFundCard>
         </motion.div>
 
-        {/* Transactions Table */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
+          {/* Revolutionary Transactions Table */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.1 }}
+          >
           <LoopFundCard className="overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -436,11 +518,34 @@ const TransactionsPage = () => {
                   ) : !transactions || transactions.length === 0 ? (
                     <tr>
                       <td colSpan="6" className="px-6 py-12 text-center">
-                        <div className="text-loopfund-neutral-500">
-                          <CreditCard className="w-12 h-12 mx-auto mb-4 text-loopfund-neutral-300" />
-                          <p className="font-body text-body-lg font-medium">No transactions found</p>
-                          <p className="font-body text-body-sm">Your transaction history will appear here</p>
-                        </div>
+                        <motion.div 
+                          className="text-loopfund-neutral-500"
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.5 }}
+                        >
+                          <motion.div
+                            className="w-20 h-20 bg-gradient-to-r from-loopfund-neutral-400 to-loopfund-neutral-500 rounded-2xl flex items-center justify-center shadow-loopfund mx-auto mb-6"
+                            animate={{ rotate: [0, 10, -10, 0] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          >
+                            <CreditCard className="w-10 h-10 text-white" />
+                          </motion.div>
+                          <h3 className="font-display text-h3 text-loopfund-neutral-900 dark:text-loopfund-dark-text mb-2">
+                            No transactions found
+                          </h3>
+                          <p className="font-body text-body text-loopfund-neutral-600 dark:text-loopfund-neutral-400 mb-6">
+                            Your transaction history will appear here
+                          </p>
+                          <LoopFundButton
+                            onClick={() => setFilters(prev => ({ ...prev, search: '' }))}
+                            variant="outline"
+                            size="lg"
+                            icon={<CreditCard className="w-5 h-5" />}
+                          >
+                            Clear Filters
+                          </LoopFundButton>
+                        </motion.div>
                       </td>
                     </tr>
                   ) : (
@@ -534,14 +639,14 @@ const TransactionsPage = () => {
           </LoopFundCard>
         </motion.div>
 
-        {/* Transaction Details Modal */}
-        {showTransactionDetails && selectedTransaction && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-            >
+          {/* Revolutionary Transaction Details Modal */}
+          {showTransactionDetails && selectedTransaction && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white dark:bg-loopfund-dark-surface rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-loopfund-lg"
+              >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-body text-body-lg font-semibold text-loopfund-neutral-900">

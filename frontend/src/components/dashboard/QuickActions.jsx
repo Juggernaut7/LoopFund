@@ -10,6 +10,7 @@ import {
   ArrowRight,
   Sparkles
 } from 'lucide-react';
+import { LoopFundCard } from '../ui';
 
 const QuickActions = () => {
   const navigate = useNavigate();
@@ -17,30 +18,34 @@ const QuickActions = () => {
   const actions = [
     {
       title: 'New Goal',
+      description: 'Create a new savings goal',
       icon: Target,
-      gradient: 'from-loopfund-emerald-500 to-loopfund-emerald-600',
-      hoverGradient: 'from-loopfund-emerald-600 to-loopfund-emerald-700',
+      iconBg: 'bg-loopfund-emerald-100',
+      iconColor: 'text-loopfund-emerald-600',
       onClick: () => navigate('/goals/create')
     },
     {
       title: 'Create Group',
+      description: 'Start a group savings',
       icon: Users,
-      gradient: 'from-loopfund-emerald-500 to-loopfund-emerald-600',
-      hoverGradient: 'from-loopfund-emerald-600 to-loopfund-emerald-700',
+      iconBg: 'bg-loopfund-coral-100',
+      iconColor: 'text-loopfund-coral-600',
       onClick: () => navigate('/groups/create')
     },
     {
       title: 'Make Payment',
+      description: 'Add money to wallet',
       icon: Wallet,
-      gradient: 'from-loopfund-emerald-500 to-loopfund-emerald-600',
-      hoverGradient: 'from-loopfund-emerald-600 to-loopfund-emerald-700',
+      iconBg: 'bg-loopfund-gold-100',
+      iconColor: 'text-loopfund-gold-600',
       onClick: () => navigate('/contributions/pay')
     },
     {
       title: 'Quick Save',
+      description: 'Instant contribution',
       icon: Zap,
-      gradient: 'from-loopfund-emerald-500 to-loopfund-emerald-600',
-      hoverGradient: 'from-loopfund-emerald-600 to-loopfund-emerald-700',
+      iconBg: 'bg-loopfund-lavender-100',
+      iconColor: 'text-loopfund-lavender-600',
       onClick: () => navigate('/contributions/quick-save')
     }
   ];
@@ -64,42 +69,32 @@ const QuickActions = () => {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {actions.map((action, index) => (
-          <motion.button
+          <motion.div
             key={action.title}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.98 }}
             onClick={action.onClick}
-            className={`w-full p-6 rounded-2xl bg-gradient-to-br ${action.gradient} text-white transition-all duration-300 shadow-loopfund flex flex-col items-center space-y-3 relative overflow-hidden group`}
+            className="cursor-pointer"
           >
-            {/* Shimmer effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-1000" />
-            
-            {/* Revolutionary Background Pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute inset-0" style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='20' cy='20' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-              }}></div>
-            </div>
-            
-            <motion.div
-              className="relative z-10"
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            >
-              <action.icon className="w-8 h-8" />
-            </motion.div>
-            <span className="font-body text-body-sm font-medium relative z-10">{action.title}</span>
-            
-            {/* Floating sparkle */}
-            <motion.div
-              className="absolute top-2 right-2 opacity-0 transition-opacity duration-300"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            >
-              <Sparkles className="w-4 h-4 text-white/80" />
-            </motion.div>
-          </motion.button>
+            <LoopFundCard className="p-6 hover:shadow-lg transition-all duration-300">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <h4 className="font-body text-body-sm font-medium text-loopfund-neutral-900 mb-1">
+                    {action.title}
+                  </h4>
+                  <p className="font-body text-body-xs text-loopfund-neutral-600">
+                    {action.description}
+                  </p>
+                </div>
+                <div className={`p-3 ${action.iconBg} rounded-full`}>
+                  <action.icon className={`w-6 h-6 ${action.iconColor}`} />
+                </div>
+              </div>
+            </LoopFundCard>
+          </motion.div>
         ))}
       </div>
     </div>

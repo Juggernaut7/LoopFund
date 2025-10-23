@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Sun, Cloud, CloudRain, CloudSnow, Wind, Thermometer, Sparkles } from 'lucide-react';
+import LoopFundCard from './LoopFundCard';
 
 const WeatherWidget = () => {
   const [weather, setWeather] = useState({
@@ -15,17 +16,17 @@ const WeatherWidget = () => {
   const getWeatherIcon = (condition) => {
     switch (condition) {
       case 'sunny':
-        return <Sun size={24} className="text-loopfund-gold-500" />;
+        return <Sun size={24} className="text-loopfund-electric-600" />;
       case 'cloudy':
-        return <Cloud size={24} className="text-loopfund-neutral-500" />;
+        return <Cloud size={24} className="text-loopfund-electric-600" />;
       case 'rainy':
-        return <CloudRain size={24} className="text-loopfund-electric-500" />;
+        return <CloudRain size={24} className="text-loopfund-electric-600" />;
       case 'snowy':
-        return <CloudSnow size={24} className="text-loopfund-lavender-500" />;
+        return <CloudSnow size={24} className="text-loopfund-electric-600" />;
       case 'windy':
-        return <Wind size={24} className="text-loopfund-neutral-400" />;
+        return <Wind size={24} className="text-loopfund-electric-600" />;
       default:
-        return <Sun size={24} className="text-loopfund-gold-500" />;
+        return <Sun size={24} className="text-loopfund-electric-600" />;
     }
   };
 
@@ -108,32 +109,16 @@ const WeatherWidget = () => {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, delay: 0.7 }}
-      className="bg-gradient-to-br from-loopfund-electric-500 via-loopfund-lavender-500 to-loopfund-electric-600 rounded-2xl p-6 text-white relative overflow-hidden"
     >
-      {/* Revolutionary Background Elements */}
-      <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12 animate-float" />
-      <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-10 -translate-x-10 animate-float-delayed" />
-      <div className="absolute top-1/2 left-1/2 w-16 h-16 bg-white/5 rounded-full -translate-x-8 -translate-y-8 animate-float-slow" />
-      
-      {/* Revolutionary Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='20' cy='20' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }}></div>
-      </div>
-      
-      <div className="relative z-10">
+      <LoopFundCard className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="font-body text-body-sm font-medium text-white/90">Weather</h3>
-            <p className="font-body text-body-xs text-white/70">{weather.location}</p>
+            <h3 className="font-body text-body-sm font-medium text-loopfund-neutral-700">Weather</h3>
+            <p className="font-body text-body-xs text-loopfund-neutral-500">{weather.location}</p>
           </div>
-          <motion.div
-            whileHover={{ scale: 1.2, rotate: 10 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          >
+          <div className="p-3 bg-loopfund-electric-100 rounded-full">
             {getWeatherIcon(weather.condition)}
-          </motion.div>
+          </div>
         </div>
         
         {isLoading ? (
@@ -141,34 +126,29 @@ const WeatherWidget = () => {
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full"
+              className="w-8 h-8 border-2 border-loopfund-neutral-300 border-t-loopfund-electric-600 rounded-full"
             />
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                >
-                  <Thermometer size={18} className="text-white/80" />
-                </motion.div>
-                <span className="font-display text-h4 text-white">{weather.temperature}°F</span>
+                <Thermometer size={18} className="text-loopfund-neutral-500" />
+                <span className="font-display text-h4 text-loopfund-neutral-900">{weather.temperature}°F</span>
               </div>
               <div className="text-right">
-                <p className="font-body text-body-xs text-white/80">Humidity: {weather.humidity}%</p>
-                <p className="font-body text-body-xs text-white/80">Wind: {weather.windSpeed} mph</p>
+                <p className="font-body text-body-xs text-loopfund-neutral-500">Humidity: {weather.humidity}%</p>
+                <p className="font-body text-body-xs text-loopfund-neutral-500">Wind: {weather.windSpeed} mph</p>
               </div>
             </div>
             
             <motion.div 
-              className="mt-4 pt-4 border-t border-white/20"
+              className="mt-4 pt-4 border-t border-loopfund-neutral-200"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
             >
-              <p className="font-body text-body-xs text-white/80 flex items-center">
+              <p className="font-body text-body-xs text-loopfund-neutral-600 flex items-center">
                 <motion.span
                   animate={{ rotate: [0, 10, -10, 0] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -181,7 +161,7 @@ const WeatherWidget = () => {
             </motion.div>
           </>
         )}
-      </div>
+      </LoopFundCard>
     </motion.div>
   );
 };
