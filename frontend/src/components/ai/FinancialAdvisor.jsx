@@ -13,6 +13,8 @@ import {
 import { useAuthStore } from '../../store/useAuthStore';
 import { useToast } from '../../context/ToastContext';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const FinancialAdvisor = () => {
   const [query, setQuery] = useState('');
   const [advice, setAdvice] = useState(null);
@@ -38,7 +40,7 @@ const FinancialAdvisor = () => {
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://localhost:4000/api/ai/advice', {
+      const response = await fetch(`${API_BASE_URL}/ai/advice`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

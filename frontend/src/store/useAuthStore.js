@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 export const useAuthStore = create(
   persist(
     (set, get) => ({
@@ -25,7 +27,7 @@ export const useAuthStore = create(
           console.log('🔐 OAuth login with data:', authData);
           
           // Fetch user data from backend using the token
-          const response = await fetch(`http://localhost:4000/api/auth/profile`, {
+          const response = await fetch(`${API_BASE_URL}/auth/profile`, {
             headers: {
               'Authorization': `Bearer ${authData.token}`,
               'Content-Type': 'application/json'

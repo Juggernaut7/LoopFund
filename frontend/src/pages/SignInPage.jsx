@@ -17,6 +17,8 @@ import LoopFundInput from '../components/ui/LoopFundInput';
 import LoopFundCard from '../components/ui/LoopFundCard';
 import logo from '../assets/logo.jpg';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const SignInPage = () => {
   const [formData, setFormData] = useState({
     email: '',
@@ -46,7 +48,7 @@ const SignInPage = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:4000/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

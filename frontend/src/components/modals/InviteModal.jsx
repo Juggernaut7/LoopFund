@@ -6,6 +6,8 @@ import LoopFundCard from '../ui/LoopFundCard';
 import LoopFundButton from '../ui/LoopFundButton';
 import LoopFundInput from '../ui/LoopFundInput';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const InviteModal = ({ isOpen, onClose, groupId, groupName, currentMembers = [] }) => {
   const [inviteLink, setInviteLink] = useState('');
   const [inviteCode, setInviteCode] = useState('');
@@ -108,7 +110,7 @@ const InviteModal = ({ isOpen, onClose, groupId, groupName, currentMembers = [] 
       const results = [];
       for (const email of validEmails) {
         try {
-          const response = await fetch('http://localhost:4000/api/invitations/email', {
+          const response = await fetch(`${API_BASE_URL}/invitations/email`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

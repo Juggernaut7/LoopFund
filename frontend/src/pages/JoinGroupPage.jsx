@@ -20,6 +20,8 @@ import LoopFundButton from '../components/ui/LoopFundButton';
 import LoopFundInput from '../components/ui/LoopFundInput';
 import { formatCurrencySimple } from '../utils/currency';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const JoinGroupPage = () => {
   const { inviteCode: urlInviteCode } = useParams();
   const navigate = useNavigate();
@@ -43,7 +45,7 @@ const JoinGroupPage = () => {
   const fetchGroupDetails = async (code) => {
     try {
       setIsLoading(true);
-      const response = await fetch(`http://localhost:4000/api/invitations/group/${code}`);
+      const response = await fetch(`${API_BASE_URL}/invitations/group/${code}`);
       
       if (!response.ok) {
         const errorData = await response.json();
@@ -94,7 +96,7 @@ const JoinGroupPage = () => {
 
     try {
       setIsJoining(true);
-      const response = await fetch('http://localhost:4000/api/invitations/join', {
+      const response = await fetch(`${API_BASE_URL}/invitations/join`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

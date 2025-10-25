@@ -11,6 +11,8 @@ import {
 import { useToast } from '../context/ToastContext';
 import logo from '../assets/logo.jpg';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -27,7 +29,7 @@ const ForgotPasswordPage = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:4000/api/auth/forgot-password', {
+      const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -18,6 +18,8 @@ import LoopFundCard from '../components/ui/LoopFundCard';
 import LoopFundButton from '../components/ui/LoopFundButton';
 import LoopFundInput from '../components/ui/LoopFundInput';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const EmailInvitationPage = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
@@ -43,7 +45,7 @@ const EmailInvitationPage = () => {
 
   const fetchInvitationDetails = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/api/invitations/email/${token}`);
+      const response = await fetch(`${API_BASE_URL}/invitations/email/${token}`);
       const data = await response.json();
       
       if (data.success) {
@@ -97,7 +99,7 @@ const EmailInvitationPage = () => {
 
     setAccepting(true);
     try {
-      const response = await fetch('http://localhost:4000/api/invitations/email/accept', {
+      const response = await fetch(`${API_BASE_URL}/invitations/email/accept`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -116,7 +118,7 @@ const EmailInvitationPage = () => {
 
       if (data.success) {
         // Auto-login the user
-        const loginResponse = await fetch('http://localhost:4000/api/auth/login', {
+        const loginResponse = await fetch(`${API_BASE_URL}/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

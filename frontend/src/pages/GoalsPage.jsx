@@ -37,6 +37,8 @@ import LoopFundCard, { LoopFundCardHeader, LoopFundCardTitle, LoopFundCardDescri
 import LoopFundInput from '../components/ui/LoopFundInput';
 import { formatCurrencySimple } from '../utils/currency';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const GoalsPage = () => {
   const [goals, setGoals] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -158,7 +160,7 @@ const GoalsPage = () => {
     if (reference) {
       console.log('🔍 Manual verification for reference:', reference);
       try {
-        const response = await fetch('http://localhost:4000/api/payments/verify-payment-manual', {
+        const response = await fetch(`${API_BASE_URL}/payments/verify-payment-manual`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -189,7 +191,7 @@ const GoalsPage = () => {
   const verifyGoalPayment = async (reference) => {
     console.log('🔍 Verifying goal payment with reference:', reference);
     try {
-      const response = await fetch(`http://localhost:4000/api/payments/verify-goal-contribution/${reference}`, {
+      const response = await fetch(`${API_BASE_URL}/payments/verify-goal-contribution/${reference}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -428,7 +430,7 @@ const GoalsPage = () => {
 
   const createGoal = async (goalData) => {
     try {
-      const response = await fetch('http://localhost:4000/api/goals', {
+      const response = await fetch(`${API_BASE_URL}/goals`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -462,7 +464,7 @@ const GoalsPage = () => {
 
   const createGoalWithFee = async (goalData, fee) => {
     try {
-      const response = await fetch('http://localhost:4000/api/goals', {
+      const response = await fetch(`${API_BASE_URL}/goals`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -501,7 +503,7 @@ const GoalsPage = () => {
   };
 
   const updateGoal = async (goalId, goalData) => {
-    const response = await fetch(`http://localhost:4000/api/goals/${goalId}`, {
+    const response = await fetch(`${API_BASE_URL}/goals/${goalId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -533,7 +535,7 @@ const GoalsPage = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:4000/api/goals/${goalId}`, {
+      const response = await fetch(`${API_BASE_URL}/goals/${goalId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -564,7 +566,7 @@ const GoalsPage = () => {
 
   const handleAddContribution = async (contributionData) => {
     try {
-      const response = await fetch('http://localhost:4000/api/contributions', {
+      const response = await fetch(`${API_BASE_URL}/contributions`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -617,7 +619,7 @@ const GoalsPage = () => {
     setIsProcessingContribution(true);
     try {
       // Initialize goal contribution payment with Paystack
-      const response = await fetch('http://localhost:4000/api/payments/initialize-goal-contribution', {
+      const response = await fetch(`${API_BASE_URL}/payments/initialize-goal-contribution`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

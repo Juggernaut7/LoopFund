@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Get API URL from environment or fallback to localhost
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
 
 // Create axios instance with default configuration
 const api = axios.create({

@@ -18,6 +18,8 @@ import LoopFundButton from '../ui/LoopFundButton';
 import LoopFundInput from '../ui/LoopFundInput';
 import QRCode from 'qrcode';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const InviteModal = ({ isOpen, onClose, group, onInviteSent }) => {
   const [inviteType, setInviteType] = useState('direct'); // 'direct', 'public', or 'qr'
   const [inviteeEmail, setInviteeEmail] = useState('');
@@ -46,7 +48,7 @@ const InviteModal = ({ isOpen, onClose, group, onInviteSent }) => {
         return;
       }
 
-      const response = await fetch('http://localhost:4000/api/invitations/email', {
+      const response = await fetch(`${API_BASE_URL}/invitations/email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +90,7 @@ const InviteModal = ({ isOpen, onClose, group, onInviteSent }) => {
         return;
       }
 
-      const response = await fetch(`http://localhost:4000/api/invitations/group/${group._id}/public-link`, {
+      const response = await fetch(`${API_BASE_URL}/invitations/group/${group._id}/public-link`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -3,7 +3,7 @@ import api from './api';
 
 class GoalPaymentService {
   constructor() {
-    this.baseURL = 'http://localhost:4000/api';
+    this.baseURL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
   }
 
   // Initialize payment for goal creation

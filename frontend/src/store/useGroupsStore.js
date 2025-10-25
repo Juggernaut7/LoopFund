@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const useGroupsStore = create(
   persist(
     (set, get) => ({
@@ -23,7 +25,7 @@ const useGroupsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch('http://localhost:4000/api/groups', {
+          const response = await fetch(`${API_BASE_URL}/groups`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -46,7 +48,7 @@ const useGroupsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch('http://localhost:4000/api/groups', {
+          const response = await fetch(`${API_BASE_URL}/groups`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -78,7 +80,7 @@ const useGroupsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`http://localhost:4000/api/groups/${groupId}`, {
+          const response = await fetch(`${API_BASE_URL}/groups/${groupId}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -113,7 +115,7 @@ const useGroupsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`http://localhost:4000/api/groups/${groupId}`, {
+          const response = await fetch(`${API_BASE_URL}/groups/${groupId}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -143,7 +145,7 @@ const useGroupsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch('http://localhost:4000/api/groups/join', {
+          const response = await fetch(`${API_BASE_URL}/groups/join`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -175,7 +177,7 @@ const useGroupsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`http://localhost:4000/api/groups/${groupId}/leave`, {
+          const response = await fetch(`${API_BASE_URL}/groups/${groupId}/leave`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -205,7 +207,7 @@ const useGroupsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`http://localhost:4000/api/groups/${groupId}/contributions`, {
+          const response = await fetch(`${API_BASE_URL}/groups/${groupId}/contributions`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -240,7 +242,7 @@ const useGroupsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`http://localhost:4000/api/groups/${groupId}/invite`, {
+          const response = await fetch(`${API_BASE_URL}/groups/${groupId}/invite`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

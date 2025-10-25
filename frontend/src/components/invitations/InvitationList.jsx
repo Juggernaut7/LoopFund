@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const InvitationList = ({ type = 'received' }) => {
   const [invitations, setInvitations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,8 +28,8 @@ const InvitationList = ({ type = 'received' }) => {
       const token = localStorage.getItem('token');
       
       const endpoint = type === 'received' 
-        ? 'http://localhost:4000/api/invitations/user'
-        : `http://localhost:4000/api/invitations/group/${groupId}`;
+        ? `${API_BASE_URL}/invitations/user`
+        : `${API_BASE_URL}/invitations/group/${groupId}`;
       
       const response = await fetch(endpoint, {
         headers: {
@@ -54,7 +56,7 @@ const InvitationList = ({ type = 'received' }) => {
   const handleInvitationAction = async (invitationId, action) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:4000/api/invitations/${invitationId}/${action}`, {
+      const response = await fetch(`${API_BASE_URL}/invitations/${invitationId}/${action}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

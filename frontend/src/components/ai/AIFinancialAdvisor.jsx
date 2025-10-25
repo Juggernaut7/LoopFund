@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { LoopFundButton, LoopFundCard, LoopFundInput } from '../ui';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const AIFinancialAdvisor = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('chat');
@@ -66,7 +68,7 @@ const AIFinancialAdvisor = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:4000/api/ai/chat', {
+      const response = await fetch(`${API_BASE_URL}/ai/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,7 +132,7 @@ const AIFinancialAdvisor = () => {
   const getSavingsPlan = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:4000/api/ai/savings-plan', {
+      const response = await fetch(`${API_BASE_URL}/ai/savings-plan`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -163,7 +165,7 @@ const AIFinancialAdvisor = () => {
   const getBudgetAnalysis = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:4000/api/ai/budget-analysis', {
+      const response = await fetch(`${API_BASE_URL}/ai/budget-analysis`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

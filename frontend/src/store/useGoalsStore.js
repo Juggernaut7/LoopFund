@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const useGoalsStore = create(
   persist(
     (set, get) => ({
@@ -23,7 +25,7 @@ const useGoalsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch('http://localhost:4000/api/goals', {
+          const response = await fetch(`${API_BASE_URL}/goals`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -46,7 +48,7 @@ const useGoalsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch('http://localhost:4000/api/goals', {
+          const response = await fetch(`${API_BASE_URL}/goals`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -78,7 +80,7 @@ const useGoalsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`http://localhost:4000/api/goals/${goalId}`, {
+          const response = await fetch(`${API_BASE_URL}/goals/${goalId}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -113,7 +115,7 @@ const useGoalsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`http://localhost:4000/api/goals/${goalId}`, {
+          const response = await fetch(`${API_BASE_URL}/goals/${goalId}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -143,7 +145,7 @@ const useGoalsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`http://localhost:4000/api/goals/${goalId}/contributions`, {
+          const response = await fetch(`${API_BASE_URL}/goals/${goalId}/contributions`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

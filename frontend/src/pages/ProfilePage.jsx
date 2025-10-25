@@ -14,6 +14,8 @@ import {
 import { useToast } from '../context/ToastContext';
 import dashboardService from '../services/dashboardService';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const ProfilePage = () => {
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,7 +75,7 @@ const ProfilePage = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:4000/api/auth/profile', {
+      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

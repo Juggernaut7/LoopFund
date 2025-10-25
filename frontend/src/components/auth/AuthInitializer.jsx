@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const AuthInitializer = () => {
   const { isAuthenticated, loginWithOAuth } = useAuthStore();
   const isInitializing = useRef(false);
@@ -26,7 +28,7 @@ const AuthInitializer = () => {
       isInitializing.current = true;
       
       // Validate token with backend
-      fetch('http://localhost:4000/api/auth/profile', {
+      fetch(`${API_BASE_URL}/auth/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

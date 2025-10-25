@@ -28,6 +28,8 @@ import { useAuthStore } from '../store/useAuthStore';
 import ModernAIFinancialAdvisor from '../components/ai/ModernAIFinancialAdvisor';
 import FinancialInsightsPanel from '../components/ai/FinancialInsightsPanel';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const AIAdvisorPage = () => {
   const [showNewChat, setShowNewChat] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
@@ -68,7 +70,7 @@ const AIAdvisorPage = () => {
 
   const loadUserProfile = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/user/profile', {
+      const response = await fetch(`${API_BASE_URL}/user/profile`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }

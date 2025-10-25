@@ -1,7 +1,7 @@
 // Dashboard service for fetching real data from backend
 import { useAuthStore } from '../store/useAuthStore';
 
-const API_BASE_URL = 'http://localhost:4000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
 
 class DashboardService {
   constructor() {

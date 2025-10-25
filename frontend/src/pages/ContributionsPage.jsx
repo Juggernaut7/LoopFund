@@ -22,6 +22,8 @@ import ContributionTimeline from '../components/contributions/ContributionTimeli
 import ContributionStats from '../components/contributions/ContributionStats';
 import ContributionCharts from '../components/contributions/ContributionCharts';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const ContributionsPage = () => {
   const [contributions, setContributions] = useState([]);
   const [goals, setGoals] = useState([]);
@@ -40,7 +42,7 @@ const ContributionsPage = () => {
 
   const fetchContributions = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/contributions', {
+      const response = await fetch(`${API_BASE_URL}/contributions`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
         }
@@ -60,7 +62,7 @@ const ContributionsPage = () => {
 
   const fetchGoals = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/goals', {
+      const response = await fetch(`${API_BASE_URL}/goals`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
         }
@@ -77,7 +79,7 @@ const ContributionsPage = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/contributions/stats', {
+      const response = await fetch(`${API_BASE_URL}/contributions/stats`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
         }
@@ -112,7 +114,7 @@ const ContributionsPage = () => {
 
   const handleAddContribution = async (contributionData) => {
     try {
-      const response = await fetch('http://localhost:4000/api/contributions', {
+      const response = await fetch(`${API_BASE_URL}/contributions`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,

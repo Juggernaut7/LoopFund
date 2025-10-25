@@ -13,6 +13,8 @@ import LoopFundCard from '../ui/LoopFundCard';
 import LoopFundButton from '../ui/LoopFundButton';
 import LoopFundInput from '../ui/LoopFundInput';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const JoinGroupModal = ({ isOpen, onClose, inviteCode = '' }) => {
   const [code, setCode] = useState(inviteCode);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,7 +32,7 @@ const JoinGroupModal = ({ isOpen, onClose, inviteCode = '' }) => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:4000/api/invitations/join', {
+      const response = await fetch(`${API_BASE_URL}/invitations/join`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

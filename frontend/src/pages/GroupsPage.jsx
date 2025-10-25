@@ -38,6 +38,8 @@ import {
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import InviteModal from '../components/invitations/InviteModal';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
 import GroupContributionForm from '../components/contributions/GroupContributionForm';
 import { LoopFundButton, LoopFundCard, LoopFundInput } from '../components/ui';
 import { formatCurrency, formatCurrencySimple, formatCompactCurrency } from '../utils/currency';
@@ -100,7 +102,7 @@ const GroupsPage = () => {
   const fetchGroups = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:4000/api/groups', {
+      const response = await fetch(`${API_BASE_URL}/groups`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
         }
@@ -138,7 +140,7 @@ const GroupsPage = () => {
     try {
       console.log('🚀 Group contribution data:', contributionData);
       
-      const response = await fetch('http://localhost:4000/api/contributions', {
+      const response = await fetch(`${API_BASE_URL}/contributions`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,

@@ -3,6 +3,8 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useToast } from './ToastContext';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const NotificationsContext = createContext();
 
 export const useNotifications = () => {
@@ -26,7 +28,7 @@ export const NotificationsProvider = ({ children }) => {
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:4000/api/notifications', {
+      const response = await fetch(`${API_BASE_URL}/notifications`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -47,7 +49,7 @@ export const NotificationsProvider = ({ children }) => {
   const markAsRead = async (notificationId) => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:4000/api/notifications/${notificationId}/read`, {
+      const response = await fetch(`${API_BASE_URL}/notifications/${notificationId}/read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -74,7 +76,7 @@ export const NotificationsProvider = ({ children }) => {
   const markAllAsRead = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:4000/api/notifications/mark-all-read', {
+      const response = await fetch(`${API_BASE_URL}/notifications/mark-all-read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

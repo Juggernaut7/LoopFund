@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const useNotificationsStore = create(
   persist(
     (set, get) => ({
@@ -23,7 +25,7 @@ const useNotificationsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch('http://localhost:4000/api/notifications', {
+          const response = await fetch(`${API_BASE_URL}/notifications`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -47,7 +49,7 @@ const useNotificationsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`http://localhost:4000/api/notifications/${notificationId}/read`, {
+          const response = await fetch(`${API_BASE_URL}/notifications/${notificationId}/read`, {
             method: 'PUT',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -82,7 +84,7 @@ const useNotificationsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch('http://localhost:4000/api/notifications/read-all', {
+          const response = await fetch(`${API_BASE_URL}/notifications/read-all`, {
             method: 'PUT',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -110,7 +112,7 @@ const useNotificationsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch(`http://localhost:4000/api/notifications/${notificationId}`, {
+          const response = await fetch(`${API_BASE_URL}/notifications/${notificationId}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -156,7 +158,7 @@ const useNotificationsStore = create(
           const { getToken } = await import('./useAuthStore');
           const token = getToken();
           
-          const response = await fetch('http://localhost:4000/api/notifications/preferences', {
+          const response = await fetch(`${API_BASE_URL}/notifications/preferences`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',

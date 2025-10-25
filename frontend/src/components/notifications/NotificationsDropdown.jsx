@@ -15,6 +15,8 @@ import { useToast } from '../../context/ToastContext';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const NotificationsDropdown = ({ isOpen, onClose, notifications = [] }) => {
   const [localNotifications, setLocalNotifications] = useState(notifications);
   const [filter, setFilter] = useState('all');
@@ -45,7 +47,7 @@ const NotificationsDropdown = ({ isOpen, onClose, notifications = [] }) => {
 
   const markAsRead = async (notificationId) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/notifications/${notificationId}/read`, {
+      const response = await fetch(`${API_BASE_URL}/notifications/${notificationId}/read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -70,7 +72,7 @@ const NotificationsDropdown = ({ isOpen, onClose, notifications = [] }) => {
 
   const deleteNotification = async (notificationId) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/notifications/${notificationId}`, {
+      const response = await fetch(`${API_BASE_URL}/notifications/${notificationId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -88,7 +90,7 @@ const NotificationsDropdown = ({ isOpen, onClose, notifications = [] }) => {
 
   const markAllAsRead = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/notifications/mark-all-read', {
+      const response = await fetch(`${API_BASE_URL}/notifications/mark-all-read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,

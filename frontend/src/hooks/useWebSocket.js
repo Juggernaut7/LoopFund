@@ -12,7 +12,10 @@ export const useWebSocket = () => {
     }
 
     try {
-      const wsUrl = `ws://localhost:4000/ws?token=${token}`;
+      const API_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+      const wsProtocol = API_URL.startsWith('https') ? 'wss' : 'ws';
+      const wsHost = API_URL.replace(/^https?:\/\//, '').replace('/api', '');
+      const wsUrl = `${wsProtocol}://${wsHost}/ws?token=${token}`;
       console.log('🔌 Attempting WebSocket connection to:', wsUrl);
       
       wsRef.current = new WebSocket(wsUrl);

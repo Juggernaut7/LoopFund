@@ -21,6 +21,8 @@ import LoopFundInput from '../components/ui/LoopFundInput';
 import LoopFundCard from '../components/ui/LoopFundCard';
 import logo from '../assets/logo.jpg';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const SignUpPage = () => {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -68,7 +70,7 @@ const SignUpPage = () => {
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://localhost:4000/api/auth/signup', {
+      const response = await fetch(`${API_BASE_URL}/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -107,7 +109,7 @@ const SignUpPage = () => {
           if (pendingInviteCode) {
             // Auto-join the group after successful signup
             try {
-              const joinResponse = await fetch('http://localhost:4000/api/invitations/join', {
+              const joinResponse = await fetch(`${API_BASE_URL}/invitations/join`, {
                 method: 'POST',
                 headers: { 
                   'Content-Type': 'application/json',
@@ -165,7 +167,7 @@ const SignUpPage = () => {
     if (pendingInviteCode) {
       try {
         // Auto-join the group after successful email verification
-        const joinResponse = await fetch('http://localhost:4000/api/invitations/join', {
+        const joinResponse = await fetch(`${API_BASE_URL}/invitations/join`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',

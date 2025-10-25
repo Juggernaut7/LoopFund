@@ -33,6 +33,8 @@ import { useToast } from '../context/ToastContext';
 import dashboardService from '../services/dashboardService';
 import { LoopFundButton, LoopFundCard, LoopFundInput } from '../components/ui';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [isLoading, setIsLoading] = useState(true);
@@ -163,7 +165,7 @@ const SettingsPage = () => {
     try {
       setIsSaving(true);
       
-      const response = await fetch('http://localhost:4000/api/auth/profile', {
+      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -203,7 +205,7 @@ const SettingsPage = () => {
     try {
       setIsSaving(true);
       
-      const response = await fetch('http://localhost:4000/api/auth/change-password', {
+      const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

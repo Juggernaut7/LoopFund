@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { LoopFundCard, LoopFundButton } from '../ui';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const FinancialInsightsPanel = ({ activeInsight, recommendations, onInsightChange }) => {
   const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -25,7 +27,7 @@ const FinancialInsightsPanel = ({ activeInsight, recommendations, onInsightChang
 
   const loadInsights = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/analytics/user/summary', {
+      const response = await fetch(`${API_BASE_URL}/analytics/user/summary`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }

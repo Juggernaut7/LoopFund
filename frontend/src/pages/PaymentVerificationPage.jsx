@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const PaymentVerificationPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -36,10 +38,10 @@ const PaymentVerificationPage = () => {
     try {
       console.log('🔍 Verifying payment with reference:', reference);
       console.log('🔍 Auth token:', localStorage.getItem('authToken') ? 'Present' : 'Missing');
-      console.log('🔍 API URL:', `http://localhost:4000/api/payments/verify/${reference}`);
+      console.log('🔍 API URL:', `${API_BASE_URL}/payments/verify/${reference}`);
       
       // Call backend to verify payment
-      const response = await fetch(`http://localhost:4000/api/payments/verify/${reference}`, {
+      const response = await fetch(`${API_BASE_URL}/payments/verify/${reference}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,

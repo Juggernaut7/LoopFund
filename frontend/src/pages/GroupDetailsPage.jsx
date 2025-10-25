@@ -35,6 +35,8 @@ import { LoopFundButton, LoopFundCard, LoopFundInput } from '../components/ui';
 import GroupChat from '../components/chat/GroupChat';
 import { formatCurrency, formatCurrencySimple } from '../utils/currency';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const GroupDetailsPage = () => {
   const { groupId } = useParams();
   const navigate = useNavigate();
@@ -72,7 +74,7 @@ const GroupDetailsPage = () => {
 
   const verifyPayment = async (reference) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/payments/verify-contribution/${reference}`, {
+      const response = await fetch(`${API_BASE_URL}/payments/verify-contribution/${reference}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -103,7 +105,7 @@ const GroupDetailsPage = () => {
 
   const fetchGroupDetails = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/api/groups/${groupId}`, {
+      const response = await fetch(`${API_BASE_URL}/groups/${groupId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         }
@@ -123,7 +125,7 @@ const GroupDetailsPage = () => {
 
   const fetchContributions = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/api/groups/${groupId}/contributions`, {
+      const response = await fetch(`${API_BASE_URL}/groups/${groupId}/contributions`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         }
@@ -142,7 +144,7 @@ const GroupDetailsPage = () => {
 
   const handleAddContribution = async (contributionData) => {
     try {
-      const response = await fetch('http://localhost:4000/api/contributions', {
+      const response = await fetch(`${API_BASE_URL}/contributions`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -189,7 +191,7 @@ const GroupDetailsPage = () => {
     setIsContributing(true);
     try {
       // Initialize contribution payment with Paystack
-      const response = await fetch('http://localhost:4000/api/payments/initialize-contribution', {
+      const response = await fetch(`${API_BASE_URL}/payments/initialize-contribution`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,6 +1,6 @@
 class TransactionService {
   constructor() {
-    this.baseURL = 'http://localhost:4000/api';
+    this.baseURL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
   }
 
   getAuthHeaders() {

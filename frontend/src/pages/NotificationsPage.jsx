@@ -28,6 +28,8 @@ import {
 import { useToast } from '../context/ToastContext';
 import { LoopFundButton, LoopFundCard, LoopFundInput } from '../components/ui';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const NotificationsPage = () => {
   const [notifications, setNotifications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,7 +46,7 @@ const NotificationsPage = () => {
   const fetchNotifications = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:4000/api/notifications', {
+      const response = await fetch(`${API_BASE_URL}/notifications`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
         }
@@ -64,7 +66,7 @@ const NotificationsPage = () => {
 
   const markAsRead = async (notificationId) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/notifications/${notificationId}/read`, {
+      const response = await fetch(`${API_BASE_URL}/notifications/${notificationId}/read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -90,7 +92,7 @@ const NotificationsPage = () => {
 
   const markAllAsRead = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/notifications/mark-all-read', {
+      const response = await fetch(`${API_BASE_URL}/notifications/mark-all-read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -110,7 +112,7 @@ const NotificationsPage = () => {
 
   const deleteNotification = async (notificationId) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/notifications/${notificationId}`, {
+      const response = await fetch(`${API_BASE_URL}/notifications/${notificationId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -134,7 +136,7 @@ const NotificationsPage = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:4000/api/notifications/archive', {
+      const response = await fetch(`${API_BASE_URL}/notifications/archive`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,

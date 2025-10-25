@@ -1,10 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+
 const GoogleOAuthButton = ({ text = "Continue with Google", variant = "default", className = "" }) => {
   const handleGoogleAuth = () => {
     // Redirect to backend Google OAuth endpoint
-    window.location.href = 'http://localhost:4000/api/auth/google';
+    window.location.href = `${API_BASE_URL}/auth/google`;
   };
 
   const getButtonStyles = () => {
