@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com';
 
 const InvitationList = ({ type = 'received' }) => {
   const [invitations, setInvitations] = useState([]);

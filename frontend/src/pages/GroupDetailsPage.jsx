@@ -35,7 +35,7 @@ import { LoopFundButton, LoopFundCard, LoopFundInput } from '../components/ui';
 import GroupChat from '../components/chat/GroupChat';
 import { formatCurrency, formatCurrencySimple } from '../utils/currency';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com';
 
 const GroupDetailsPage = () => {
   const { groupId } = useParams();

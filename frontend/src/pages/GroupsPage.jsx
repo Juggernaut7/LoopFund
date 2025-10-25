@@ -39,7 +39,7 @@ import {
 import { useToast } from '../context/ToastContext';
 import InviteModal from '../components/invitations/InviteModal';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com';
 import GroupContributionForm from '../components/contributions/GroupContributionForm';
 import { LoopFundButton, LoopFundCard, LoopFundInput } from '../components/ui';
 import { formatCurrency, formatCurrencySimple, formatCompactCurrency } from '../utils/currency';

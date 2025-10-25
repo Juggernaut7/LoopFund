@@ -22,7 +22,7 @@ import ContributionTimeline from '../components/contributions/ContributionTimeli
 import ContributionStats from '../components/contributions/ContributionStats';
 import ContributionCharts from '../components/contributions/ContributionCharts';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com';
 
 const ContributionsPage = () => {
   const [contributions, setContributions] = useState([]);

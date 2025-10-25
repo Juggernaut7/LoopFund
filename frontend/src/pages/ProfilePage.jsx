@@ -14,7 +14,7 @@ import {
 import { useToast } from '../context/ToastContext';
 import dashboardService from '../services/dashboardService';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com';
 
 const ProfilePage = () => {
   const [profile, setProfile] = useState(null);

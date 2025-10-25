@@ -12,7 +12,7 @@ export const useWebSocket = () => {
     }
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com';
       const wsProtocol = API_URL.startsWith('https') ? 'wss' : 'ws';
       const wsHost = API_URL.replace(/^https?:\/\//, '').replace('/api', '');
       const wsUrl = `${wsProtocol}://${wsHost}/ws?token=${token}`;

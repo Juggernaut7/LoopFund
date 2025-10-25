@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com';
 
 const PaymentVerificationPage = () => {
   const [searchParams] = useSearchParams();

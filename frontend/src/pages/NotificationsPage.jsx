@@ -28,7 +28,7 @@ import {
 import { useToast } from '../context/ToastContext';
 import { LoopFundButton, LoopFundCard, LoopFundInput } from '../components/ui';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com';
 
 const NotificationsPage = () => {
   const [notifications, setNotifications] = useState([]);

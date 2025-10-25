@@ -33,7 +33,7 @@ import { useToast } from '../context/ToastContext';
 import dashboardService from '../services/dashboardService';
 import { LoopFundButton, LoopFundCard, LoopFundInput } from '../components/ui';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com';
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState('profile');

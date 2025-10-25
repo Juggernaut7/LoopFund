@@ -13,7 +13,7 @@ import {
 import { useAuthStore } from '../../store/useAuthStore';
 import { useToast } from '../../context/ToastContext';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com';
 
 const FinancialAdvisor = () => {
   const [query, setQuery] = useState('');

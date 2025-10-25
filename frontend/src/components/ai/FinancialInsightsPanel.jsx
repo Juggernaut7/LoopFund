@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { LoopFundCard, LoopFundButton } from '../ui';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com';
 
 const FinancialInsightsPanel = ({ activeInsight, recommendations, onInsightChange }) => {
   const [insights, setInsights] = useState(null);

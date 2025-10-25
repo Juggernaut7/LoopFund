@@ -18,7 +18,7 @@ import LoopFundCard from '../components/ui/LoopFundCard';
 import LoopFundButton from '../components/ui/LoopFundButton';
 import LoopFundInput from '../components/ui/LoopFundInput';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com';
 
 const EmailInvitationPage = () => {
   const [searchParams] = useSearchParams();

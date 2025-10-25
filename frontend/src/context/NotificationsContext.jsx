@@ -3,7 +3,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useToast } from './ToastContext';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com';
 
 const NotificationsContext = createContext();
 

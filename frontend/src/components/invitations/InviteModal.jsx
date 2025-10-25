@@ -18,7 +18,7 @@ import LoopFundButton from '../ui/LoopFundButton';
 import LoopFundInput from '../ui/LoopFundInput';
 import QRCode from 'qrcode';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com';
 
 const InviteModal = ({ isOpen, onClose, group, onInviteSent }) => {
   const [inviteType, setInviteType] = useState('direct'); // 'direct', 'public', or 'qr'

@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { LoopFundButton, LoopFundCard, LoopFundInput } from '../ui';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com';
 
 const AIFinancialAdvisor = () => {
   const [isOpen, setIsOpen] = useState(false);

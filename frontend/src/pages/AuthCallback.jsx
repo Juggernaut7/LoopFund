@@ -59,7 +59,7 @@ const AuthCallback = () => {
         setMessage('Loading your profile...');
 
         // Fetch user profile directly using the token
-        const apiUrl = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com/api';
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://loopfund.onrender.com';
         const response = await fetch(`${apiUrl}/auth/profile`, {
           headers: {
             'Authorization': `Bearer ${token}`,
